@@ -27,11 +27,21 @@ function getSetDocRef(setId: string) {
 }
 
 /**
+ * Remove undefined values from an object (Firestore doesn't accept undefined)
+ */
+function removeUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, value]) => value !== undefined)
+  ) as Partial<T>;
+}
+
+/**
  * Create a new Lego set
  */
 export async function createSet(data: CreateLegoSetInput): Promise<string> {
+  const cleanData = removeUndefined(data as Record<string, unknown>);
   const docRef = await addDoc(getSetsRef(), {
-    ...data,
+    ...cleanData,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -84,8 +94,9 @@ export function subscribeToSetsForCollection(
  * Update a set
  */
 export async function updateSet(setId: string, data: UpdateLegoSetInput): Promise<void> {
+  const cleanData = removeUndefined(data as Record<string, unknown>);
   await updateDoc(getSetDocRef(setId), {
-    ...data,
+    ...cleanData,
     updatedAt: serverTimestamp(),
   });
 }
