@@ -11,6 +11,7 @@ import { CollectionSettingsModal } from '@/components/CollectionSettingsModal';
 import { SetList } from '@/components/SetList';
 import { AddSetForm } from '@/components/AddSetForm';
 import { EditSetModal } from '@/components/EditSetModal';
+import { BulkRefreshModal } from '@/components/BulkRefreshModal';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';
 
@@ -20,6 +21,7 @@ export default function CollectionPage(): React.JSX.Element {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingSet, setEditingSet] = useState<LegoSet | null>(null);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
+  const [showBulkRefresh, setShowBulkRefresh] = useState(false);
 
   const handleSetClick = (set: LegoSet) => {
     setEditingSet(set);
@@ -118,13 +120,38 @@ export default function CollectionPage(): React.JSX.Element {
       <main className={styles.main}>
         <div className={styles.toolbar}>
           <h2 className={styles.sectionTitle}>Your Sets</h2>
-          <button
-            type="button"
-            onClick={() => setShowAddForm(true)}
-            className={styles.addButton}
-          >
-            + Add Set
-          </button>
+          <div className={styles.toolbarActions}>
+            <button
+              type="button"
+              onClick={() => setShowBulkRefresh(true)}
+              className={styles.refreshButton}
+              title="Refresh set data from Brickset"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M14 8A6 6 0 1 1 8 2"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M8 2V5L10.5 3.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Refresh Data
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAddForm(true)}
+              className={styles.addButton}
+            >
+              + Add Set
+            </button>
+          </div>
         </div>
 
         {activeCollection && (
@@ -160,6 +187,10 @@ export default function CollectionPage(): React.JSX.Element {
           onSuccess={() => setShowCollectionSettings(false)}
           onCancel={() => setShowCollectionSettings(false)}
         />
+      )}
+
+      {showBulkRefresh && (
+        <BulkRefreshModal sets={sets} onClose={() => setShowBulkRefresh(false)} />
       )}
     </div>
   );
