@@ -72,18 +72,23 @@ export class BricksetProvider implements SetDataProvider {
     }
 
     const response = await fetch(url.toString(), {
+      method: 'GET',
       headers: {
         Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
+      const text = await response.text();
+      console.error('Brickset API HTTP error:', response.status, text);
       throw new Error(`Brickset API error: ${response.status} ${response.statusText}`);
     }
 
     const data: BricksetResponse = await response.json();
 
     if (data.status !== 'success') {
+      console.error('Brickset API returned error:', data);
       throw new Error(`Brickset API error: ${data.message || 'Unknown error'}`);
     }
 
@@ -104,12 +109,18 @@ export class BricksetProvider implements SetDataProvider {
   }
 
   async lookupSet(setNumber: string): Promise<SetLookupResult | null> {
+    if (!this.apiKey) {
+      throw new Error('Brickset API key not configured');
+    }
+
     const normalizedNumber = normalizeSetNumber(setNumber);
 
     try {
+      console.log(`Brickset: Looking up set ${normalizedNumber}`);
       const response = await this.fetch('getSets', {
         setNumber: normalizedNumber,
       });
+      console.log(`Brickset: Got ${response.matches} matches for ${normalizedNumber}`);
 
       if (response.matches === 0 || response.sets.length === 0) {
         // Try without the variant suffix as fallback
@@ -118,6 +129,7 @@ export class BricksetProvider implements SetDataProvider {
         }
 
         // Some sets might have variant -2, -3, etc. Try searching by number
+        console.log(`Brickset: Trying search fallback for ${setNumber}`);
         const searchResponse = await this.fetch('getSets', {
           query: setNumber,
         });
@@ -135,8 +147,8 @@ export class BricksetProvider implements SetDataProvider {
 
       return this.mapToResult(response.sets[0]);
     } catch (error) {
-      console.error('Brickset lookup error:', error);
-      return null;
+      console.error('Brickset lookup error for', setNumber, ':', error);
+      throw error; // Re-throw to surface the actual error
     }
   }
 
