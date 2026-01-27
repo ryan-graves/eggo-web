@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "preCommit": [
+      {
+        "command": "npm run typecheck",
+        "description": "Run TypeScript type checking before commit"
+      },
+      {
+        "command": "npm run lint",
+        "description": "Run ESLint before commit"
+      }
+    ],
+    "postFileWrite": [
+      {
+        "pattern": "**/*.{ts,tsx}",
+        "command": "npm run lint -- --fix ${file}",
+        "description": "Auto-fix lint issues on TypeScript files"
+      }
+    ]
+  },
+  "codeReview": {
+    "enabled": true,
+    "checkForPlaceholders": true,
+    "checkForTodos": true,
+    "checkForConsoleLog": true,
+    "checkForHardcodedSecrets": true
+  }
+}
