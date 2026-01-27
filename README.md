@@ -33,11 +33,13 @@ A web application for managing your Lego set collection. Track what you own, whe
 1. Clone the repository
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Copy the environment template:
+
    ```bash
    cp .env.local.example .env.local
    ```
@@ -45,6 +47,7 @@ A web application for managing your Lego set collection. Track what you own, whe
 4. Fill in your Firebase and Rebrickable credentials in `.env.local`
 
 5. Start the development server:
+
    ```bash
    npm run dev
    ```

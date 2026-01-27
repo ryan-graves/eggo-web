@@ -32,3 +32,18 @@
   color: var(--text-tertiary);
   margin-top: var(--space-4);
 }
+
+.loginLink {
+  margin-top: var(--space-6);
+  padding: var(--space-3) var(--space-6);
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-medium);
+  transition: background-color var(--transition-fast);
+}
+
+.loginLink:hover {
+  background-color: var(--interactive-primary-hover);
+  color: var(--text-inverse);
+}

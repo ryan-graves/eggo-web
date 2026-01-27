@@ -1,0 +1,89 @@
+.page {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-8);
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: var(--font-size-xl);
+  color: var(--text-secondary);
+}
+
+.loginBox {
+  margin-top: var(--space-8);
+  padding: var(--space-8);
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  min-width: 320px;
+}
+
+.description {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+}
+
+.error {
+  color: var(--status-error);
+  font-size: var(--font-size-sm);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--status-error-bg);
+  border-radius: var(--radius-md);
+  width: 100%;
+  text-align: center;
+}
+
+.googleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+  width: 100%;
+}
+
+.googleButton:hover {
+  background-color: var(--surface-secondary);
+  border-color: var(--border-primary);
+}
+
+.googleButton:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.loading {
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+}
