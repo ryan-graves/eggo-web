@@ -1,0 +1,169 @@
+import type { SetLookupResult } from '@/types';
+import type { SetDataProvider } from './types';
+
+const BRICKSET_API_BASE = 'https://brickset.com/api/v3.asmx';
+
+interface BricksetSet {
+  setID: number;
+  number: string;
+  numberVariant: number;
+  name: string;
+  year: number;
+  theme: string;
+  themeGroup: string;
+  subtheme: string | null;
+  pieces: number | null;
+  minifigs: number | null;
+  image: {
+    thumbnailURL: string | null;
+    imageURL: string | null;
+  };
+  bricksetURL: string;
+}
+
+interface BricksetResponse {
+  status: string;
+  matches: number;
+  sets: BricksetSet[];
+  message?: string;
+}
+
+/**
+ * Normalize a set number by adding the "-1" suffix if not present.
+ * LEGO set numbers in databases typically use format "12345-1" where
+ * the suffix indicates the variant (usually 1 for the standard release).
+ */
+function normalizeSetNumber(setNumber: string): string {
+  if (setNumber.includes('-')) {
+    return setNumber;
+  }
+  return `${setNumber}-1`;
+}
+
+/**
+ * Remove the variant suffix from a set number for display.
+ * Converts "12345-1" back to "12345".
+ */
+function displaySetNumber(setNumber: string): string {
+  return setNumber.replace(/-\d+$/, '');
+}
+
+export class BricksetProvider implements SetDataProvider {
+  readonly name = 'brickset';
+  private readonly apiKey: string;
+
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey || process.env.NEXT_PUBLIC_BRICKSET_API_KEY || '';
+    if (!this.apiKey) {
+      console.warn('Brickset API key not configured');
+    }
+  }
+
+  private async fetch(
+    method: string,
+    params: Record<string, string>
+  ): Promise<BricksetResponse> {
+    const url = new URL(`${BRICKSET_API_BASE}/${method}`);
+    url.searchParams.set('apiKey', this.apiKey);
+
+    // Brickset expects params as a JSON string in the 'params' parameter
+    if (Object.keys(params).length > 0) {
+      url.searchParams.set('params', JSON.stringify(params));
+    }
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Brickset API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data: BricksetResponse = await response.json();
+
+    if (data.status !== 'success') {
+      throw new Error(`Brickset API error: ${data.message || 'Unknown error'}`);
+    }
+
+    return data;
+  }
+
+  private mapToResult(set: BricksetSet): SetLookupResult {
+    return {
+      setNumber: displaySetNumber(set.number),
+      name: set.name,
+      year: set.year,
+      pieceCount: set.pieces,
+      theme: set.theme,
+      subtheme: set.subtheme,
+      imageUrl: set.image.imageURL || set.image.thumbnailURL,
+      sourceId: `${set.number}-${set.numberVariant}`,
+    };
+  }
+
+  async lookupSet(setNumber: string): Promise<SetLookupResult | null> {
+    const normalizedNumber = normalizeSetNumber(setNumber);
+
+    try {
+      const response = await this.fetch('getSets', {
+        setNumber: normalizedNumber,
+      });
+
+      if (response.matches === 0 || response.sets.length === 0) {
+        // Try without the variant suffix as fallback
+        if (setNumber.includes('-')) {
+          return null;
+        }
+
+        // Some sets might have variant -2, -3, etc. Try searching by number
+        const searchResponse = await this.fetch('getSets', {
+          query: setNumber,
+        });
+
+        const exactMatch = searchResponse.sets.find(
+          (s) => s.number === setNumber || displaySetNumber(s.number) === setNumber
+        );
+
+        if (exactMatch) {
+          return this.mapToResult(exactMatch);
+        }
+
+        return null;
+      }
+
+      return this.mapToResult(response.sets[0]);
+    } catch (error) {
+      console.error('Brickset lookup error:', error);
+      return null;
+    }
+  }
+
+  async searchSets(
+    query: string,
+    options?: { limit?: number; theme?: string }
+  ): Promise<SetLookupResult[]> {
+    const params: Record<string, string> = {
+      query,
+      pageSize: String(options?.limit || 20),
+    };
+
+    if (options?.theme) {
+      params.theme = options.theme;
+    }
+
+    try {
+      const response = await this.fetch('getSets', params);
+      return response.sets.map((set) => this.mapToResult(set));
+    } catch (error) {
+      console.error('Brickset search error:', error);
+      return [];
+    }
+  }
+
+  async getImageUrl(setNumber: string): Promise<string | null> {
+    const set = await this.lookupSet(setNumber);
+    return set?.imageUrl || null;
+  }
+}
