@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { collection, addDoc, serverTimestamp, Timestamp, getFirestore } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
-import { getFirebaseApp } from '@/lib/firebase/config';
+import { getFirebaseDb } from '@/lib/firebase/config';
 import styles from './page.module.css';
 
 const CSV_DATA = `Name,Date Received,Has Been Assembled,Occasion,Pieces,Primary Owner,Set Number,Status
@@ -198,7 +198,7 @@ export default function MigratePage(): React.JSX.Element {
     const rows = parseCSV(CSV_DATA);
     setTotal(rows.length);
 
-    const db = getFirestore(getFirebaseApp());
+    const db = getFirebaseDb();
     const setsCollection = collection(db, 'sets');
 
     for (let i = 0; i < rows.length; i++) {
