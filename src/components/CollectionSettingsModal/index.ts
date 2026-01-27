@@ -1,0 +1,1 @@
+export { CollectionSettingsModal } from './CollectionSettingsModal';

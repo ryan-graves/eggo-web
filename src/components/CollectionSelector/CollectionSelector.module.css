@@ -1,0 +1,100 @@
+.container {
+  position: relative;
+}
+
+.singleCollection {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  padding: var(--spacing-1) var(--spacing-3);
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-md);
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-3);
+  background-color: var(--surface-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.trigger:hover {
+  background-color: var(--surface-tertiary);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.selectedName {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.chevron {
+  transition: transform var(--transition-fast);
+  color: var(--text-tertiary);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: var(--spacing-1);
+  min-width: 200px;
+  max-width: 300px;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-dropdown);
+  list-style: none;
+  padding: var(--spacing-1);
+  z-index: 50;
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-1);
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transition-fast);
+}
+
+.option:hover {
+  background-color: var(--surface-secondary);
+}
+
+.optionSelected {
+  background-color: var(--surface-secondary);
+}
+
+.optionName {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.optionOwners {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
