@@ -149,9 +149,34 @@ Used for set metadata (piece count, themes, images).
 
 ## Deployment
 
-- Hosting: Netlify (free tier)
-- Environment variables must be configured in Netlify dashboard
-- Uses `next export` compatible features where possible
+Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js support.
+
+### Netlify Setup
+
+1. Connect your GitHub repository to Netlify
+2. Build settings are configured in `netlify.toml` (no manual config needed)
+3. Add environment variables in Netlify dashboard:
+   - Site Settings > Environment Variables
+   - Add all variables from `.env.local.example`
+
+### Required Environment Variables
+
+| Variable | Description | Where to get it |
+|----------|-------------|-----------------|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase Web API key | Firebase Console > Project Settings |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase Auth domain | Firebase Console > Project Settings |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project ID | Firebase Console > Project Settings |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket | Firebase Console > Project Settings |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase sender ID | Firebase Console > Project Settings |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID | Firebase Console > Project Settings |
+| `NEXT_PUBLIC_REBRICKABLE_API_KEY` | Rebrickable API key | https://rebrickable.com/api/ |
+
+### Firebase Setup for Production
+
+1. In Firebase Console, add your Netlify domain to authorized domains:
+   - Authentication > Settings > Authorized domains
+   - Add: `your-site.netlify.app` and custom domain if applicable
+2. Update Firestore security rules for production use
 
 ## Getting Started
 
