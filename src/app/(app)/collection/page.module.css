@@ -13,10 +13,24 @@
   border-bottom: 1px solid var(--border-primary);
 }
 
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
 .title {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
+}
+
+.collectionName {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-md);
 }
 
 .userInfo {
@@ -56,31 +70,77 @@
 
 .main {
   flex: 1;
-  padding: var(--space-8);
+  padding: var(--space-6);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.emptyState {
+.toolbar {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: var(--space-16);
-  gap: var(--space-4);
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
 }
 
-.emptyState h2 {
-  font-size: var(--font-size-2xl);
+.sectionTitle {
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
-.emptyState p {
-  color: var(--text-secondary);
+.addButton {
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--interactive-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-inverse);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
 }
 
-.hint {
-  margin-top: var(--space-4);
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
+.addButton:hover {
+  background-color: var(--interactive-primary-hover);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+
+  .headerLeft {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .userName {
+    display: none;
+  }
+
+  .main {
+    padding: var(--space-4);
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .addButton {
+    width: 100%;
+  }
 }
