@@ -14,7 +14,8 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { getFirebaseDb } from './config';
-import type { LegoSet, CreateLegoSetInput, UpdateLegoSetInput } from '@/types';
+import { getSetDataProvider } from '@/lib/providers';
+import type { LegoSet, CreateLegoSetInput, UpdateLegoSetInput, DataSource } from '@/types';
 
 const SETS_PATH = 'sets';
 
@@ -171,4 +172,38 @@ export async function findSetByNumber(
   }
   const doc = snapshot.docs[0];
   return { id: doc.id, ...doc.data() } as LegoSet;
+}
+
+/**
+ * Refresh a set's metadata from the external data provider
+ * Updates name, pieceCount, year, theme, subtheme, and imageUrl
+ */
+export async function refreshSetMetadata(setId: string): Promise<LegoSet | null> {
+  const set = await getSet(setId);
+  if (!set) {
+    return null;
+  }
+
+  const provider = getSetDataProvider();
+  const lookupResult = await provider.lookupSet(set.setNumber);
+
+  if (!lookupResult) {
+    throw new Error(`Set ${set.setNumber} not found in ${provider.name}`);
+  }
+
+  const updates: UpdateLegoSetInput = {
+    name: lookupResult.name,
+    pieceCount: lookupResult.pieceCount ?? undefined,
+    year: lookupResult.year ?? undefined,
+    theme: lookupResult.theme ?? undefined,
+    subtheme: lookupResult.subtheme ?? undefined,
+    imageUrl: lookupResult.imageUrl ?? undefined,
+    dataSource: provider.name as DataSource,
+    dataSourceId: lookupResult.sourceId,
+  };
+
+  await updateSet(setId, updates);
+
+  // Return the updated set
+  return getSet(setId);
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Timestamp } from 'firebase/firestore';
-import { updateSet, deleteSet } from '@/lib/firebase';
+import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './EditSetModal.module.css';
 
@@ -44,10 +44,29 @@ export function EditSetModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const imageUrl = set.customImageUrl || set.imageUrl;
+  const [currentSet, setCurrentSet] = useState(set);
+  const imageUrl = currentSet.customImageUrl || currentSet.imageUrl;
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    setError(null);
+
+    try {
+      const updated = await refreshSetMetadata(set.id);
+      if (updated) {
+        setCurrentSet(updated);
+        setName(updated.name);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to refresh metadata');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,27 +124,39 @@ export function EditSetModal({
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.setInfo}>
-            {imageUrl && (
+            {imageUrl ? (
               <div className={styles.imageContainer}>
                 <Image
                   src={imageUrl}
-                  alt={set.name}
+                  alt={currentSet.name}
                   width={120}
                   height={90}
                   style={{ objectFit: 'contain' }}
                 />
               </div>
+            ) : (
+              <div className={styles.noImage}>No Image</div>
             )}
             <div className={styles.setMeta}>
-              <p className={styles.setNumber}>{set.setNumber}</p>
-              {set.pieceCount && <p className={styles.pieces}>{set.pieceCount.toLocaleString()} pieces</p>}
-              {set.theme && (
+              <p className={styles.setNumber}>{currentSet.setNumber}</p>
+              {currentSet.pieceCount && (
+                <p className={styles.pieces}>{currentSet.pieceCount.toLocaleString()} pieces</p>
+              )}
+              {currentSet.theme && (
                 <p className={styles.theme}>
-                  {set.theme}
-                  {set.subtheme && ` › ${set.subtheme}`}
+                  {currentSet.theme}
+                  {currentSet.subtheme && ` › ${currentSet.subtheme}`}
                 </p>
               )}
-              {set.year && <p className={styles.year}>{set.year}</p>}
+              {currentSet.year && <p className={styles.year}>{currentSet.year}</p>}
+              <button
+                type="button"
+                onClick={handleRefresh}
+                className={styles.refreshButton}
+                disabled={isRefreshing}
+              >
+                {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+              </button>
             </div>
           </div>
 

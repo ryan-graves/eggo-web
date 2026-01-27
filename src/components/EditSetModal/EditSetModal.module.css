@@ -88,6 +88,42 @@
   gap: var(--space-1);
 }
 
+.noImage {
+  flex-shrink: 0;
+  width: 120px;
+  height: 90px;
+  background-color: var(--surface-tertiary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+.refreshButton {
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background-color: transparent;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.refreshButton:hover:not(:disabled) {
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+.refreshButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .setNumber {
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);

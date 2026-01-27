@@ -18,7 +18,7 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 /**
  * Source of set data
  */
-export type DataSource = 'rebrickable' | 'bricklink' | 'manual';
+export type DataSource = 'rebrickable' | 'brickset' | 'bricklink' | 'manual';
 
 /**
  * A Lego set in the collection
