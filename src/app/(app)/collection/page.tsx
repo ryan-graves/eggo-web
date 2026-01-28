@@ -143,13 +143,15 @@ export default function CollectionPage(): React.JSX.Element {
           </div>
         </div>
 
-        {activeCollection && <SetList sets={sets} owners={activeCollection.owners} />}
+        {activeCollection && (
+          <SetList sets={sets} availableOwners={activeCollection.owners} />
+        )}
       </main>
 
       {showAddForm && activeCollection && (
         <AddSetForm
           collectionId={activeCollection.id}
-          owners={activeCollection.owners}
+          availableOwners={activeCollection.owners}
           onSuccess={handleAddSuccess}
           onCancel={() => setShowAddForm(false)}
         />

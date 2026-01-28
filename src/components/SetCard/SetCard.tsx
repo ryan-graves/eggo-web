@@ -44,7 +44,9 @@ export function SetCard({ set }: SetCardProps): React.JSX.Element {
           <span className={`${styles.status} ${styles[set.status]}`}>
             {STATUS_LABELS[set.status]}
           </span>
-          {set.owner && <span className={styles.owner}>{set.owner}</span>}
+          {set.owners.length > 0 && (
+            <span className={styles.owner}>{set.owners.join(', ')}</span>
+          )}
         </div>
 
         <div className={styles.details}>

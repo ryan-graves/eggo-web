@@ -9,7 +9,7 @@ import styles from './EditSetModal.module.css';
 
 interface EditSetModalProps {
   set: LegoSet;
-  owners: string[];
+  availableOwners: string[];
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -30,14 +30,20 @@ function formatDate(timestamp: Timestamp | null): string {
 
 export function EditSetModal({
   set,
-  owners,
+  availableOwners,
   onSuccess,
   onCancel,
 }: EditSetModalProps): React.JSX.Element {
   const [name, setName] = useState(set.name);
   const [status, setStatus] = useState<SetStatus>(set.status);
-  const [owner, setOwner] = useState(set.owner);
+  const [selectedOwners, setSelectedOwners] = useState<string[]>(set.owners);
   const [occasion, setOccasion] = useState(set.occasion);
+
+  const toggleOwner = (ownerName: string) => {
+    setSelectedOwners((prev) =>
+      prev.includes(ownerName) ? prev.filter((o) => o !== ownerName) : [...prev, ownerName]
+    );
+  };
   const [dateReceived, setDateReceived] = useState(formatDate(set.dateReceived));
   const [notes, setNotes] = useState(set.notes || '');
   const [hasBeenAssembled, setHasBeenAssembled] = useState(set.hasBeenAssembled);
@@ -85,7 +91,7 @@ export function EditSetModal({
         status,
         hasBeenAssembled:
           hasBeenAssembled || status === 'assembled' || status === 'disassembled',
-        owner,
+        owners: selectedOwners,
         occasion: occasion.trim(),
         dateReceived: dateReceived ? Timestamp.fromDate(new Date(dateReceived)) : null,
         notes: notes.trim() || undefined,
@@ -204,21 +210,20 @@ export function EditSetModal({
                 </div>
 
                 <div className={styles.field}>
-                  <label htmlFor="owner" className={styles.label}>
-                    Owner
-                  </label>
-                  <select
-                    id="owner"
-                    value={owner}
-                    onChange={(e) => setOwner(e.target.value)}
-                    className={styles.select}
-                  >
-                    {owners.map((o) => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
+                  <span className={styles.label}>Owners</span>
+                  <div className={styles.ownerCheckboxes}>
+                    {availableOwners.map((ownerName) => (
+                      <label key={ownerName} className={styles.checkboxLabel}>
+                        <input
+                          type="checkbox"
+                          checked={selectedOwners.includes(ownerName)}
+                          onChange={() => toggleOwner(ownerName)}
+                          className={styles.checkbox}
+                        />
+                        {ownerName}
+                      </label>
                     ))}
-                  </select>
+                  </div>
                 </div>
               </div>
 

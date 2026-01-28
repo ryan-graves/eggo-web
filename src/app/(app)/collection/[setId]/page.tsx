@@ -121,7 +121,9 @@ export default function SetDetailPage(): React.JSX.Element {
               <span className={`${styles.status} ${styles[set.status]}`}>
                 {STATUS_LABELS[set.status]}
               </span>
-              {set.owner && <span className={styles.owner}>{set.owner}</span>}
+              {set.owners.length > 0 && (
+                <span className={styles.owner}>{set.owners.join(', ')}</span>
+              )}
             </div>
 
             <dl className={styles.specs}>
@@ -175,7 +177,7 @@ export default function SetDetailPage(): React.JSX.Element {
       {showEditModal && activeCollection && (
         <EditSetModal
           set={set}
-          owners={activeCollection.owners}
+          availableOwners={activeCollection.owners}
           onSuccess={handleEditSuccess}
           onCancel={() => setShowEditModal(false)}
         />

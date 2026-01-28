@@ -197,6 +197,16 @@
   color: var(--text-primary);
 }
 
+.ownerCheckboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-secondary);
+}
+
 .checkboxLabel {
   display: flex;
   align-items: center;

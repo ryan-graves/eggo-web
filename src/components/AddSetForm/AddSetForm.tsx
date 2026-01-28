@@ -10,7 +10,7 @@ import styles from './AddSetForm.module.css';
 
 interface AddSetFormProps {
   collectionId: string;
-  owners: string[];
+  availableOwners: string[];
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -25,7 +25,7 @@ const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
 
 export function AddSetForm({
   collectionId,
-  owners,
+  availableOwners,
   onSuccess,
   onCancel,
 }: AddSetFormProps): React.JSX.Element {
@@ -37,8 +37,16 @@ export function AddSetForm({
   // Form fields
   const [name, setName] = useState('');
   const [status, setStatus] = useState<SetStatus>('unopened');
-  const [owner, setOwner] = useState(owners[0] || '');
+  const [selectedOwners, setSelectedOwners] = useState<string[]>(
+    availableOwners.length > 0 ? [availableOwners[0]] : []
+  );
   const [occasion, setOccasion] = useState('');
+
+  const toggleOwner = (ownerName: string) => {
+    setSelectedOwners((prev) =>
+      prev.includes(ownerName) ? prev.filter((o) => o !== ownerName) : [...prev, ownerName]
+    );
+  };
   const [dateReceived, setDateReceived] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -100,7 +108,7 @@ export function AddSetForm({
         imageUrl: lookupResult?.imageUrl || null,
         status,
         hasBeenAssembled: status === 'assembled' || status === 'disassembled',
-        owner,
+        owners: selectedOwners,
         occasion: occasion.trim(),
         dateReceived: dateReceived ? Timestamp.fromDate(new Date(dateReceived)) : null,
         notes: notes.trim() || undefined,
@@ -212,21 +220,20 @@ export function AddSetForm({
               </div>
 
               <div className={styles.field}>
-                <label htmlFor="owner" className={styles.label}>
-                  Owner
-                </label>
-                <select
-                  id="owner"
-                  value={owner}
-                  onChange={(e) => setOwner(e.target.value)}
-                  className={styles.select}
-                >
-                  {owners.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
+                <span className={styles.label}>Owners</span>
+                <div className={styles.ownerCheckboxes}>
+                  {availableOwners.map((ownerName) => (
+                    <label key={ownerName} className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={selectedOwners.includes(ownerName)}
+                        onChange={() => toggleOwner(ownerName)}
+                        className={styles.checkbox}
+                      />
+                      {ownerName}
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
             </div>
 

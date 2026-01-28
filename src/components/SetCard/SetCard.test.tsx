@@ -41,7 +41,7 @@ const mockSet: LegoSet = {
   hasBeenAssembled: true,
   occasion: 'Birthday',
   dateReceived: Timestamp.fromDate(new Date('2020-01-01')),
-  owner: 'Ryan',
+  owners: ['Ryan'],
   dataSource: 'rebrickable',
   createdAt: Timestamp.now(),
   updatedAt: Timestamp.now(),
@@ -93,8 +93,8 @@ describe('SetCard', () => {
     expect(screen.getByText('Ryan')).toBeInTheDocument();
   });
 
-  it('does not render owner when absent', () => {
-    const setWithoutOwner = { ...mockSet, owner: '' };
+  it('does not render owner when empty', () => {
+    const setWithoutOwner = { ...mockSet, owners: [] };
     render(<SetCard set={setWithoutOwner} />);
 
     expect(screen.queryByText('Ryan')).not.toBeInTheDocument();

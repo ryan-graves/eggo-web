@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { getFirebaseDb } from './config';
 import { getSetDataProvider } from '@/lib/providers';
+import { removeImageBackground } from '@/lib/image';
 import type { LegoSet, CreateLegoSetInput, UpdateLegoSetInput, DataSource } from '@/types';
 
 const SETS_PATH = 'sets';
@@ -111,12 +112,13 @@ export async function deleteSet(setId: string): Promise<void> {
 
 /**
  * Get sets by owner within a collection
+ * Uses array-contains since a set can have multiple owners
  */
 export async function getSetsByOwner(collectionId: string, owner: string): Promise<LegoSet[]> {
   const q = query(
     getSetsRef(),
     where('collectionId', '==', collectionId),
-    where('owner', '==', owner),
+    where('owners', 'array-contains', owner),
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
@@ -175,8 +177,9 @@ export async function findSetByNumber(
 }
 
 /**
- * Refresh a set's metadata from the external data provider
- * Updates name, pieceCount, year, theme, subtheme, and imageUrl
+ * Refresh a set's metadata from the external data provider.
+ * Updates name, pieceCount, year, theme, subtheme, and imageUrl.
+ * Optionally processes images to remove background (if enabled via ENABLE_BACKGROUND_REMOVAL).
  */
 export async function refreshSetMetadata(setId: string): Promise<LegoSet | null> {
   const set = await getSet(setId);
@@ -191,6 +194,12 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
     throw new Error(`Set ${set.setNumber} not found in ${provider.name}`);
   }
 
+  // Try to remove background from image if available
+  let processedImageUrl: string | null = null;
+  if (lookupResult.imageUrl) {
+    processedImageUrl = await removeImageBackground(lookupResult.imageUrl);
+  }
+
   // Use null values directly to allow clearing stale data in Firestore.
   // Combine all updates into a single Firestore write for efficiency.
   const updates = removeUndefined({
@@ -200,6 +209,8 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
     theme: lookupResult.theme,
     subtheme: lookupResult.subtheme,
     imageUrl: lookupResult.imageUrl,
+    // Store processed image as custom image if background removal succeeded
+    ...(processedImageUrl ? { customImageUrl: processedImageUrl } : {}),
     dataSource: provider.name as DataSource,
     dataSourceId: lookupResult.sourceId,
   } as Record<string, unknown>);

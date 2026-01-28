@@ -7,7 +7,7 @@ import styles from './SetList.module.css';
 
 interface SetListProps {
   sets: LegoSet[];
-  owners: string[];
+  availableOwners: string[];
 }
 
 type SortField = 'name' | 'dateReceived' | 'pieceCount' | 'setNumber';
@@ -29,7 +29,7 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'pieceCount', label: 'Piece Count' },
 ];
 
-export function SetList({ sets, owners }: SetListProps): React.JSX.Element {
+export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Element {
   const [statusFilter, setStatusFilter] = useState<SetStatus | 'all'>('all');
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
   const [themeFilter, setThemeFilter] = useState<string>('all');
@@ -68,7 +68,7 @@ export function SetList({ sets, owners }: SetListProps): React.JSX.Element {
 
     // Apply owner filter
     if (ownerFilter !== 'all') {
-      result = result.filter((set) => set.owner === ownerFilter);
+      result = result.filter((set) => set.owners.includes(ownerFilter));
     }
 
     // Apply theme filter
@@ -141,7 +141,7 @@ export function SetList({ sets, owners }: SetListProps): React.JSX.Element {
           className={styles.select}
         >
           <option value="all">All Owners</option>
-          {owners.map((owner) => (
+          {availableOwners.map((owner) => (
             <option key={owner} value={owner}>
               {owner}
             </option>

@@ -46,7 +46,7 @@ export interface LegoSet {
   hasBeenAssembled: boolean;
   occasion: string;
   dateReceived: Timestamp | null;
-  owner: string;
+  owners: string[]; // Can have multiple owners for shared sets
   notes?: string;
 
   // Data provenance

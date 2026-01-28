@@ -17,7 +17,7 @@ const mockSet: LegoSet = {
   hasBeenAssembled: true,
   occasion: 'Birthday',
   dateReceived: Timestamp.fromDate(new Date('2020-01-01')),
-  owner: 'Ryan',
+  owners: ['Ryan'],
   dataSource: 'rebrickable',
   createdAt: Timestamp.now(),
   updatedAt: Timestamp.now(),
@@ -91,7 +91,16 @@ export const NoOwner: Story = {
   args: {
     set: {
       ...mockSet,
-      owner: '',
+      owners: [],
+    },
+  },
+};
+
+export const MultipleOwners: Story = {
+  args: {
+    set: {
+      ...mockSet,
+      owners: ['Ryan', 'Alyssa'],
     },
   },
 };
