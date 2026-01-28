@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { SetCard } from '@/components/SetCard';
+import { FilterSheet } from '@/components/FilterSheet';
+import { FilterTags } from '@/components/FilterTags';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './SetList.module.css';
 
@@ -36,6 +38,7 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('dateReceived');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   // Get unique themes from sets
   const themes = useMemo(() => {
@@ -112,9 +115,85 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
     }
   };
 
+  // Build filter tags for active filters
+  const filterTags = useMemo(() => {
+    const tags = [];
+
+    if (statusFilter !== 'all') {
+      const statusLabel = STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label || statusFilter;
+      tags.push({
+        key: 'status',
+        label: 'Status',
+        value: statusLabel,
+        onRemove: () => setStatusFilter('all'),
+      });
+    }
+
+    if (ownerFilter !== 'all') {
+      tags.push({
+        key: 'owner',
+        label: 'Owner',
+        value: ownerFilter,
+        onRemove: () => setOwnerFilter('all'),
+      });
+    }
+
+    if (themeFilter !== 'all') {
+      tags.push({
+        key: 'theme',
+        label: 'Theme',
+        value: themeFilter,
+        onRemove: () => setThemeFilter('all'),
+      });
+    }
+
+    return tags;
+  }, [statusFilter, ownerFilter, themeFilter]);
+
+  const activeFilterCount = filterTags.length;
+
   return (
     <div className={styles.container}>
-      <div className={styles.filters}>
+      {/* Mobile filter UI */}
+      <div className={styles.mobileFilters}>
+        <input
+          type="search"
+          placeholder="Search sets..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className={styles.searchInput}
+        />
+        <button
+          type="button"
+          onClick={() => setIsFilterSheetOpen(true)}
+          className={styles.filterButton}
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
+          Filters
+          {activeFilterCount > 0 && (
+            <span className={styles.filterBadge}>{activeFilterCount}</span>
+          )}
+        </button>
+      </div>
+
+      {/* Filter tags (shown on mobile when filters are active) */}
+      <div className={styles.mobileFilterTags}>
+        <FilterTags tags={filterTags} />
+      </div>
+
+      {/* Desktop filter UI */}
+      <div className={styles.desktopFilters}>
         <input
           type="search"
           placeholder="Search sets..."
@@ -211,6 +290,26 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
           ))}
         </div>
       )}
+
+      {/* Filter sheet for mobile */}
+      <FilterSheet
+        isOpen={isFilterSheetOpen}
+        onClose={() => setIsFilterSheetOpen(false)}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        ownerFilter={ownerFilter}
+        onOwnerChange={setOwnerFilter}
+        themeFilter={themeFilter}
+        onThemeChange={setThemeFilter}
+        sortField={sortField}
+        onSortFieldChange={(field) => setSortField(field as SortField)}
+        sortDirection={sortDirection}
+        onSortDirectionChange={setSortDirection}
+        availableOwners={availableOwners}
+        availableThemes={themes}
+        statusOptions={STATUS_OPTIONS}
+        sortOptions={SORT_OPTIONS}
+      />
     </div>
   );
 }
