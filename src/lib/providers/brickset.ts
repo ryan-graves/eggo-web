@@ -1,7 +1,8 @@
 import type { SetLookupResult } from '@/types';
 import type { SetDataProvider } from './types';
 
-const BRICKSET_API_BASE = 'https://brickset.com/api/v3.asmx';
+// Use our API proxy to avoid CORS issues
+const BRICKSET_API_PROXY = '/api/brickset';
 
 interface BricksetSet {
   setID: number;
@@ -63,10 +64,11 @@ export class BricksetProvider implements SetDataProvider {
     method: string,
     params: Record<string, string>
   ): Promise<BricksetResponse> {
-    const url = new URL(`${BRICKSET_API_BASE}/${method}`);
-    url.searchParams.set('apiKey', this.apiKey);
+    // Use the proxy API route to avoid CORS issues
+    const url = new URL(BRICKSET_API_PROXY, window.location.origin);
+    url.searchParams.set('method', method);
 
-    // Brickset expects params as a JSON string in the 'params' parameter
+    // Pass params as JSON string
     if (Object.keys(params).length > 0) {
       url.searchParams.set('params', JSON.stringify(params));
     }
@@ -75,7 +77,6 @@ export class BricksetProvider implements SetDataProvider {
       method: 'GET',
       headers: {
         Accept: 'application/json',
-        'Content-Type': 'application/json',
       },
     });
 
@@ -109,10 +110,6 @@ export class BricksetProvider implements SetDataProvider {
   }
 
   async lookupSet(setNumber: string): Promise<SetLookupResult | null> {
-    if (!this.apiKey) {
-      throw new Error('Brickset API key not configured');
-    }
-
     const normalizedNumber = normalizeSetNumber(setNumber);
 
     try {
