@@ -1,87 +1,63 @@
 /**
  * Background removal utility for Lego set images.
  *
- * Uses @imgly/background-removal-node for AI-powered background removal.
+ * Uses the remove.bg API for cloud-based background removal.
  * This runs on the server side and processes images during the refresh pipeline.
  *
  * To enable:
- * 1. Install the package: npm install @imgly/background-removal-node
- * 2. Set ENABLE_BACKGROUND_REMOVAL=true in your environment
+ * 1. Get an API key from https://www.remove.bg/api
+ * 2. Set REMOVEBG_API_KEY in your environment
  *
+ * Note: Free tier includes 50 API calls/month at preview resolution.
  * The processed images are stored as data URLs in Firestore.
- * For large collections, consider using Firebase Storage instead.
  */
 
-// Feature flag - set via environment variable
-const BACKGROUND_REMOVAL_ENABLED = process.env.ENABLE_BACKGROUND_REMOVAL === 'true';
-
-// Type for the background removal module
-interface BackgroundRemovalModule {
-  removeBackground: (
-    image: Blob,
-    options?: { output?: { format?: string; quality?: number } }
-  ) => Promise<Blob>;
-}
-
-// Cached module reference
-let removeBackgroundModule: BackgroundRemovalModule | null = null;
-let moduleLoadAttempted = false;
-
-async function getRemoveBackgroundModule(): Promise<BackgroundRemovalModule | null> {
-  if (removeBackgroundModule) return removeBackgroundModule;
-  if (moduleLoadAttempted) return null;
-
-  moduleLoadAttempted = true;
-
-  try {
-    // Dynamic import - will fail if package isn't installed
-    const bgModule = await import('@imgly/background-removal-node' as string);
-    removeBackgroundModule = bgModule as BackgroundRemovalModule;
-    return removeBackgroundModule;
-  } catch {
-    // Package not installed - this is expected in development
-    return null;
-  }
-}
+const REMOVEBG_API_URL = 'https://api.remove.bg/v1.0/removebg';
 
 /**
- * Remove the background from an image URL.
+ * Remove the background from an image URL using remove.bg API.
  *
  * @param imageUrl - The URL of the image to process
  * @returns A data URL of the processed image with transparent background, or null if failed/disabled
  */
 export async function removeImageBackground(imageUrl: string): Promise<string | null> {
-  if (!BACKGROUND_REMOVAL_ENABLED) {
-    return null;
-  }
+  const apiKey = process.env.REMOVEBG_API_KEY;
 
-  const bgRemoval = await getRemoveBackgroundModule();
-  if (!bgRemoval) {
+  if (!apiKey) {
     return null;
   }
 
   try {
-    // Fetch the image
-    const response = await fetch(imageUrl);
+    const formData = new FormData();
+    formData.append('image_url', imageUrl);
+    formData.append('size', 'auto'); // Use best available size for API tier
+    formData.append('format', 'png');
+
+    const response = await fetch(REMOVEBG_API_URL, {
+      method: 'POST',
+      headers: {
+        'X-Api-Key': apiKey,
+      },
+      body: formData,
+    });
+
     if (!response.ok) {
-      console.error(`Failed to fetch image: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`remove.bg API error: ${response.status}`, errorText);
+
+      // Log specific error cases
+      if (response.status === 402) {
+        console.error('remove.bg API: Insufficient credits');
+      } else if (response.status === 403) {
+        console.error('remove.bg API: Invalid API key');
+      }
+
       return null;
     }
 
+    // Response is the processed image binary
     const imageBuffer = await response.arrayBuffer();
-    const imageBlob = new Blob([imageBuffer]);
-
-    // Process with background removal
-    const resultBlob = await bgRemoval.removeBackground(imageBlob, {
-      output: {
-        format: 'image/png',
-        quality: 0.9,
-      },
-    });
-
-    // Convert to data URL
-    const resultBuffer = await resultBlob.arrayBuffer();
-    const base64 = Buffer.from(resultBuffer).toString('base64');
+    const base64 = Buffer.from(imageBuffer).toString('base64');
     return `data:image/png;base64,${base64}`;
   } catch (error) {
     console.error('Background removal failed:', error);
@@ -90,13 +66,8 @@ export async function removeImageBackground(imageUrl: string): Promise<string | 
 }
 
 /**
- * Check if background removal is available and enabled.
+ * Check if background removal is available (API key configured).
  */
-export async function isBackgroundRemovalAvailable(): Promise<boolean> {
-  if (!BACKGROUND_REMOVAL_ENABLED) {
-    return false;
-  }
-
-  const bgRemoval = await getRemoveBackgroundModule();
-  return bgRemoval !== null;
+export function isBackgroundRemovalAvailable(): boolean {
+  return !!process.env.REMOVEBG_API_KEY;
 }
