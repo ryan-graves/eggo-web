@@ -8,10 +8,13 @@ import { useCollection } from '@/hooks/useCollection';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
 import { CollectionSettingsModal } from '@/components/CollectionSettingsModal';
+import { CollectionHome } from '@/components/CollectionHome';
 import { SetList } from '@/components/SetList';
 import { AddSetForm } from '@/components/AddSetForm';
 import { BulkRefreshModal } from '@/components/BulkRefreshModal';
 import styles from './page.module.css';
+
+type ViewMode = 'home' | 'all';
 
 export default function CollectionPage(): React.JSX.Element {
   const { user } = useAuth();
@@ -19,6 +22,7 @@ export default function CollectionPage(): React.JSX.Element {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
   const [showBulkRefresh, setShowBulkRefresh] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('home');
 
   const handleAddSuccess = () => {
     setShowAddForm(false);
@@ -108,7 +112,32 @@ export default function CollectionPage(): React.JSX.Element {
 
       <main className={styles.main}>
         <div className={styles.toolbar}>
-          <h2 className={styles.sectionTitle}>Your Sets</h2>
+          <div className={styles.viewToggle}>
+            <button
+              type="button"
+              className={`${styles.viewToggleButton} ${viewMode === 'home' ? styles.active : ''}`}
+              onClick={() => setViewMode('home')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              Home
+            </button>
+            <button
+              type="button"
+              className={`${styles.viewToggleButton} ${viewMode === 'all' ? styles.active : ''}`}
+              onClick={() => setViewMode('all')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              All Sets
+            </button>
+          </div>
           <div className={styles.toolbarActions}>
             <button
               type="button"
@@ -131,7 +160,7 @@ export default function CollectionPage(): React.JSX.Element {
                   strokeLinejoin="round"
                 />
               </svg>
-              Refresh Data
+              <span className={styles.buttonLabel}>Refresh</span>
             </button>
             <button
               type="button"
@@ -144,7 +173,11 @@ export default function CollectionPage(): React.JSX.Element {
         </div>
 
         {activeCollection && (
-          <SetList sets={sets} availableOwners={activeCollection.owners} />
+          viewMode === 'home' ? (
+            <CollectionHome sets={sets} />
+          ) : (
+            <SetList sets={sets} availableOwners={activeCollection.owners} />
+          )
         )}
       </main>
 
