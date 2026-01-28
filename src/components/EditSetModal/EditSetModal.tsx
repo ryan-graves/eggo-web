@@ -112,12 +112,20 @@ export function EditSetModal({
     }
   };
 
+  const isBusy = isSubmitting || isDeleting || isRefreshing;
+
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2 className={styles.title}>Edit Set</h2>
-          <button type="button" onClick={onCancel} className={styles.closeButton}>
+          <button
+            type="button"
+            onClick={onCancel}
+            className={styles.closeButton}
+            disabled={isBusy}
+            aria-label="Close"
+          >
             ×
           </button>
         </div>

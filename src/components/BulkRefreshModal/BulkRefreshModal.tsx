@@ -166,12 +166,29 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
   const progressPercent = totalToProcess > 0 ? (progress / totalToProcess) * 100 : 0;
   const isComplete = !isRunning && results.length > 0;
 
+  // Prevent closing while operation is running to avoid unmount issues
+  const handleClose = useCallback(() => {
+    if (isRunning) {
+      // Stop the operation first, then close
+      if (abortController) {
+        abortController.abort();
+      }
+    }
+    onClose();
+  }, [isRunning, abortController, onClose]);
+
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={isRunning ? undefined : handleClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2 className={styles.title}>Refresh Set Data</h2>
-          <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Close">
+          <button
+            type="button"
+            className={styles.closeButton}
+            onClick={handleClose}
+            aria-label="Close"
+            disabled={isRunning}
+          >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
                 d="M15 5L5 15M5 5L15 15"

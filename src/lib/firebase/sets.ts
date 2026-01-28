@@ -191,13 +191,16 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
     throw new Error(`Set ${set.setNumber} not found in ${provider.name}`);
   }
 
+  // Use null values directly to allow clearing stale data in Firestore.
+  // The removeUndefined helper preserves null values, so fields with null
+  // will be explicitly set to null in the database.
   const updates: UpdateLegoSetInput = {
     name: lookupResult.name,
-    pieceCount: lookupResult.pieceCount ?? undefined,
-    year: lookupResult.year ?? undefined,
-    theme: lookupResult.theme ?? undefined,
-    subtheme: lookupResult.subtheme ?? undefined,
-    imageUrl: lookupResult.imageUrl ?? undefined,
+    pieceCount: lookupResult.pieceCount,
+    year: lookupResult.year,
+    theme: lookupResult.theme,
+    subtheme: lookupResult.subtheme,
+    imageUrl: lookupResult.imageUrl,
     dataSource: provider.name as DataSource,
     dataSourceId: lookupResult.sourceId,
   };

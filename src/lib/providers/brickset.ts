@@ -51,14 +51,8 @@ function displaySetNumber(setNumber: string): string {
 
 export class BricksetProvider implements SetDataProvider {
   readonly name = 'brickset';
-  private readonly apiKey: string;
 
-  constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.NEXT_PUBLIC_BRICKSET_API_KEY || '';
-    if (!this.apiKey) {
-      console.warn('Brickset API key not configured');
-    }
-  }
+  // API key is handled server-side by the /api/brickset proxy
 
   private async fetch(
     method: string,
