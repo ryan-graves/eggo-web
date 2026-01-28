@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const BRICKSET_API_BASE = 'https://brickset.com/api/v3.asmx';
 
+// Whitelist of allowed Brickset API methods
+const ALLOWED_METHODS = ['getSets'];
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const method = searchParams.get('method');
   const params = searchParams.get('params');
 
-  const apiKey = process.env.NEXT_PUBLIC_BRICKSET_API_KEY;
+  // Use server-only env var, fall back to NEXT_PUBLIC for backwards compatibility
+  const apiKey = process.env.BRICKSET_API_KEY || process.env.NEXT_PUBLIC_BRICKSET_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(
@@ -19,6 +23,13 @@ export async function GET(request: NextRequest) {
   if (!method) {
     return NextResponse.json(
       { status: 'error', message: 'Method parameter required' },
+      { status: 400 }
+    );
+  }
+
+  if (!ALLOWED_METHODS.includes(method)) {
+    return NextResponse.json(
+      { status: 'error', message: `Method '${method}' is not allowed` },
       { status: 400 }
     );
   }

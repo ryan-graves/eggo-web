@@ -64,16 +64,16 @@ export class BricksetProvider implements SetDataProvider {
     method: string,
     params: Record<string, string>
   ): Promise<BricksetResponse> {
-    // Use the proxy API route to avoid CORS issues
-    const url = new URL(BRICKSET_API_PROXY, window.location.origin);
-    url.searchParams.set('method', method);
+    // Build URL with query params - use relative URL for browser compatibility
+    const searchParams = new URLSearchParams();
+    searchParams.set('method', method);
 
     // Pass params as JSON string
     if (Object.keys(params).length > 0) {
-      url.searchParams.set('params', JSON.stringify(params));
+      searchParams.set('params', JSON.stringify(params));
     }
 
-    const response = await fetch(url.toString(), {
+    const response = await fetch(`${BRICKSET_API_PROXY}?${searchParams.toString()}`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',

@@ -177,7 +177,7 @@ Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js supp
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket | Firebase Console > Project Settings |
 | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase sender ID | Firebase Console > Project Settings |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID | Firebase Console > Project Settings |
-| `NEXT_PUBLIC_BRICKSET_API_KEY` | Brickset API key (recommended) | https://brickset.com/tools/webservices/requestkey |
+| `BRICKSET_API_KEY` | Brickset API key (recommended, server-only) | https://brickset.com/tools/webservices/requestkey |
 | `NEXT_PUBLIC_REBRICKABLE_API_KEY` | Rebrickable API key (fallback) | https://rebrickable.com/api/ |
 
 ### Firebase Setup for Production

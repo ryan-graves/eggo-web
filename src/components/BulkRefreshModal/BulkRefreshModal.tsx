@@ -171,7 +171,7 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2 className={styles.title}>Refresh Set Data</h2>
-          <button type="button" className={styles.closeButton} onClick={onClose}>
+          <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
                 d="M15 5L5 15M5 5L15 15"
@@ -195,7 +195,10 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
                 <label className={styles.filterLabel}>Which sets to refresh?</label>
                 <div className={styles.filterOptions}>
                   {FILTER_OPTIONS.map((option) => (
-                    <label key={option.value} className={styles.filterOption}>
+                    <label
+                      key={option.value}
+                      className={`${styles.filterOption} ${filter === option.value ? styles.filterOptionSelected : ''}`}
+                    >
                       <input
                         type="radio"
                         name="filter"

@@ -204,6 +204,11 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
 
   await updateSet(setId, updates);
 
+  // Set lastSyncedAt timestamp separately since serverTimestamp() is a FieldValue
+  await updateDoc(getSetDocRef(setId), {
+    lastSyncedAt: serverTimestamp(),
+  });
+
   // Return the updated set
   return getSet(setId);
 }

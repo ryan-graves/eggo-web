@@ -97,7 +97,7 @@
   border-color: var(--border-primary);
 }
 
-.filterOption:has(.radio:checked) {
+.filterOptionSelected {
   border-color: var(--interactive-primary);
   background-color: var(--surface-secondary);
 }
