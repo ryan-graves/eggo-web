@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
   const method = searchParams.get('method');
   const params = searchParams.get('params');
 
-  // Check both env var names for flexibility
-  const apiKey = process.env.NEXT_PUBLIC_BRICKSET_API_KEY || process.env.BRICKSET_API_KEY;
+  // Server-only env var - never expose API keys to client
+  const apiKey = process.env.BRICKSET_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(
