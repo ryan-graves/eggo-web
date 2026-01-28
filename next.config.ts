@@ -23,6 +23,11 @@ const nextConfig: NextConfig = {
         hostname: 'rebrickable.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.brickset.com',
+        pathname: '/**',
+      },
     ],
   },
 };

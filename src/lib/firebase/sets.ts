@@ -14,7 +14,8 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { getFirebaseDb } from './config';
-import type { LegoSet, CreateLegoSetInput, UpdateLegoSetInput } from '@/types';
+import { getSetDataProvider } from '@/lib/providers';
+import type { LegoSet, CreateLegoSetInput, UpdateLegoSetInput, DataSource } from '@/types';
 
 const SETS_PATH = 'sets';
 
@@ -171,4 +172,44 @@ export async function findSetByNumber(
   }
   const doc = snapshot.docs[0];
   return { id: doc.id, ...doc.data() } as LegoSet;
+}
+
+/**
+ * Refresh a set's metadata from the external data provider
+ * Updates name, pieceCount, year, theme, subtheme, and imageUrl
+ */
+export async function refreshSetMetadata(setId: string): Promise<LegoSet | null> {
+  const set = await getSet(setId);
+  if (!set) {
+    return null;
+  }
+
+  const provider = getSetDataProvider();
+  const lookupResult = await provider.lookupSet(set.setNumber);
+
+  if (!lookupResult) {
+    throw new Error(`Set ${set.setNumber} not found in ${provider.name}`);
+  }
+
+  // Use null values directly to allow clearing stale data in Firestore.
+  // Combine all updates into a single Firestore write for efficiency.
+  const updates = removeUndefined({
+    name: lookupResult.name,
+    pieceCount: lookupResult.pieceCount,
+    year: lookupResult.year,
+    theme: lookupResult.theme,
+    subtheme: lookupResult.subtheme,
+    imageUrl: lookupResult.imageUrl,
+    dataSource: provider.name as DataSource,
+    dataSourceId: lookupResult.sourceId,
+  } as Record<string, unknown>);
+
+  await updateDoc(getSetDocRef(setId), {
+    ...updates,
+    lastSyncedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  // Return the updated set
+  return getSet(setId);
 }

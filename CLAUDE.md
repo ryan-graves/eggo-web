@@ -126,7 +126,7 @@ Groups of Lego sets (e.g., "The Graves Collection")
 Individual Lego sets with:
 
 - Core data: `setNumber`, `name`, `pieceCount`, `year`
-- Theme hierarchy: `theme`, `subtheme` (from Rebrickable)
+- Theme hierarchy: `theme`, `subtheme` (from Brickset/Rebrickable)
 - User data: `status`, `owner`, `occasion`, `dateReceived`
 - Status values: `unopened`, `in_progress`, `rebuild_in_progress`, `assembled`, `disassembled`
 
@@ -139,9 +139,17 @@ Application users with:
 
 ## External APIs
 
-### Rebrickable
+### Brickset (Primary)
 
-Used for set metadata (piece count, themes, images).
+Used for set metadata (piece count, themes, images). Better data coverage than Rebrickable.
+
+- API docs: https://brickset.com/article/52664/api-version-3-documentation
+- Get API key: https://brickset.com/tools/webservices/requestkey
+- Set numbers: Use format "12345-1" (with suffix), auto-added if missing
+
+### Rebrickable (Fallback)
+
+Used as fallback if Brickset API key is not configured.
 
 - API docs: https://rebrickable.com/api/
 - Rate limits: Be mindful of request frequency
@@ -169,7 +177,8 @@ Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js supp
 | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket | Firebase Console > Project Settings |
 | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase sender ID | Firebase Console > Project Settings |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID | Firebase Console > Project Settings |
-| `NEXT_PUBLIC_REBRICKABLE_API_KEY` | Rebrickable API key | https://rebrickable.com/api/ |
+| `BRICKSET_API_KEY` | Brickset API key (recommended, server-only) | https://brickset.com/tools/webservices/requestkey |
+| `NEXT_PUBLIC_REBRICKABLE_API_KEY` | Rebrickable API key (fallback) | https://rebrickable.com/api/ |
 
 ### Firebase Setup for Production
 
@@ -181,7 +190,7 @@ Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js supp
 ## Getting Started
 
 1. Copy `.env.local.example` to `.env.local`
-2. Fill in Firebase and Rebrickable API credentials
+2. Fill in Firebase and Brickset API credentials
 3. Run `npm install`
 4. Run `npm run dev`
 

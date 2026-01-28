@@ -104,7 +104,7 @@ export function AddSetForm({
         occasion: occasion.trim(),
         dateReceived: dateReceived ? Timestamp.fromDate(new Date(dateReceived)) : null,
         notes: notes.trim() || undefined,
-        dataSource: lookupResult ? 'rebrickable' : 'manual',
+        dataSource: lookupResult?.dataSource ?? 'manual',
         dataSourceId: lookupResult?.sourceId,
       });
 

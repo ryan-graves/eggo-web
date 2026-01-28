@@ -21,4 +21,5 @@ export {
   getSetsByStatus,
   getSetsByTheme,
   findSetByNumber,
+  refreshSetMetadata,
 } from './sets';
