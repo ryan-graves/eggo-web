@@ -38,6 +38,30 @@ function removeUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> 
 }
 
 /**
+ * Normalize set data to handle migration from owner (string) to owners (string[])
+ * This ensures backward compatibility with existing data in Firestore.
+ */
+function normalizeSetData(data: Record<string, unknown>): Record<string, unknown> {
+  const normalized = { ...data };
+
+  // Migrate owner -> owners if needed
+  if (!normalized.owners) {
+    if (typeof normalized.owner === 'string' && normalized.owner) {
+      normalized.owners = [normalized.owner];
+    } else {
+      normalized.owners = [];
+    }
+  }
+
+  // Ensure owners is always an array
+  if (!Array.isArray(normalized.owners)) {
+    normalized.owners = [];
+  }
+
+  return normalized;
+}
+
+/**
  * Create a new Lego set
  */
 export async function createSet(data: CreateLegoSetInput): Promise<string> {
@@ -58,7 +82,8 @@ export async function getSet(setId: string): Promise<LegoSet | null> {
   if (!docSnap.exists()) {
     return null;
   }
-  return { id: docSnap.id, ...docSnap.data() } as LegoSet;
+  const data = normalizeSetData(docSnap.data());
+  return { id: docSnap.id, ...data } as LegoSet;
 }
 
 /**
@@ -71,7 +96,10 @@ export async function getSetsForCollection(collectionId: string): Promise<LegoSe
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+  return snapshot.docs.map((doc) => {
+    const data = normalizeSetData(doc.data());
+    return { id: doc.id, ...data } as LegoSet;
+  });
 }
 
 /**
@@ -87,7 +115,10 @@ export function subscribeToSetsForCollection(
     orderBy('createdAt', 'desc')
   );
   return onSnapshot(q, (snapshot) => {
-    const sets = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+    const sets = snapshot.docs.map((doc) => {
+      const data = normalizeSetData(doc.data());
+      return { id: doc.id, ...data } as LegoSet;
+    });
     callback(sets);
   });
 }
@@ -122,7 +153,10 @@ export async function getSetsByOwner(collectionId: string, owner: string): Promi
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+  return snapshot.docs.map((doc) => {
+    const data = normalizeSetData(doc.data());
+    return { id: doc.id, ...data } as LegoSet;
+  });
 }
 
 /**
@@ -139,7 +173,10 @@ export async function getSetsByStatus(
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+  return snapshot.docs.map((doc) => {
+    const data = normalizeSetData(doc.data());
+    return { id: doc.id, ...data } as LegoSet;
+  });
 }
 
 /**
@@ -153,7 +190,10 @@ export async function getSetsByTheme(collectionId: string, theme: string): Promi
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+  return snapshot.docs.map((doc) => {
+    const data = normalizeSetData(doc.data());
+    return { id: doc.id, ...data } as LegoSet;
+  });
 }
 
 /**
@@ -173,7 +213,8 @@ export async function findSetByNumber(
     return null;
   }
   const doc = snapshot.docs[0];
-  return { id: doc.id, ...doc.data() } as LegoSet;
+  const data = normalizeSetData(doc.data());
+  return { id: doc.id, ...data } as LegoSet;
 }
 
 /**
