@@ -238,7 +238,11 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
   // Try to remove background from image if available
   let processedImageUrl: string | null = null;
   if (lookupResult.imageUrl) {
+    console.log('[refreshSetMetadata] Attempting background removal for:', lookupResult.imageUrl);
     processedImageUrl = await removeImageBackground(lookupResult.imageUrl);
+    console.log('[refreshSetMetadata] Background removal result:', processedImageUrl ? 'success' : 'failed/skipped');
+  } else {
+    console.log('[refreshSetMetadata] No image URL from provider, skipping background removal');
   }
 
   // Use null values directly to allow clearing stale data in Firestore.

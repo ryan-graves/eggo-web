@@ -24,6 +24,8 @@ interface RemoveBackgroundResponse {
  * @returns A data URL of the processed image with transparent background, or null if failed/disabled
  */
 export async function removeImageBackground(imageUrl: string): Promise<string | null> {
+  console.log('[removeBackground] Starting background removal for:', imageUrl);
+
   try {
     const response = await fetch('/api/remove-background', {
       method: 'POST',
@@ -33,19 +35,24 @@ export async function removeImageBackground(imageUrl: string): Promise<string | 
       body: JSON.stringify({ imageUrl }),
     });
 
+    console.log('[removeBackground] API response status:', response.status);
+
     if (!response.ok) {
       // 503 means the feature is not configured - this is expected in some environments
       if (response.status === 503) {
+        console.log('[removeBackground] Feature not configured (503)');
         return null;
       }
-      console.error(`Background removal failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`[removeBackground] API error: ${response.status}`, errorText);
       return null;
     }
 
     const data: RemoveBackgroundResponse = await response.json();
+    console.log('[removeBackground] Success, got processed image:', !!data.processedImageUrl);
     return data.processedImageUrl || null;
   } catch (error) {
-    console.error('Background removal failed:', error);
+    console.error('[removeBackground] Exception:', error);
     return null;
   }
 }
