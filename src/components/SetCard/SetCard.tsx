@@ -1,12 +1,12 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import type { LegoSet } from '@/types';
 import styles from './SetCard.module.css';
 
 interface SetCardProps {
   set: LegoSet;
-  onClick?: () => void;
 }
 
 const STATUS_LABELS: Record<LegoSet['status'], string> = {
@@ -17,11 +17,11 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
   disassembled: 'Disassembled',
 };
 
-export function SetCard({ set, onClick }: SetCardProps): React.JSX.Element {
+export function SetCard({ set }: SetCardProps): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
 
   return (
-    <button type="button" className={styles.card} onClick={onClick}>
+    <Link href={`/collection/${set.id}`} className={styles.card}>
       <div className={styles.imageContainer}>
         {imageUrl ? (
           <Image
@@ -52,6 +52,6 @@ export function SetCard({ set, onClick }: SetCardProps): React.JSX.Element {
           {set.theme && <span>{set.theme}</span>}
         </div>
       </div>
-    </button>
+    </Link>
   );
 }

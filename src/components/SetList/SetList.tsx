@@ -8,7 +8,6 @@ import styles from './SetList.module.css';
 interface SetListProps {
   sets: LegoSet[];
   owners: string[];
-  onSetClick?: (set: LegoSet) => void;
 }
 
 type SortField = 'name' | 'dateReceived' | 'pieceCount' | 'setNumber';
@@ -30,7 +29,7 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'pieceCount', label: 'Piece Count' },
 ];
 
-export function SetList({ sets, owners, onSetClick }: SetListProps): React.JSX.Element {
+export function SetList({ sets, owners }: SetListProps): React.JSX.Element {
   const [statusFilter, setStatusFilter] = useState<SetStatus | 'all'>('all');
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
   const [themeFilter, setThemeFilter] = useState<string>('all');
@@ -208,7 +207,7 @@ export function SetList({ sets, owners, onSetClick }: SetListProps): React.JSX.E
       ) : (
         <div className={styles.grid}>
           {filteredSets.map((set) => (
-            <SetCard key={set.id} set={set} onClick={() => onSetClick?.(set)} />
+            <SetCard key={set.id} set={set} />
           ))}
         </div>
       )}

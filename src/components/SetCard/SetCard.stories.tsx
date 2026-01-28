@@ -30,9 +30,6 @@ const meta: Meta<typeof SetCard> = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-  argTypes: {
-    onClick: { action: 'clicked' },
-  },
 };
 
 export default meta;

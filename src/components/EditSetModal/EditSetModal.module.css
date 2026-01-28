@@ -7,6 +7,16 @@
   justify-content: center;
   padding: var(--space-4);
   z-index: 100;
+  animation: fadeIn var(--transition-fast) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal {
@@ -14,27 +24,38 @@
   border-radius: var(--radius-lg);
   width: 100%;
   max-width: 520px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: min(90vh, 700px);
+  display: flex;
+  flex-direction: column;
   box-shadow: var(--shadow-lg);
+  animation: slideUp var(--transition-normal) ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-primary);
-  position: sticky;
-  top: 0;
-  background-color: var(--surface-primary);
-  z-index: 1;
+  flex-shrink: 0;
 }
 
 .title {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
+  margin: 0;
 }
 
 .closeButton {
@@ -49,6 +70,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
 }
 
 .closeButton:hover {
@@ -57,52 +79,63 @@
 }
 
 .form {
-  padding: var(--space-6);
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  flex: 1;
+  min-height: 0;
+}
+
+.scrollArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .setInfo {
   display: flex;
-  gap: var(--space-4);
-  padding: var(--space-4);
+  gap: var(--space-3);
+  padding: var(--space-3);
   background-color: var(--surface-secondary);
   border-radius: var(--radius-md);
 }
 
 .imageContainer {
   flex-shrink: 0;
-  width: 120px;
-  height: 90px;
+  width: 100px;
+  height: 75px;
   background-color: var(--surface-primary);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .setMeta {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  min-width: 0;
 }
 
 .noImage {
   flex-shrink: 0;
-  width: 120px;
-  height: 90px;
+  width: 100px;
+  height: 75px;
   background-color: var(--surface-tertiary);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
 }
 
 .refreshButton {
-  margin-top: var(--space-2);
+  margin-top: var(--space-1);
   padding: var(--space-1) var(--space-2);
   background-color: transparent;
   border: 1px solid var(--border-secondary);
@@ -111,6 +144,9 @@
   color: var(--text-secondary);
   cursor: pointer;
   align-self: flex-start;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .refreshButton:hover:not(:disabled) {
@@ -127,31 +163,32 @@
 .setNumber {
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
+  font-size: var(--font-size-sm);
 }
 
 .pieces,
 .theme,
 .year {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
 }
 
 .fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .label {
@@ -173,6 +210,7 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
+  accent-color: var(--interactive-primary);
 }
 
 .input,
@@ -181,9 +219,10 @@
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
   background-color: var(--surface-primary);
+  transition: border-color var(--transition-fast);
 }
 
 .input:focus,
@@ -196,38 +235,44 @@
 .textarea {
   resize: vertical;
   font-family: inherit;
+  min-height: 60px;
 }
 
 .error {
   color: var(--status-error);
   font-size: var(--font-size-sm);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   background-color: var(--status-error-bg);
   border-radius: var(--radius-md);
 }
 
-.actions {
+.footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: var(--space-3);
-  padding-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--border-primary);
+  background-color: var(--surface-primary);
+  flex-shrink: 0;
 }
 
 .rightActions {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .deleteButton {
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   background-color: transparent;
   border: 1px solid var(--status-error);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   color: var(--status-error);
   cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    opacity var(--transition-fast);
 }
 
 .deleteButton:hover {
@@ -243,13 +288,14 @@
 }
 
 .confirmDeleteButton {
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   background-color: var(--status-error);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   color: white;
   cursor: pointer;
+  transition: opacity var(--transition-fast);
 }
 
 .confirmDeleteButton:hover:not(:disabled) {
@@ -262,23 +308,31 @@
 }
 
 .cancelDeleteButton {
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   background-color: transparent;
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.cancelDeleteButton:hover {
+  background-color: var(--surface-secondary);
 }
 
 .cancelButton {
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   background-color: transparent;
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .cancelButton:hover {
@@ -287,14 +341,15 @@
 }
 
 .submitButton {
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   background-color: var(--interactive-primary);
   border: none;
   border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--text-inverse);
   cursor: pointer;
+  transition: background-color var(--transition-fast);
 }
 
 .submitButton:hover:not(:disabled) {
@@ -306,7 +361,20 @@
   cursor: not-allowed;
 }
 
+/* Deprecated class names kept for compatibility */
+.actions {
+  display: none;
+}
+
 @media (max-width: 480px) {
+  .overlay {
+    padding: var(--space-2);
+  }
+
+  .modal {
+    max-height: calc(100vh - var(--space-4));
+  }
+
   .row {
     grid-template-columns: 1fr;
   }
@@ -317,13 +385,42 @@
     text-align: center;
   }
 
-  .actions {
+  .setMeta {
+    align-items: center;
+  }
+
+  .footer {
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-3);
   }
 
   .rightActions {
     width: 100%;
-    justify-content: flex-end;
+  }
+
+  .cancelButton,
+  .submitButton {
+    flex: 1;
+  }
+}
+
+@media (max-height: 600px) {
+  .modal {
+    max-height: calc(100vh - var(--space-4));
+  }
+
+  .scrollArea {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .setInfo {
+    padding: var(--space-2);
+  }
+
+  .imageContainer,
+  .noImage {
+    width: 80px;
+    height: 60px;
   }
 }

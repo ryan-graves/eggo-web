@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-4);
+  padding: var(--space-4);
   z-index: 100;
 }
 
@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-4) var(--spacing-5);
+  padding: var(--space-4) var(--space-5);
   border-bottom: 1px solid var(--border-primary);
 }
 
@@ -54,11 +54,11 @@
 }
 
 .form {
-  padding: var(--spacing-5);
+  padding: var(--space-5);
 }
 
 .field {
-  margin-bottom: var(--spacing-4);
+  margin-bottom: var(--space-4);
 }
 
 .label {
@@ -66,12 +66,12 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--text-primary);
-  margin-bottom: var(--spacing-2);
+  margin-bottom: var(--space-2);
 }
 
 .input {
   width: 100%;
-  padding: var(--spacing-2) var(--spacing-3);
+  padding: var(--space-2) var(--space-3);
   font-size: var(--font-size-base);
   color: var(--text-primary);
   background-color: var(--surface-primary);
@@ -94,24 +94,24 @@
 .hint {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
-  margin-top: var(--spacing-1);
+  margin-top: var(--space-1);
 }
 
 .error {
   font-size: var(--font-size-sm);
   color: var(--status-error);
-  margin-bottom: var(--spacing-4);
+  margin-bottom: var(--space-4);
 }
 
 .actions {
   display: flex;
-  gap: var(--spacing-3);
+  gap: var(--space-3);
   justify-content: flex-end;
-  margin-bottom: var(--spacing-6);
+  margin-bottom: var(--space-6);
 }
 
 .cancelButton {
-  padding: var(--spacing-2) var(--spacing-4);
+  padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
@@ -135,7 +135,7 @@
 }
 
 .saveButton {
-  padding: var(--spacing-2) var(--spacing-4);
+  padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--text-inverse);
@@ -156,7 +156,7 @@
 }
 
 .dangerZone {
-  padding-top: var(--spacing-5);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--border-primary);
 }
 
@@ -164,17 +164,17 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--status-error);
-  margin: 0 0 var(--spacing-2) 0;
+  margin: 0 0 var(--space-2) 0;
 }
 
 .dangerDescription {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  margin: 0 0 var(--spacing-3) 0;
+  margin: 0 0 var(--space-3) 0;
 }
 
 .deleteButton {
-  padding: var(--spacing-2) var(--spacing-4);
+  padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--status-error);
@@ -196,29 +196,29 @@
 
 /* Delete confirmation */
 .deleteConfirm {
-  padding: var(--spacing-5);
+  padding: var(--space-5);
 }
 
 .deleteWarning {
   font-size: var(--font-size-base);
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-3) 0;
+  margin: 0 0 var(--space-3) 0;
 }
 
 .deleteNote {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  margin: 0 0 var(--spacing-4) 0;
+  margin: 0 0 var(--space-4) 0;
 }
 
 .deleteActions {
   display: flex;
-  gap: var(--spacing-3);
+  gap: var(--space-3);
   justify-content: flex-end;
 }
 
 .confirmDeleteButton {
-  padding: var(--spacing-2) var(--spacing-4);
+  padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: #ffffff;

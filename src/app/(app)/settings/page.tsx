@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -28,9 +29,9 @@ function SettingsContent(): React.JSX.Element {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Settings</h1>
-        <a href="/collection" className={styles.backLink}>
+        <Link href="/collection" className={styles.backLink}>
           Back to Collection
-        </a>
+        </Link>
       </header>
 
       <main className={styles.main}>

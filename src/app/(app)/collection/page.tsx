@@ -10,29 +10,18 @@ import { CollectionSelector } from '@/components/CollectionSelector';
 import { CollectionSettingsModal } from '@/components/CollectionSettingsModal';
 import { SetList } from '@/components/SetList';
 import { AddSetForm } from '@/components/AddSetForm';
-import { EditSetModal } from '@/components/EditSetModal';
 import { BulkRefreshModal } from '@/components/BulkRefreshModal';
-import type { LegoSet } from '@/types';
 import styles from './page.module.css';
 
 export default function CollectionPage(): React.JSX.Element {
   const { user } = useAuth();
   const { collections, activeCollection, sets, loading, setActiveCollection } = useCollection();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingSet, setEditingSet] = useState<LegoSet | null>(null);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
   const [showBulkRefresh, setShowBulkRefresh] = useState(false);
 
-  const handleSetClick = (set: LegoSet) => {
-    setEditingSet(set);
-  };
-
   const handleAddSuccess = () => {
     setShowAddForm(false);
-  };
-
-  const handleEditSuccess = () => {
-    setEditingSet(null);
   };
 
   // Show loading state
@@ -154,13 +143,7 @@ export default function CollectionPage(): React.JSX.Element {
           </div>
         </div>
 
-        {activeCollection && (
-          <SetList
-            sets={sets}
-            owners={activeCollection.owners}
-            onSetClick={handleSetClick}
-          />
-        )}
+        {activeCollection && <SetList sets={sets} owners={activeCollection.owners} />}
       </main>
 
       {showAddForm && activeCollection && (
@@ -169,15 +152,6 @@ export default function CollectionPage(): React.JSX.Element {
           owners={activeCollection.owners}
           onSuccess={handleAddSuccess}
           onCancel={() => setShowAddForm(false)}
-        />
-      )}
-
-      {editingSet && activeCollection && (
-        <EditSetModal
-          set={editingSet}
-          owners={activeCollection.owners}
-          onSuccess={handleEditSuccess}
-          onCancel={() => setEditingSet(null)}
         />
       )}
 

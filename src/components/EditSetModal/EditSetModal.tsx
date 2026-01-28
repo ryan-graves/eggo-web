@@ -115,8 +115,8 @@ export function EditSetModal({
   const isBusy = isSubmitting || isDeleting || isRefreshing;
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
+    <div className={styles.overlay} onClick={onCancel}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2 className={styles.title}>Edit Set</h2>
           <button
@@ -131,169 +131,173 @@ export function EditSetModal({
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.setInfo}>
-            {imageUrl ? (
-              <div className={styles.imageContainer}>
-                <Image
-                  src={imageUrl}
-                  alt={currentSet.name}
-                  width={120}
-                  height={90}
-                  style={{ objectFit: 'contain' }}
-                />
-              </div>
-            ) : (
-              <div className={styles.noImage}>No Image</div>
-            )}
-            <div className={styles.setMeta}>
-              <p className={styles.setNumber}>{currentSet.setNumber}</p>
-              {currentSet.pieceCount && (
-                <p className={styles.pieces}>{currentSet.pieceCount.toLocaleString()} pieces</p>
+          <div className={styles.scrollArea}>
+            <div className={styles.setInfo}>
+              {imageUrl ? (
+                <div className={styles.imageContainer}>
+                  <Image
+                    src={imageUrl}
+                    alt={currentSet.name}
+                    width={100}
+                    height={75}
+                    style={{ objectFit: 'contain' }}
+                  />
+                </div>
+              ) : (
+                <div className={styles.noImage}>No Image</div>
               )}
-              {currentSet.theme && (
-                <p className={styles.theme}>
-                  {currentSet.theme}
-                  {currentSet.subtheme && ` › ${currentSet.subtheme}`}
-                </p>
-              )}
-              {currentSet.year && <p className={styles.year}>{currentSet.year}</p>}
-              <button
-                type="button"
-                onClick={handleRefresh}
-                className={styles.refreshButton}
-                disabled={isBusy}
-              >
-                {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.fields}>
-            <div className={styles.field}>
-              <label htmlFor="name" className={styles.label}>
-                Name *
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={styles.input}
-                required
-              />
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label htmlFor="status" className={styles.label}>
-                  Status
-                </label>
-                <select
-                  id="status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as SetStatus)}
-                  className={styles.select}
+              <div className={styles.setMeta}>
+                <p className={styles.setNumber}>{currentSet.setNumber}</p>
+                {currentSet.pieceCount && (
+                  <p className={styles.pieces}>{currentSet.pieceCount.toLocaleString()} pieces</p>
+                )}
+                {currentSet.theme && (
+                  <p className={styles.theme}>
+                    {currentSet.theme}
+                    {currentSet.subtheme && ` › ${currentSet.subtheme}`}
+                  </p>
+                )}
+                {currentSet.year && <p className={styles.year}>{currentSet.year}</p>}
+                <button
+                  type="button"
+                  onClick={handleRefresh}
+                  className={styles.refreshButton}
+                  disabled={isBusy}
                 >
-                  {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.field}>
-                <label htmlFor="owner" className={styles.label}>
-                  Owner
-                </label>
-                <select
-                  id="owner"
-                  value={owner}
-                  onChange={(e) => setOwner(e.target.value)}
-                  className={styles.select}
-                >
-                  {owners.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                </select>
+                  {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                </button>
               </div>
             </div>
 
-            <div className={styles.field}>
-              <label className={styles.checkboxLabel}>
+            <div className={styles.fields}>
+              <div className={styles.field}>
+                <label htmlFor="name" className={styles.label}>
+                  Name *
+                </label>
                 <input
-                  type="checkbox"
-                  checked={hasBeenAssembled}
-                  onChange={(e) => setHasBeenAssembled(e.target.checked)}
-                  className={styles.checkbox}
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={styles.input}
+                  required
                 />
-                Has been assembled before
-              </label>
+              </div>
+
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label htmlFor="status" className={styles.label}>
+                    Status
+                  </label>
+                  <select
+                    id="status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as SetStatus)}
+                    className={styles.select}
+                  >
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.field}>
+                  <label htmlFor="owner" className={styles.label}>
+                    Owner
+                  </label>
+                  <select
+                    id="owner"
+                    value={owner}
+                    onChange={(e) => setOwner(e.target.value)}
+                    className={styles.select}
+                  >
+                    {owners.map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className={styles.field}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={hasBeenAssembled}
+                    onChange={(e) => setHasBeenAssembled(e.target.checked)}
+                    className={styles.checkbox}
+                  />
+                  Has been assembled before
+                </label>
+              </div>
+
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label htmlFor="occasion" className={styles.label}>
+                    Occasion
+                  </label>
+                  <input
+                    id="occasion"
+                    type="text"
+                    value={occasion}
+                    onChange={(e) => setOccasion(e.target.value)}
+                    placeholder="e.g., Christmas 2024"
+                    className={styles.input}
+                  />
+                </div>
+
+                <div className={styles.field}>
+                  <label htmlFor="dateReceived" className={styles.label}>
+                    Date Received
+                  </label>
+                  <input
+                    id="dateReceived"
+                    type="date"
+                    value={dateReceived}
+                    onChange={(e) => setDateReceived(e.target.value)}
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.field}>
+                <label htmlFor="notes" className={styles.label}>
+                  Notes
+                </label>
+                <textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className={styles.textarea}
+                  rows={2}
+                />
+              </div>
             </div>
 
-            <div className={styles.field}>
-              <label htmlFor="occasion" className={styles.label}>
-                Occasion
-              </label>
-              <input
-                id="occasion"
-                type="text"
-                value={occasion}
-                onChange={(e) => setOccasion(e.target.value)}
-                placeholder="e.g., Christmas 2024 from Alyssa's parents"
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="dateReceived" className={styles.label}>
-                Date Received
-              </label>
-              <input
-                id="dateReceived"
-                type="date"
-                value={dateReceived}
-                onChange={(e) => setDateReceived(e.target.value)}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="notes" className={styles.label}>
-                Notes
-              </label>
-              <textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className={styles.textarea}
-                rows={3}
-              />
-            </div>
+            {error && <p className={styles.error}>{error}</p>}
           </div>
 
-          {error && <p className={styles.error}>{error}</p>}
-
-          <div className={styles.actions}>
+          <div className={styles.footer}>
             {showDeleteConfirm ? (
               <div className={styles.deleteConfirm}>
-                <span>Delete this set?</span>
+                <span>Delete?</span>
                 <button
                   type="button"
                   onClick={handleDelete}
                   className={styles.confirmDeleteButton}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? 'Deleting...' : 'Yes, delete'}
+                  {isDeleting ? '...' : 'Yes'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(false)}
                   className={styles.cancelDeleteButton}
                 >
-                  Cancel
+                  No
                 </button>
               </div>
             ) : (
@@ -311,7 +315,7 @@ export function EditSetModal({
                 Cancel
               </button>
               <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                {isSubmitting ? 'Saving...' : 'Save'}
               </button>
             </div>
           </div>
