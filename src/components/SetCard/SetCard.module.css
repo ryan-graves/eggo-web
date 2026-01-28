@@ -34,12 +34,10 @@
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  background-color: var(--surface-secondary);
 }
 
 .image {
   object-fit: contain;
-  padding: var(--space-2);
 }
 
 .placeholder {

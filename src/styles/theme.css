@@ -4,13 +4,60 @@
  * These variables use semantic names (e.g., "surface", "text-primary")
  * and map to primitive tokens. This allows easy theme switching.
  *
- * Theme is controlled by:
- * - data-theme="light" or data-theme="dark" on <html>
- * - Falls back to system preference when data-theme="system" or not set
+ * Dark theme is the default (Factory.ai inspired).
+ * Light theme available via data-theme="light".
  */
 
-/* Light Theme (default) */
+/* Dark Theme (default) */
 :root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --surface-background: var(--color-gray-950);
+  --surface-primary: var(--color-gray-900);
+  --surface-secondary: var(--color-gray-850);
+  --surface-tertiary: var(--color-gray-800);
+  --surface-inverse: var(--color-gray-100);
+
+  /* Text */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-tertiary: var(--color-gray-500);
+  --text-inverse: var(--color-gray-900);
+  --text-link: var(--color-orange-500);
+  --text-link-hover: var(--color-orange-400);
+
+  /* Borders */
+  --border-primary: var(--color-gray-800);
+  --border-secondary: var(--color-gray-700);
+  --border-focus: var(--color-orange-500);
+
+  /* Interactive - Orange accent */
+  --interactive-primary: var(--color-orange-500);
+  --interactive-primary-hover: var(--color-orange-400);
+  --interactive-primary-bg: rgba(249, 115, 22, 0.1);
+  --interactive-secondary: var(--color-gray-800);
+  --interactive-secondary-hover: var(--color-gray-700);
+
+  /* Status */
+  --status-success: var(--color-success);
+  --status-warning: var(--color-warning);
+  --status-error: var(--color-error);
+  --status-info: var(--color-info);
+
+  /* Status Backgrounds (for badges, alerts) */
+  --status-success-bg: rgba(34, 197, 94, 0.15);
+  --status-warning-bg: rgba(245, 158, 11, 0.15);
+  --status-error-bg: rgba(239, 68, 68, 0.15);
+  --status-info-bg: rgba(59, 130, 246, 0.15);
+
+  /* Shadows */
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+}
+
+/* Light Theme */
 [data-theme='light'] {
   color-scheme: light;
 
@@ -26,17 +73,18 @@
   --text-secondary: var(--color-gray-600);
   --text-tertiary: var(--color-gray-500);
   --text-inverse: #ffffff;
-  --text-link: var(--color-blue-600);
-  --text-link-hover: var(--color-blue-500);
+  --text-link: var(--color-orange-600);
+  --text-link-hover: var(--color-orange-500);
 
   /* Borders */
   --border-primary: var(--color-gray-200);
   --border-secondary: var(--color-gray-300);
-  --border-focus: var(--color-blue-500);
+  --border-focus: var(--color-orange-500);
 
-  /* Interactive */
-  --interactive-primary: var(--color-blue-600);
-  --interactive-primary-hover: var(--color-blue-500);
+  /* Interactive - Orange accent */
+  --interactive-primary: var(--color-orange-500);
+  --interactive-primary-hover: var(--color-orange-600);
+  --interactive-primary-bg: rgba(249, 115, 22, 0.1);
   --interactive-secondary: var(--color-gray-200);
   --interactive-secondary-hover: var(--color-gray-300);
 
@@ -57,80 +105,40 @@
   --shadow-dropdown: var(--shadow-lg);
 }
 
-/* Dark Theme */
-[data-theme='dark'] {
-  color-scheme: dark;
+/* System preference - when data-theme is "system" or not set */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']):not([data-theme='light']) {
+    color-scheme: light;
 
-  /* Backgrounds */
-  --surface-background: var(--color-gray-950);
-  --surface-primary: var(--color-gray-900);
-  --surface-secondary: var(--color-gray-800);
-  --surface-tertiary: var(--color-gray-700);
-  --surface-inverse: var(--color-gray-100);
+    --surface-background: var(--color-gray-50);
+    --surface-primary: #ffffff;
+    --surface-secondary: var(--color-gray-100);
+    --surface-tertiary: var(--color-gray-200);
+    --surface-inverse: var(--color-gray-900);
 
-  /* Text */
-  --text-primary: var(--color-gray-100);
-  --text-secondary: var(--color-gray-400);
-  --text-tertiary: var(--color-gray-500);
-  --text-inverse: var(--color-gray-900);
-  --text-link: #60a5fa;
-  --text-link-hover: #93c5fd;
-
-  /* Borders */
-  --border-primary: var(--color-gray-700);
-  --border-secondary: var(--color-gray-600);
-  --border-focus: #60a5fa;
-
-  /* Interactive */
-  --interactive-primary: #3b82f6;
-  --interactive-primary-hover: #60a5fa;
-  --interactive-secondary: var(--color-gray-700);
-  --interactive-secondary-hover: var(--color-gray-600);
-
-  /* Status Backgrounds (for badges, alerts) */
-  --status-success-bg: #14532d;
-  --status-warning-bg: #78350f;
-  --status-error-bg: #7f1d1d;
-  --status-info-bg: #1e3a5f;
-
-  /* Shadows - darker in dark mode */
-  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
-}
-
-/* System preference - when data-theme is not set or is "system" */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
-
-    --surface-background: var(--color-gray-950);
-    --surface-primary: var(--color-gray-900);
-    --surface-secondary: var(--color-gray-800);
-    --surface-tertiary: var(--color-gray-700);
-    --surface-inverse: var(--color-gray-100);
-
-    --text-primary: var(--color-gray-100);
-    --text-secondary: var(--color-gray-400);
+    --text-primary: var(--color-gray-900);
+    --text-secondary: var(--color-gray-600);
     --text-tertiary: var(--color-gray-500);
-    --text-inverse: var(--color-gray-900);
-    --text-link: #60a5fa;
-    --text-link-hover: #93c5fd;
+    --text-inverse: #ffffff;
+    --text-link: var(--color-orange-600);
+    --text-link-hover: var(--color-orange-500);
 
-    --border-primary: var(--color-gray-700);
-    --border-secondary: var(--color-gray-600);
-    --border-focus: #60a5fa;
+    --border-primary: var(--color-gray-200);
+    --border-secondary: var(--color-gray-300);
+    --border-focus: var(--color-orange-500);
 
-    --interactive-primary: #3b82f6;
-    --interactive-primary-hover: #60a5fa;
-    --interactive-secondary: var(--color-gray-700);
-    --interactive-secondary-hover: var(--color-gray-600);
+    --interactive-primary: var(--color-orange-500);
+    --interactive-primary-hover: var(--color-orange-600);
+    --interactive-primary-bg: rgba(249, 115, 22, 0.1);
+    --interactive-secondary: var(--color-gray-200);
+    --interactive-secondary-hover: var(--color-gray-300);
 
-    --status-success-bg: #14532d;
-    --status-warning-bg: #78350f;
-    --status-error-bg: #7f1d1d;
-    --status-info-bg: #1e3a5f;
+    --status-success-bg: #dcfce7;
+    --status-warning-bg: #fef3c7;
+    --status-error-bg: #fee2e2;
+    --status-info-bg: #dbeafe;
 
-    --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-card: var(--shadow-md);
+    --shadow-dropdown: var(--shadow-lg);
   }
 }
