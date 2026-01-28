@@ -67,6 +67,7 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [total, setTotal] = useState(0); // Store total when processing starts
   const [currentSet, setCurrentSet] = useState<string | null>(null);
   const [results, setResults] = useState<RefreshResult[]>([]);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
@@ -75,7 +76,8 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
   const isPausedRef = useRef(false);
 
   const filteredSets = filterSets(sets, filter);
-  const totalToProcess = filteredSets.length;
+  // Use stored total during processing, otherwise use current filtered count
+  const totalToProcess = isRunning || results.length > 0 ? total : filteredSets.length;
 
   const successCount = results.filter((r) => r.success).length;
   const errorCount = results.filter((r) => !r.success && !r.skipped).length;
@@ -91,6 +93,7 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
     setResults([]);
 
     const setsToProcess = filterSets(sets, filter);
+    setTotal(setsToProcess.length); // Store total at start
 
     for (let i = 0; i < setsToProcess.length; i++) {
       // Check if aborted
