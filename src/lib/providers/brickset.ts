@@ -113,11 +113,9 @@ export class BricksetProvider implements SetDataProvider {
     const normalizedNumber = normalizeSetNumber(setNumber);
 
     try {
-      console.log(`Brickset: Looking up set ${normalizedNumber}`);
       const response = await this.fetch('getSets', {
         setNumber: normalizedNumber,
       });
-      console.log(`Brickset: Got ${response.matches} matches for ${normalizedNumber}`);
 
       if (response.matches === 0 || response.sets.length === 0) {
         // Try without the variant suffix as fallback
@@ -126,7 +124,6 @@ export class BricksetProvider implements SetDataProvider {
         }
 
         // Some sets might have variant -2, -3, etc. Try searching by number
-        console.log(`Brickset: Trying search fallback for ${setNumber}`);
         const searchResponse = await this.fetch('getSets', {
           query: setNumber,
         });
