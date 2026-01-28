@@ -48,9 +48,11 @@
 
 .track {
   display: flex;
+  align-items: stretch;
   gap: var(--space-3);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--space-4);
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding: var(--space-1) var(--space-4);
@@ -65,6 +67,7 @@
   flex-shrink: 0;
   width: 160px;
   scroll-snap-align: start;
+  display: flex;
 }
 
 .empty {
