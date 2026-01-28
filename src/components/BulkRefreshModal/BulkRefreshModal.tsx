@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { refreshSetMetadata } from '@/lib/firebase';
 import type { LegoSet } from '@/types';
 import styles from './BulkRefreshModal.module.css';
@@ -71,6 +71,9 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
   const [results, setResults] = useState<RefreshResult[]>([]);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
 
+  // Use ref for pause state so async loop can see updates
+  const isPausedRef = useRef(false);
+
   const filteredSets = filterSets(sets, filter);
   const totalToProcess = filteredSets.length;
 
@@ -82,6 +85,7 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
     const controller = new AbortController();
     setAbortController(controller);
     setIsRunning(true);
+    isPausedRef.current = false;
     setIsPaused(false);
     setProgress(0);
     setResults([]);
@@ -94,8 +98,8 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
         break;
       }
 
-      // Wait while paused
-      while (isPaused && !controller.signal.aborted) {
+      // Wait while paused (use ref to get current value in async loop)
+      while (isPausedRef.current && !controller.signal.aborted) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
@@ -135,13 +139,15 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
     setIsRunning(false);
     setCurrentSet(null);
     setAbortController(null);
-  }, [sets, filter, isPaused]);
+  }, [sets, filter]);
 
   const handlePause = () => {
+    isPausedRef.current = true;
     setIsPaused(true);
   };
 
   const handleResume = () => {
+    isPausedRef.current = false;
     setIsPaused(false);
   };
 

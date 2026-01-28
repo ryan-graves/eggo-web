@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
 
   const url = new URL(`${BRICKSET_API_BASE}/${method}`);
   url.searchParams.set('apiKey', apiKey);
+  url.searchParams.set('userHash', ''); // Required by Brickset API, can be empty for public data
   if (params) {
     url.searchParams.set('params', params);
   }
