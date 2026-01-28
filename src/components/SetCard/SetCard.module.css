@@ -34,7 +34,11 @@
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  padding: var(--space-3);
+}
+
+.imageInner {
+  position: absolute;
+  inset: var(--space-4);
 }
 
 .image {
@@ -139,6 +143,10 @@
 .compact .imageContainer {
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
+}
+
+.compact .imageInner {
+  inset: var(--space-3);
 }
 
 .compact .content {

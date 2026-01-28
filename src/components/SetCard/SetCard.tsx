@@ -25,17 +25,19 @@ export function SetCard({ set, compact = false }: SetCardProps): React.JSX.Eleme
   return (
     <Link href={`/collection/${set.id}`} className={cardClassName}>
       <div className={styles.imageContainer}>
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={set.name}
-            fill
-            sizes={compact ? '160px' : '(max-width: 768px) 50vw, 200px'}
-            className={styles.image}
-          />
-        ) : (
-          <div className={styles.placeholder}>No Image</div>
-        )}
+        <div className={styles.imageInner}>
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={set.name}
+              fill
+              sizes={compact ? '160px' : '(max-width: 768px) 50vw, 200px'}
+              className={styles.image}
+            />
+          ) : (
+            <div className={styles.placeholder}>No Image</div>
+          )}
+        </div>
       </div>
 
       <div className={styles.content}>
