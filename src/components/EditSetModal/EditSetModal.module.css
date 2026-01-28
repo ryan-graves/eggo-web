@@ -70,70 +70,96 @@
   gap: var(--space-4);
 }
 
-/* Hero */
-.hero {
+/* API Data Card */
+.apiCard {
   display: flex;
   gap: var(--space-4);
   align-items: flex-start;
+  padding: var(--space-4);
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-lg);
+  position: relative;
 }
 
 .imageWrapper {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   flex-shrink: 0;
 }
 
-.heroInfo {
+.apiInfo {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-1);
 }
 
 .setNumber {
   font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
+  font-weight: var(--font-weight-medium);
+  color: var(--interactive-primary);
+  letter-spacing: 0.05em;
 }
 
-.setName {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+.apiName {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
   margin: 0;
 }
 
-.meta {
+.apiMeta {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.apiStat {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
-.theme {
+.apiStat strong {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.apiTheme {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
+  margin-top: var(--space-1);
 }
 
 .refreshButton {
-  display: inline-flex;
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 28px;
+  height: 28px;
+  display: flex;
   align-items: center;
-  gap: var(--space-1);
-  margin-top: var(--space-2);
+  justify-content: center;
   padding: 0;
-  background: none;
-  border: none;
-  font-size: var(--font-size-xs);
-  color: var(--interactive-primary);
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
   cursor: pointer;
-  align-self: flex-start;
+  transition: all var(--transition-fast);
 }
 
 .refreshButton:hover:not(:disabled) {
-  text-decoration: underline;
+  background-color: var(--surface-tertiary);
+  color: var(--interactive-primary);
+  border-color: var(--interactive-primary);
 }
 
 .refreshButton:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -285,17 +311,24 @@
   gap: var(--space-2);
 }
 
-.deleteButton {
-  padding: var(--space-2) var(--space-3);
+.deleteIconButton {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
-  border: none;
-  font-size: var(--font-size-sm);
-  color: var(--status-error);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
   cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-.deleteButton:hover {
-  text-decoration: underline;
+.deleteIconButton:hover {
+  background-color: var(--status-error-bg);
+  border-color: var(--status-error);
+  color: var(--status-error);
 }
 
 .deleteConfirm {
@@ -390,18 +423,24 @@
     border-radius: var(--radius-full);
   }
 
-  .hero {
+  .apiCard {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding: var(--space-5);
   }
 
-  .heroInfo {
+  .apiInfo {
     align-items: center;
   }
 
+  .apiMeta {
+    justify-content: center;
+  }
+
   .refreshButton {
-    align-self: center;
+    position: static;
+    margin-top: var(--space-2);
   }
 
   .row {
@@ -409,26 +448,26 @@
   }
 
   .footer {
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--space-3);
     padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
   }
 
-  .deleteButton {
-    order: 1;
+  .deleteIconButton {
+    order: 0;
   }
 
   .deleteConfirm {
-    order: 1;
+    flex: 1;
   }
 
   .rightActions {
-    width: 100%;
-    order: 0;
+    flex: 1;
+    justify-content: flex-end;
   }
 
   .cancelButton,
   .submitButton {
-    flex: 1;
+    flex: 0 0 auto;
   }
 }

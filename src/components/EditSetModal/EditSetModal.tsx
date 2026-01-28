@@ -140,8 +140,8 @@ export function EditSetModal({
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.scrollArea}>
-            {/* Hero - Image & Core Info */}
-            <div className={styles.hero}>
+            {/* API Data Card - Bold treatment */}
+            <div className={styles.apiCard}>
               {imageUrl && (
                 <div className={styles.imageWrapper}>
                   <Image
@@ -149,36 +149,44 @@ export function EditSetModal({
                     alt={currentSet.name}
                     fill
                     style={{ objectFit: 'contain' }}
-                    sizes="140px"
+                    sizes="120px"
                   />
                 </div>
               )}
-              <div className={styles.heroInfo}>
+              <div className={styles.apiInfo}>
                 <span className={styles.setNumber}>{currentSet.setNumber}</span>
-                <h3 className={styles.setName}>{currentSet.name}</h3>
-                <span className={styles.meta}>
-                  {currentSet.pieceCount?.toLocaleString()} pcs
-                  {currentSet.year && ` · ${currentSet.year}`}
-                </span>
+                <h3 className={styles.apiName}>{currentSet.name}</h3>
+                <div className={styles.apiMeta}>
+                  {currentSet.pieceCount && (
+                    <span className={styles.apiStat}>
+                      <strong>{currentSet.pieceCount.toLocaleString()}</strong> pieces
+                    </span>
+                  )}
+                  {currentSet.year && (
+                    <span className={styles.apiStat}>
+                      <strong>{currentSet.year}</strong>
+                    </span>
+                  )}
+                </div>
                 {currentSet.theme && (
-                  <span className={styles.theme}>
+                  <span className={styles.apiTheme}>
                     {currentSet.theme}
                     {currentSet.subtheme && ` › ${currentSet.subtheme}`}
                   </span>
                 )}
-                <button
-                  type="button"
-                  onClick={handleRefresh}
-                  className={styles.refreshButton}
-                  disabled={isBusy}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isRefreshing ? styles.spinning : ''}>
-                    <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-                    <path d="M21 3v5h-5" />
-                  </svg>
-                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
-                </button>
               </div>
+              <button
+                type="button"
+                onClick={handleRefresh}
+                className={styles.refreshButton}
+                disabled={isBusy}
+                aria-label="Refresh data"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isRefreshing ? styles.spinning : ''}>
+                  <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                  <path d="M21 3v5h-5" />
+                </svg>
+              </button>
             </div>
 
             {/* Status */}
@@ -290,7 +298,7 @@ export function EditSetModal({
           <div className={styles.footer}>
             {showDeleteConfirm ? (
               <div className={styles.deleteConfirm}>
-                <span>Delete?</span>
+                <span>Delete this set?</span>
                 <button
                   type="button"
                   onClick={handleDelete}
@@ -308,23 +316,27 @@ export function EditSetModal({
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(true)}
-                className={styles.deleteButton}
-              >
-                Delete
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className={styles.deleteIconButton}
+                  aria-label="Delete set"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </button>
+                <div className={styles.rightActions}>
+                  <button type="button" onClick={onCancel} className={styles.cancelButton}>
+                    Cancel
+                  </button>
+                  <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </>
             )}
-
-            <div className={styles.rightActions}>
-              <button type="button" onClick={onCancel} className={styles.cancelButton}>
-                Cancel
-              </button>
-              <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
-              </button>
-            </div>
           </div>
         </form>
       </div>

@@ -91,15 +91,10 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background-color: var(--surface-primary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
 }
 
 .image {
   object-fit: contain;
-  padding: var(--space-4);
 }
 
 .placeholder {
@@ -125,15 +120,17 @@
 }
 
 .name {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-3xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
   margin: 0;
 }
 
 .setNumber {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
   color: var(--text-tertiary);
   margin: 0;
 }
