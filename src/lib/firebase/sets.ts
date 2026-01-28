@@ -192,9 +192,8 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
   }
 
   // Use null values directly to allow clearing stale data in Firestore.
-  // The removeUndefined helper preserves null values, so fields with null
-  // will be explicitly set to null in the database.
-  const updates: UpdateLegoSetInput = {
+  // Combine all updates into a single Firestore write for efficiency.
+  const updates = removeUndefined({
     name: lookupResult.name,
     pieceCount: lookupResult.pieceCount,
     year: lookupResult.year,
@@ -203,13 +202,12 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
     imageUrl: lookupResult.imageUrl,
     dataSource: provider.name as DataSource,
     dataSourceId: lookupResult.sourceId,
-  };
+  } as Record<string, unknown>);
 
-  await updateSet(setId, updates);
-
-  // Set lastSyncedAt timestamp separately since serverTimestamp() is a FieldValue
   await updateDoc(getSetDocRef(setId), {
+    ...updates,
     lastSyncedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   });
 
   // Return the updated set

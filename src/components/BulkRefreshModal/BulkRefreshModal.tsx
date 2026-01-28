@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { refreshSetMetadata } from '@/lib/firebase';
 import type { LegoSet } from '@/types';
 import styles from './BulkRefreshModal.module.css';
@@ -74,6 +74,14 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
 
   // Use ref for pause state so async loop can see updates
   const isPausedRef = useRef(false);
+  // Track mounted state to prevent setState on unmounted component
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const filteredSets = filterSets(sets, filter);
   // Use stored total during processing, otherwise use current filtered count
@@ -115,12 +123,29 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
       setProgress(i + 1);
 
       try {
-        await refreshSetMetadata(set.id);
-        setResults((prev) => [
-          ...prev,
-          { setId: set.id, setNumber: set.setNumber, name: set.name, success: true },
-        ]);
+        const updated = await refreshSetMetadata(set.id);
+        if (!isMountedRef.current) break;
+
+        if (updated) {
+          setResults((prev) => [
+            ...prev,
+            { setId: set.id, setNumber: set.setNumber, name: set.name, success: true },
+          ]);
+        } else {
+          // refreshSetMetadata returned null (set not found)
+          setResults((prev) => [
+            ...prev,
+            {
+              setId: set.id,
+              setNumber: set.setNumber,
+              name: set.name,
+              success: false,
+              error: 'Set not found in database',
+            },
+          ]);
+        }
       } catch (error) {
+        if (!isMountedRef.current) break;
         setResults((prev) => [
           ...prev,
           {
@@ -139,9 +164,11 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
       }
     }
 
-    setIsRunning(false);
-    setCurrentSet(null);
-    setAbortController(null);
+    if (isMountedRef.current) {
+      setIsRunning(false);
+      setCurrentSet(null);
+      setAbortController(null);
+    }
   }, [sets, filter]);
 
   const handlePause = () => {
@@ -158,9 +185,12 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
     if (abortController) {
       abortController.abort();
     }
-    setIsRunning(false);
-    setIsPaused(false);
-    setCurrentSet(null);
+    // Only update state if still mounted
+    if (isMountedRef.current) {
+      setIsRunning(false);
+      setIsPaused(false);
+      setCurrentSet(null);
+    }
   };
 
   const progressPercent = totalToProcess > 0 ? (progress / totalToProcess) * 100 : 0;

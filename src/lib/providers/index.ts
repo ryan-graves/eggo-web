@@ -12,20 +12,20 @@ let currentProvider: SetDataProvider | null = null;
 /**
  * Get the configured set data provider
  *
- * Defaults to Brickset for better data coverage.
- * Falls back to Rebrickable if Brickset API key is not configured.
+ * Defaults to Brickset for better data coverage. The Brickset provider uses
+ * a server-side proxy (/api/brickset) so the API key doesn't need to be
+ * available client-side.
  *
- * Checks both BRICKSET_API_KEY (server-only) and NEXT_PUBLIC_BRICKSET_API_KEY
- * to support both server and client-side provider selection.
+ * Falls back to Rebrickable only if NEXT_PUBLIC_USE_REBRICKABLE is explicitly
+ * set to 'true'. This is useful for development without a Brickset API key.
  */
 export function getSetDataProvider(): SetDataProvider {
   if (!currentProvider) {
-    // Check both server-only and public env vars
-    const bricksetKey = process.env.BRICKSET_API_KEY || process.env.NEXT_PUBLIC_BRICKSET_API_KEY;
-    if (bricksetKey) {
-      currentProvider = new BricksetProvider();
-    } else {
+    const useRebrickable = process.env.NEXT_PUBLIC_USE_REBRICKABLE === 'true';
+    if (useRebrickable) {
       currentProvider = new RebrickableProvider();
+    } else {
+      currentProvider = new BricksetProvider();
     }
   }
   return currentProvider;
