@@ -100,6 +100,7 @@ export class BricksetProvider implements SetDataProvider {
       subtheme: set.subtheme,
       imageUrl: set.image.imageURL || set.image.thumbnailURL,
       sourceId: `${set.number}-${set.numberVariant}`,
+      dataSource: 'brickset',
     };
   }
 

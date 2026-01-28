@@ -104,6 +104,7 @@ export class RebrickableProvider implements SetDataProvider {
       subtheme,
       imageUrl: set.set_img_url,
       sourceId: set.set_num,
+      dataSource: 'rebrickable',
     };
   }
 

@@ -16,7 +16,6 @@ interface RefreshResult {
   name: string;
   success: boolean;
   error?: string;
-  skipped?: boolean;
 }
 
 type FilterOption = 'all' | 'missing_image' | 'missing_theme' | 'missing_any';
@@ -88,8 +87,7 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
   const totalToProcess = isRunning || results.length > 0 ? total : filteredSets.length;
 
   const successCount = results.filter((r) => r.success).length;
-  const errorCount = results.filter((r) => !r.success && !r.skipped).length;
-  const skippedCount = results.filter((r) => r.skipped).length;
+  const errorCount = results.filter((r) => !r.success).length;
 
   const handleStart = useCallback(async () => {
     const controller = new AbortController();
@@ -310,12 +308,6 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
                   <span className={styles.statValueError}>{errorCount}</span>
                   <span className={styles.statLabel}>Errors</span>
                 </div>
-                {skippedCount > 0 && (
-                  <div className={styles.stat}>
-                    <span className={styles.statValue}>{skippedCount}</span>
-                    <span className={styles.statLabel}>Skipped</span>
-                  </div>
-                )}
               </div>
 
               {results.length > 0 && (
@@ -328,16 +320,10 @@ export function BulkRefreshModal({ sets, onClose }: BulkRefreshModalProps): Reac
                       {results.map((result) => (
                         <li
                           key={result.setId}
-                          className={
-                            result.success
-                              ? styles.resultSuccess
-                              : result.skipped
-                                ? styles.resultSkipped
-                                : styles.resultError
-                          }
+                          className={result.success ? styles.resultSuccess : styles.resultError}
                         >
                           <span className={styles.resultIcon}>
-                            {result.success ? '✓' : result.skipped ? '–' : '✗'}
+                            {result.success ? '✓' : '✗'}
                           </span>
                           <span className={styles.resultText}>
                             {result.setNumber} - {result.name}

@@ -161,7 +161,7 @@ export function EditSetModal({
                 type="button"
                 onClick={handleRefresh}
                 className={styles.refreshButton}
-                disabled={isRefreshing}
+                disabled={isBusy}
               >
                 {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
               </button>

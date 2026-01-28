@@ -54,6 +54,7 @@ describe('BricksetProvider', () => {
         subtheme: 'Ultimate Collector Series',
         imageUrl: 'https://images.brickset.com/sets/images/75192-1.jpg',
         sourceId: '75192-1',
+        dataSource: 'brickset',
       });
 
       expect(mockFetch).toHaveBeenCalledWith(

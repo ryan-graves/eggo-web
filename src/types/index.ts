@@ -97,6 +97,7 @@ export interface SetLookupResult {
   subtheme: string | null;
   imageUrl: string | null;
   sourceId?: string;
+  dataSource: DataSource;
 }
 
 /**
