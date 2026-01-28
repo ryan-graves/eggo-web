@@ -112,7 +112,6 @@ export function CollectionHome({ sets }: CollectionHomeProps): React.JSX.Element
           key={section.id}
           title={section.title}
           sets={section.sets}
-          viewAllHref={section.viewAllFilter ? `/collection/all?${section.viewAllFilter}` : undefined}
           emptyMessage={section.emptyMessage}
         />
       ))}

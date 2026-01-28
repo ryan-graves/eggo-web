@@ -18,7 +18,7 @@ type ViewMode = 'home' | 'all';
 
 export default function CollectionPage(): React.JSX.Element {
   const { user } = useAuth();
-  const { collections, activeCollection, sets, loading, setActiveCollection } = useCollection();
+  const { collections, activeCollection, sets, loading, setsLoading, setActiveCollection } = useCollection();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
   const [showBulkRefresh, setShowBulkRefresh] = useState(false);
@@ -28,8 +28,8 @@ export default function CollectionPage(): React.JSX.Element {
     setShowAddForm(false);
   };
 
-  // Show loading state
-  if (loading) {
+  // Show loading state while collections or sets are loading
+  if (loading || (activeCollection && setsLoading)) {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>Loading your collection...</div>
@@ -145,20 +145,9 @@ export default function CollectionPage(): React.JSX.Element {
               className={styles.refreshButton}
               title="Refresh set data from Brickset"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M14 8A6 6 0 1 1 8 2"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M8 2V5L10.5 3.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
               </svg>
               <span className={styles.buttonLabel}>Refresh</span>
             </button>
