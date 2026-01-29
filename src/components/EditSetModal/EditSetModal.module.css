@@ -170,6 +170,9 @@
 
 .spinning {
   animation: spin 1s linear infinite;
+  transform-origin: center;
+  display: block;
+  will-change: transform;
 }
 
 /* Fields */
