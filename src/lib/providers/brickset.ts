@@ -49,6 +49,29 @@ function displaySetNumber(setNumber: string): string {
   return setNumber.replace(/-\d+$/, '');
 }
 
+/**
+ * Upgrade a Brickset image URL to the large version for better quality.
+ * Brickset URLs follow patterns like:
+ * - https://images.brickset.com/sets/small/12345-1.jpg (thumbnail ~140px)
+ * - https://images.brickset.com/sets/images/12345-1.jpg (standard ~300px)
+ * - https://images.brickset.com/sets/large/12345-1.jpg (large ~800px)
+ *
+ * This function converts any Brickset set image URL to use the /large/ path.
+ */
+function upgradeToLargeImage(imageUrl: string | null): string | null {
+  if (!imageUrl) return null;
+
+  // Check if it's a Brickset sets image URL
+  if (imageUrl.includes('images.brickset.com/sets/')) {
+    // Replace /small/ or /images/ with /large/
+    return imageUrl
+      .replace('/sets/small/', '/sets/large/')
+      .replace('/sets/images/', '/sets/large/');
+  }
+
+  return imageUrl;
+}
+
 export class BricksetProvider implements SetDataProvider {
   readonly name = 'brickset';
 
@@ -91,6 +114,9 @@ export class BricksetProvider implements SetDataProvider {
   }
 
   private mapToResult(set: BricksetSet): SetLookupResult {
+    // Prefer imageURL over thumbnailURL, and upgrade to large version for better quality
+    const baseImageUrl = set.image.imageURL || set.image.thumbnailURL;
+
     return {
       setNumber: displaySetNumber(set.number),
       name: set.name,
@@ -98,7 +124,7 @@ export class BricksetProvider implements SetDataProvider {
       pieceCount: set.pieces,
       theme: set.theme,
       subtheme: set.subtheme,
-      imageUrl: set.image.imageURL || set.image.thumbnailURL,
+      imageUrl: upgradeToLargeImage(baseImageUrl),
       sourceId: `${set.number}-${set.numberVariant}`,
       dataSource: 'brickset',
     };
