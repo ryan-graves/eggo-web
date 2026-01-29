@@ -168,10 +168,8 @@
   to { transform: rotate(360deg); }
 }
 
-.spinning {
-  display: flex;
+.refreshing svg {
   animation: spin 1s linear infinite;
-  backface-visibility: hidden;
 }
 
 /* Fields */
