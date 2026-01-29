@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import type { SetStatus } from '@/types';
 import styles from './FilterSheet.module.css';
 
@@ -23,6 +23,8 @@ interface FilterSheetProps {
   sortOptions: { value: string; label: string }[];
 }
 
+const DRAG_CLOSE_THRESHOLD = 100;
+
 export function FilterSheet({
   isOpen,
   onClose,
@@ -42,12 +44,28 @@ export function FilterSheet({
   sortOptions,
 }: FilterSheetProps): React.JSX.Element | null {
   const sheetRef = useRef<HTMLDivElement>(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartY = useRef(0);
+
+  // Derive visibility: show when open OR when playing close animation
+  const isVisible = isOpen || isClosing;
+
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      setDragOffset(0);
+      onClose();
+    }, 200);
+  }, [onClose]);
 
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
 
@@ -60,7 +78,7 @@ export function FilterSheet({
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   // Focus trap
   useEffect(() => {
@@ -74,6 +92,28 @@ export function FilterSheet({
     }
   }, [isOpen]);
 
+  // Touch handlers for drag-to-close
+  const handleTouchStart = (e: React.TouchEvent) => {
+    dragStartY.current = e.touches[0].clientY;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const currentY = e.touches[0].clientY;
+    const offset = Math.max(0, currentY - dragStartY.current);
+    setDragOffset(offset);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    if (dragOffset > DRAG_CLOSE_THRESHOLD) {
+      handleClose();
+    } else {
+      setDragOffset(0);
+    }
+  };
+
   const handleClearAll = () => {
     onStatusChange('all');
     onOwnerChange('all');
@@ -83,25 +123,41 @@ export function FilterSheet({
   const hasActiveFilters =
     statusFilter !== 'all' || ownerFilter !== 'all' || themeFilter !== 'all';
 
-  if (!isOpen) return null;
+  if (!isVisible) return null;
+
+  const sheetStyle = {
+    transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
+    transition: isDragging ? 'none' : undefined,
+  };
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div
+      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      onClick={handleClose}
+    >
       <div
         ref={sheetRef}
-        className={styles.sheet}
+        className={`${styles.sheet} ${isClosing ? styles.sheetClosing : ''}`}
+        style={sheetStyle}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Filter options"
       >
-        <div className={styles.handle} />
+        <div
+          className={styles.handleArea}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className={styles.handle} />
+        </div>
 
         <div className={styles.header}>
           <h2 className={styles.title}>Filters</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className={styles.closeButton}
             aria-label="Close filters"
           >
@@ -203,7 +259,7 @@ export function FilterSheet({
               Clear All Filters
             </button>
           )}
-          <button type="button" onClick={onClose} className={styles.applyButton}>
+          <button type="button" onClick={handleClose} className={styles.applyButton}>
             Apply
           </button>
         </div>

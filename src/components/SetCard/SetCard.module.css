@@ -20,9 +20,12 @@
   transform: scale(0.98);
 }
 
-.card:hover {
-  border-color: var(--border-secondary);
-  box-shadow: var(--shadow-card);
+/* Only apply hover styles on devices that support hover */
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--border-secondary);
+    box-shadow: var(--shadow-card);
+  }
 }
 
 .card:focus-visible {
@@ -121,8 +124,9 @@
 .owner {
   font-size: var(--font-size-xs);
   padding: var(--space-1) var(--space-2);
-  background-color: var(--surface-tertiary);
-  border-radius: var(--radius-sm);
+  background-color: transparent;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
   color: var(--text-secondary);
 }
 

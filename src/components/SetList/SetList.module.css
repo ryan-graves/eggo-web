@@ -12,6 +12,7 @@
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
+  margin: 0 var(--space-4);
 }
 
 .mobileFilterTags {
@@ -156,6 +157,7 @@
 
   .mobileFilterTags {
     display: block;
+    padding: 0 var(--space-4);
   }
 
   .mobileFilterTags:empty {
@@ -171,7 +173,12 @@
     min-width: 0;
   }
 
+  .stats {
+    padding: 0 var(--space-4);
+  }
+
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    padding: 0 var(--space-4);
   }
 }
