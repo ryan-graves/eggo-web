@@ -32,6 +32,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv11', 'ss01';
+  /* Prevent pull-to-refresh and scroll bleed on iOS */
+  overscroll-behavior: none;
 }
 
 /* Headings */
@@ -44,6 +46,8 @@ a {
   color: var(--text-link);
   text-decoration: none;
   transition: color var(--transition-normal);
+  /* Prevent tap highlight on iOS */
+  -webkit-tap-highlight-color: transparent;
 }
 
 a:hover {
@@ -55,6 +59,14 @@ button {
   font-size: inherit;
   cursor: pointer;
   transition: all var(--transition-normal);
+  /* Prevent tap highlight and double-tap zoom delay on iOS */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Active state for touch feedback */
+button:active:not(:disabled) {
+  opacity: 0.8;
 }
 
 img {
@@ -80,4 +92,13 @@ img {
 ::selection {
   background-color: var(--interactive-primary);
   color: var(--text-inverse);
+}
+
+/* Prevent iOS zoom on input focus - inputs must be 16px minimum */
+@media screen and (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }

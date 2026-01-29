@@ -90,6 +90,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  /* iOS momentum scrolling and prevent scroll bleed */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .section {

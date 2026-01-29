@@ -17,6 +17,9 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
+  /* iOS momentum scrolling and prevent scroll bleed */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .header {
@@ -257,6 +260,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  /* iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .resultSuccess,

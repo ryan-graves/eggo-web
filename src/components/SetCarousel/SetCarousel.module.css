@@ -57,6 +57,8 @@
   -ms-overflow-style: none;
   padding: var(--space-1) var(--space-4);
   margin: calc(-1 * var(--space-1)) 0;
+  /* iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
 }
 
 .track::-webkit-scrollbar {
