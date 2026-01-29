@@ -29,7 +29,7 @@ function formatDate(timestamp: LegoSet['dateReceived']): string {
 
 export default function SetDetailPage(): React.JSX.Element {
   const params = useParams();
-  const { sets, activeCollection, loading } = useCollection();
+  const { sets, activeCollection, loading, setsLoading } = useCollection();
   const [showEditModal, setShowEditModal] = useState(false);
 
   const setId = params.setId as string;
@@ -39,7 +39,7 @@ export default function SetDetailPage(): React.JSX.Element {
     setShowEditModal(false);
   };
 
-  if (loading) {
+  if (loading || setsLoading) {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>Loading...</div>
