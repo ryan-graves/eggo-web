@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Timestamp } from 'firebase/firestore';
 import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
@@ -56,6 +56,16 @@ export function EditSetModal({
 
   const [currentSet, setCurrentSet] = useState(set);
   const imageUrl = currentSet.customImageUrl || currentSet.imageUrl;
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
