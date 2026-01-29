@@ -168,7 +168,19 @@
   to { transform: rotate(360deg); }
 }
 
-.refreshing svg {
+.refreshSpinner {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--interactive-primary);
+}
+
+.refreshSpinner svg {
   animation: spin 1s linear infinite;
 }
 
@@ -439,6 +451,11 @@
   }
 
   .refreshButton {
+    position: static;
+    margin-top: var(--space-2);
+  }
+
+  .refreshSpinner {
     position: static;
     margin-top: var(--space-2);
   }

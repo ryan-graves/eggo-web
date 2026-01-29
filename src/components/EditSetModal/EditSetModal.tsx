@@ -185,18 +185,27 @@ export function EditSetModal({
                   </span>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={handleRefresh}
-                className={`${styles.refreshButton} ${isRefreshing ? styles.refreshing : ''}`}
-                disabled={isBusy}
-                aria-label="Refresh data"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-                  <path d="M21 3v5h-5" />
-                </svg>
-              </button>
+              {isRefreshing ? (
+                <div className={styles.refreshSpinner}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                    <path d="M12 2a10 10 0 0 1 10 10" />
+                  </svg>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleRefresh}
+                  className={styles.refreshButton}
+                  disabled={isBusy}
+                  aria-label="Refresh data"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                    <path d="M21 3v5h-5" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             {/* Status */}
