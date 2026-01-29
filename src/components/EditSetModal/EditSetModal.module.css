@@ -168,11 +168,13 @@
   to { transform: rotate(360deg); }
 }
 
-.spinning {
+.refreshButton.spinning {
   animation: spin 1s linear infinite;
-  transform-origin: center;
-  display: block;
-  will-change: transform;
+}
+
+.refreshButton.spinning svg {
+  /* Prevent Safari from showing ghost image */
+  backface-visibility: hidden;
 }
 
 /* Fields */
