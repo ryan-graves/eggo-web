@@ -168,12 +168,9 @@
   to { transform: rotate(360deg); }
 }
 
-.refreshButton.spinning {
+.spinning {
+  display: flex;
   animation: spin 1s linear infinite;
-}
-
-.refreshButton.spinning svg {
-  /* Prevent Safari from showing ghost image */
   backface-visibility: hidden;
 }
 
