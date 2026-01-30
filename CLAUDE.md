@@ -179,7 +179,7 @@ Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js supp
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID | Firebase Console > Project Settings |
 | `BRICKSET_API_KEY` | Brickset API key (recommended, server-only) | https://brickset.com/tools/webservices/requestkey |
 | `NEXT_PUBLIC_REBRICKABLE_API_KEY` | Rebrickable API key (fallback) | https://rebrickable.com/api/ |
-| `REMOVEBG_API_KEY` | remove.bg API key for background removal (optional) | https://www.remove.bg/api |
+| `REMBG_API_KEY` | rembg.com API key for background removal (optional, free) | https://www.rembg.com |
 
 ### Firebase Setup for Production
 
