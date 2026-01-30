@@ -51,9 +51,10 @@ const SECTIONS: Section[] = [
       [...sets]
         .filter((s) => s.dateReceived)
         .sort((a, b) => {
-          const dateA = a.dateReceived?.toMillis() || 0;
-          const dateB = b.dateReceived?.toMillis() || 0;
-          return dateB - dateA;
+          // YYYY-MM-DD strings sort correctly with localeCompare
+          const dateA = a.dateReceived || '';
+          const dateB = b.dateReceived || '';
+          return dateB.localeCompare(dateA);
         }),
     emptyMessage: 'No sets with dates yet',
   },

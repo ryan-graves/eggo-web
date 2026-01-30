@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
-import { formatDateForInput, parseDateFromInput } from '@/lib/date';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './EditSetModal.module.css';
 
@@ -39,7 +38,7 @@ export function EditSetModal({
       prev.includes(ownerName) ? prev.filter((o) => o !== ownerName) : [...prev, ownerName]
     );
   };
-  const [dateReceived, setDateReceived] = useState(formatDateForInput(set.dateReceived));
+  const [dateReceived, setDateReceived] = useState(set.dateReceived || '');
   const [notes, setNotes] = useState(set.notes || '');
   const [hasBeenAssembled, setHasBeenAssembled] = useState(set.hasBeenAssembled);
 
@@ -107,7 +106,7 @@ export function EditSetModal({
           hasBeenAssembled || status === 'assembled' || status === 'disassembled',
         owners: selectedOwners,
         occasion: occasion.trim(),
-        dateReceived: parseDateFromInput(dateReceived),
+        dateReceived: dateReceived || null,
         notes: notes.trim() || undefined,
       });
 

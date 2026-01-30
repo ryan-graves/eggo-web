@@ -16,7 +16,7 @@ const mockSet: LegoSet = {
   status: 'assembled',
   hasBeenAssembled: true,
   occasion: 'Birthday',
-  dateReceived: Timestamp.fromDate(new Date('2020-01-01')),
+  dateReceived: '2020-01-01',
   owners: ['Ryan'],
   dataSource: 'rebrickable',
   createdAt: Timestamp.now(),

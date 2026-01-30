@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection } from '@/hooks/useCollection';
 import { EditSetModal } from '@/components/EditSetModal';
+import { formatDateForDisplay } from '@/lib/date';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';
 
@@ -16,16 +17,6 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
   assembled: 'Assembled',
   disassembled: 'Disassembled',
 };
-
-function formatDate(timestamp: LegoSet['dateReceived']): string {
-  if (!timestamp) return 'Not set';
-  const date = timestamp.toDate();
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
 
 export default function SetDetailPage(): React.JSX.Element {
   const params = useParams();
@@ -146,7 +137,7 @@ export default function SetDetailPage(): React.JSX.Element {
                 <p className={styles.storyText}>
                   {set.owners.length > 0 && set.dateReceived ? (
                     <>
-                      {set.owners.join(' & ')} got this on {formatDate(set.dateReceived)}
+                      {set.owners.join(' & ')} got this on {formatDateForDisplay(set.dateReceived)}
                       {set.occasion ? <> for {set.occasion}</> : <>, for fun</>}
                     </>
                   ) : set.owners.length > 0 ? (
@@ -156,7 +147,7 @@ export default function SetDetailPage(): React.JSX.Element {
                     </>
                   ) : set.dateReceived ? (
                     <>
-                      Got this on {formatDate(set.dateReceived)}
+                      Got this on {formatDateForDisplay(set.dateReceived)}
                       {set.occasion ? <> for {set.occasion}</> : <>, for fun</>}
                     </>
                   ) : null}

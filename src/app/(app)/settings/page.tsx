@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { collection, getDocs, updateDoc, doc, deleteField } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, deleteField, Timestamp } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -27,6 +27,8 @@ function SettingsContent(): React.JSX.Element {
   const [isClearingCustomImages, setIsClearingCustomImages] = useState(false);
   const [refreshStatus, setRefreshStatus] = useState<string | null>(null);
   const [isRefreshingAll, setIsRefreshingAll] = useState(false);
+  const [migrateDateStatus, setMigrateDateStatus] = useState<string | null>(null);
+  const [isMigratingDates, setIsMigratingDates] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -190,6 +192,50 @@ function SettingsContent(): React.JSX.Element {
     }
   };
 
+  const handleMigrateDates = async () => {
+    setIsMigratingDates(true);
+    setMigrateDateStatus('Scanning sets...');
+
+    try {
+      const db = getFirebaseDb();
+      const setsRef = collection(db, 'sets');
+      const snapshot = await getDocs(setsRef);
+
+      let migrated = 0;
+      let skipped = 0;
+
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        const dateReceived = data.dateReceived;
+
+        // Check if it's a Firestore Timestamp (has toDate method)
+        if (dateReceived && dateReceived instanceof Timestamp) {
+          const date = dateReceived.toDate();
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const dateString = `${year}-${month}-${day}`;
+
+          await updateDoc(doc(db, 'sets', docSnap.id), { dateReceived: dateString });
+          migrated++;
+          setMigrateDateStatus(`Migrating... (${migrated} converted)`);
+        } else if (dateReceived && typeof dateReceived === 'string') {
+          skipped++;
+        }
+      }
+
+      setMigrateDateStatus(
+        `Done! Converted ${migrated} date${migrated !== 1 ? 's' : ''} to string format` +
+          (skipped > 0 ? ` (${skipped} already migrated)` : '') +
+          '.'
+      );
+    } catch (err) {
+      setMigrateDateStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsMigratingDates(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -249,6 +295,21 @@ function SettingsContent(): React.JSX.Element {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Data Maintenance</h2>
           <div className={styles.card}>
+            <div className={styles.maintenanceItem}>
+              <p className={styles.settingDescription}>
+                Migrate dates from Timestamp to string format (one-time migration).
+              </p>
+              <button
+                type="button"
+                onClick={handleMigrateDates}
+                disabled={isMigratingDates}
+                className={styles.cleanupButton}
+              >
+                {isMigratingDates ? 'Migrating...' : 'Migrate date formats'}
+              </button>
+              {migrateDateStatus && <p className={styles.cleanupStatus}>{migrateDateStatus}</p>}
+            </div>
+
             <div className={styles.maintenanceItem}>
               <p className={styles.settingDescription}>
                 Remove backgrounds from set images (for dark mode compatibility).

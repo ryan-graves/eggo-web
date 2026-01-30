@@ -94,9 +94,8 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
           comparison = (a.pieceCount || 0) - (b.pieceCount || 0);
           break;
         case 'dateReceived':
-          const dateA = a.dateReceived?.toMillis() || 0;
-          const dateB = b.dateReceived?.toMillis() || 0;
-          comparison = dateA - dateB;
+          // YYYY-MM-DD strings sort correctly with localeCompare
+          comparison = (a.dateReceived || '').localeCompare(b.dateReceived || '');
           break;
       }
 

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { createSet } from '@/lib/firebase';
-import { parseDateFromInput } from '@/lib/date';
 import { getSetDataProvider } from '@/lib/providers';
 import type { SetStatus, SetLookupResult } from '@/types';
 import styles from './AddSetForm.module.css';
@@ -115,7 +114,7 @@ export function AddSetForm({
         hasBeenAssembled: status === 'assembled' || status === 'disassembled',
         owners: selectedOwners,
         occasion: occasion.trim(),
-        dateReceived: parseDateFromInput(dateReceived),
+        dateReceived: dateReceived || null,
         notes: notes.trim() || undefined,
         dataSource: lookupResult?.dataSource ?? 'manual',
         dataSourceId: lookupResult?.sourceId,
