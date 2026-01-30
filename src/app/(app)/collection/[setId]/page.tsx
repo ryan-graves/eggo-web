@@ -146,7 +146,7 @@ export default function SetDetailPage(): React.JSX.Element {
                 <p className={styles.storyText}>
                   {set.owners.length > 0 && set.dateReceived ? (
                     <>
-                      {set.owners.join(' & ')} received this on {formatDate(set.dateReceived)}
+                      {set.owners.join(' & ')} got this on {formatDate(set.dateReceived)}
                       {set.occasion ? <> for {set.occasion}</> : <>, for fun</>}
                     </>
                   ) : set.owners.length > 0 ? (
@@ -156,7 +156,7 @@ export default function SetDetailPage(): React.JSX.Element {
                     </>
                   ) : set.dateReceived ? (
                     <>
-                      Received {formatDate(set.dateReceived)}
+                      Got this on {formatDate(set.dateReceived)}
                       {set.occasion ? <> for {set.occasion}</> : <>, for fun</>}
                     </>
                   ) : null}

@@ -1,6 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { getFirebaseDb } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -16,12 +19,78 @@ const THEME_OPTIONS: { value: ThemePreference; label: string; description: strin
 function SettingsContent(): React.JSX.Element {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const [cleanupStatus, setCleanupStatus] = useState<string | null>(null);
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
+  const [imageStatus, setImageStatus] = useState<string | null>(null);
+  const [isUpgradingImages, setIsUpgradingImages] = useState(false);
 
   const handleSignOut = async () => {
     try {
       await signOut();
     } catch {
       // Error is handled in auth context
+    }
+  };
+
+  const handleCleanupOccasions = async () => {
+    setIsCleaningUp(true);
+    setCleanupStatus('Starting cleanup...');
+
+    try {
+      const db = getFirebaseDb();
+      const setsRef = collection(db, 'sets');
+      const snapshot = await getDocs(setsRef);
+
+      let updated = 0;
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        if (data.occasion?.toLowerCase().trim() === 'just because') {
+          await updateDoc(doc(db, 'sets', docSnap.id), { occasion: '' });
+          updated++;
+        }
+      }
+
+      setCleanupStatus(`Done! Cleared "just because" from ${updated} set${updated !== 1 ? 's' : ''}.`);
+    } catch (err) {
+      setCleanupStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsCleaningUp(false);
+    }
+  };
+
+  const handleUpgradeImages = async () => {
+    setIsUpgradingImages(true);
+    setImageStatus('Scanning sets...');
+
+    try {
+      const db = getFirebaseDb();
+      const setsRef = collection(db, 'sets');
+      const snapshot = await getDocs(setsRef);
+
+      let upgraded = 0;
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        const imageUrl = data.imageUrl as string | null;
+
+        // Check if it's a Brickset image that's not already using /large/
+        if (imageUrl && imageUrl.includes('images.brickset.com/sets/')) {
+          if (imageUrl.includes('/small/') || (imageUrl.includes('/images/') && !imageUrl.includes('/large/'))) {
+            const upgradedUrl = imageUrl
+              .replace('/sets/small/', '/sets/large/')
+              .replace('/sets/images/', '/sets/large/');
+
+            await updateDoc(doc(db, 'sets', docSnap.id), { imageUrl: upgradedUrl });
+            upgraded++;
+            setImageStatus(`Upgrading... (${upgraded} so far)`);
+          }
+        }
+      }
+
+      setImageStatus(`Done! Upgraded ${upgraded} image${upgraded !== 1 ? 's' : ''} to high resolution.`);
+    } catch (err) {
+      setImageStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsUpgradingImages(false);
     }
   };
 
@@ -77,6 +146,41 @@ function SettingsContent(): React.JSX.Element {
                   </span>
                 </label>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Data Maintenance</h2>
+          <div className={styles.card}>
+            <div className={styles.maintenanceItem}>
+              <p className={styles.settingDescription}>
+                Upgrade set images to high resolution (Brickset large format).
+              </p>
+              <button
+                type="button"
+                onClick={handleUpgradeImages}
+                disabled={isUpgradingImages}
+                className={styles.cleanupButton}
+              >
+                {isUpgradingImages ? 'Upgrading...' : 'Upgrade images to high-res'}
+              </button>
+              {imageStatus && <p className={styles.cleanupStatus}>{imageStatus}</p>}
+            </div>
+
+            <div className={styles.maintenanceItem}>
+              <p className={styles.settingDescription}>
+                Clean up &quot;just because&quot; occasion entries.
+              </p>
+              <button
+                type="button"
+                onClick={handleCleanupOccasions}
+                disabled={isCleaningUp}
+                className={styles.cleanupButton}
+              >
+                {isCleaningUp ? 'Cleaning...' : 'Clear "just because" occasions'}
+              </button>
+              {cleanupStatus && <p className={styles.cleanupStatus}>{cleanupStatus}</p>}
             </div>
           </div>
         </section>
