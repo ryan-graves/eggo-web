@@ -121,48 +121,48 @@ export default function SetDetailPage(): React.JSX.Element {
               <span className={`${styles.status} ${styles[set.status]}`}>
                 {STATUS_LABELS[set.status]}
               </span>
-              {set.owners.length > 0 && (
-                <span className={styles.owner}>{set.owners.join(', ')}</span>
+            </div>
+
+            {/* Set Info - compact horizontal stats */}
+            <div className={styles.setStats}>
+              {set.pieceCount && (
+                <span className={styles.stat}>
+                  <strong>{set.pieceCount.toLocaleString()}</strong> pieces
+                </span>
+              )}
+              {set.year && (
+                <span className={styles.stat}>
+                  <strong>{set.year}</strong>
+                </span>
+              )}
+              {set.theme && (
+                <span className={styles.stat}>
+                  {set.theme}
+                  {set.subtheme && ` / ${set.subtheme}`}
+                </span>
               )}
             </div>
 
-            <dl className={styles.specs}>
-              {set.pieceCount && (
-                <div className={styles.spec}>
-                  <dt>Pieces</dt>
-                  <dd>{set.pieceCount.toLocaleString()}</dd>
-                </div>
-              )}
-              {set.year && (
-                <div className={styles.spec}>
-                  <dt>Year</dt>
-                  <dd>{set.year}</dd>
-                </div>
-              )}
-              {set.theme && (
-                <div className={styles.spec}>
-                  <dt>Theme</dt>
-                  <dd>
-                    {set.theme}
-                    {set.subtheme && ` / ${set.subtheme}`}
-                  </dd>
-                </div>
-              )}
-              <div className={styles.spec}>
-                <dt>Previously Built</dt>
-                <dd>{set.hasBeenAssembled ? 'Yes' : 'No'}</dd>
+            {/* Collection Story */}
+            <div className={styles.storyCard}>
+              <div className={styles.storyHeader}>
+                {set.owners.length > 0 && (
+                  <span className={styles.ownerBadge}>{set.owners.join(' & ')}</span>
+                )}
+                {set.hasBeenAssembled && (
+                  <span className={styles.builtBadge}>Built before</span>
+                )}
               </div>
-              {set.occasion && (
-                <div className={styles.spec}>
-                  <dt>Occasion</dt>
-                  <dd>{set.occasion}</dd>
-                </div>
+              {(set.dateReceived || set.occasion) && (
+                <p className={styles.storyText}>
+                  {set.dateReceived && (
+                    <>Received {formatDate(set.dateReceived)}</>
+                  )}
+                  {set.dateReceived && set.occasion && ' — '}
+                  {set.occasion && <>{set.occasion}</>}
+                </p>
               )}
-              <div className={styles.spec}>
-                <dt>Date Received</dt>
-                <dd>{formatDate(set.dateReceived)}</dd>
-              </div>
-            </dl>
+            </div>
 
             {set.notes && (
               <div className={styles.notesSection}>
