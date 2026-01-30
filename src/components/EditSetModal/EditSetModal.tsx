@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Timestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
+import { formatDateForInput, parseDateFromInput } from '@/lib/date';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './EditSetModal.module.css';
 
@@ -23,12 +23,6 @@ const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
   { value: 'disassembled', label: 'Disassembled' },
 ];
 
-function formatDate(timestamp: Timestamp | null): string {
-  if (!timestamp) return '';
-  const date = timestamp.toDate();
-  return date.toISOString().split('T')[0];
-}
-
 export function EditSetModal({
   set,
   availableOwners,
@@ -45,7 +39,7 @@ export function EditSetModal({
       prev.includes(ownerName) ? prev.filter((o) => o !== ownerName) : [...prev, ownerName]
     );
   };
-  const [dateReceived, setDateReceived] = useState(formatDate(set.dateReceived));
+  const [dateReceived, setDateReceived] = useState(formatDateForInput(set.dateReceived));
   const [notes, setNotes] = useState(set.notes || '');
   const [hasBeenAssembled, setHasBeenAssembled] = useState(set.hasBeenAssembled);
 
@@ -113,7 +107,7 @@ export function EditSetModal({
           hasBeenAssembled || status === 'assembled' || status === 'disassembled',
         owners: selectedOwners,
         occasion: occasion.trim(),
-        dateReceived: dateReceived ? Timestamp.fromDate(new Date(dateReceived)) : null,
+        dateReceived: parseDateFromInput(dateReceived),
         notes: notes.trim() || undefined,
       });
 
