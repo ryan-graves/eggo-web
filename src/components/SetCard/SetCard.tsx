@@ -42,7 +42,7 @@ export function SetCard({ set, compact = false }: SetCardProps): React.JSX.Eleme
 
       <div className={styles.content}>
         <h3 className={styles.name}>{set.name}</h3>
-        <p className={styles.setNumber}>{set.setNumber}</p>
+        <p className={styles.setNumber}>#{set.setNumber}</p>
 
         {!compact && (
           <>

@@ -174,7 +174,7 @@ export function EditSetModal({
                 </div>
               )}
               <div className={styles.apiInfo}>
-                <span className={styles.setNumber}>{currentSet.setNumber}</span>
+                <span className={styles.setNumber}>#{currentSet.setNumber}</span>
                 <h3 className={styles.apiName}>{currentSet.name}</h3>
                 <div className={styles.apiMeta}>
                   {currentSet.pieceCount && (
@@ -273,19 +273,19 @@ export function EditSetModal({
             </div>
 
             {/* Date & Occasion */}
-            <div className={styles.row}>
-              <div className={styles.field}>
+            <div className={styles.dateOccasionRow}>
+              <div className={styles.dateField}>
                 <label htmlFor="dateReceived" className={styles.label}>Date Received</label>
                 <input
                   id="dateReceived"
                   type="date"
                   value={dateReceived}
                   onChange={(e) => setDateReceived(e.target.value)}
-                  className={styles.input}
+                  className={styles.dateInput}
                 />
               </div>
               <div className={styles.field}>
-                <label htmlFor="occasion" className={styles.label}>Occasion</label>
+                <label htmlFor="occasion" className={styles.label}>Occasion (optional)</label>
                 <input
                   id="occasion"
                   type="text"

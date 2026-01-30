@@ -121,7 +121,7 @@ export default function SetDetailPage(): React.JSX.Element {
 
             {/* Set Info - compact horizontal stats */}
             <div className={styles.setStats}>
-              <span className={styles.stat}>{set.setNumber}</span>
+              <span className={styles.stat}>#{set.setNumber}</span>
               {set.pieceCount && (
                 <span className={styles.stat}>
                   <strong>{set.pieceCount.toLocaleString()}</strong> pieces
@@ -141,13 +141,13 @@ export default function SetDetailPage(): React.JSX.Element {
             </div>
 
             {/* Collection Story */}
-            {(set.owners.length > 0 || set.dateReceived || set.occasion || set.hasBeenAssembled) && (
+            {(set.owners.length > 0 || set.dateReceived || set.hasBeenAssembled) && (
               <div className={styles.storyCard}>
                 <p className={styles.storyText}>
                   {set.owners.length > 0 && set.dateReceived ? (
                     <>
                       {set.owners.join(' & ')} received this on {formatDate(set.dateReceived)}
-                      {set.occasion && <> for {set.occasion}</>}
+                      {set.occasion ? <> for {set.occasion}</> : <>, for fun</>}
                     </>
                   ) : set.owners.length > 0 ? (
                     <>
@@ -157,10 +157,8 @@ export default function SetDetailPage(): React.JSX.Element {
                   ) : set.dateReceived ? (
                     <>
                       Received {formatDate(set.dateReceived)}
-                      {set.occasion && <> for {set.occasion}</>}
+                      {set.occasion ? <> for {set.occasion}</> : <>, for fun</>}
                     </>
-                  ) : set.occasion ? (
-                    <>{set.occasion}</>
                   ) : null}
                 </p>
                 {set.hasBeenAssembled && (
