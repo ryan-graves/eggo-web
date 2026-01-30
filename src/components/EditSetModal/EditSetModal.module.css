@@ -226,6 +226,8 @@
   color: var(--text-primary);
   background-color: var(--surface-primary);
   width: auto;
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .dateInput:focus {
@@ -241,6 +243,8 @@
   font-size: var(--font-size-sm);
   color: var(--text-primary);
   background-color: var(--surface-primary);
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .input:focus,
@@ -252,6 +256,7 @@
 .textarea {
   resize: vertical;
   font-family: inherit;
+  height: auto;
   min-height: 60px;
 }
 
