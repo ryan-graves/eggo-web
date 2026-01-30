@@ -114,10 +114,6 @@ export default function SetDetailPage(): React.JSX.Element {
           <div className={styles.details}>
             <div className={styles.titleSection}>
               <h1 className={styles.name}>{set.name}</h1>
-              <p className={styles.setNumber}>{set.setNumber}</p>
-            </div>
-
-            <div className={styles.badges}>
               <span className={`${styles.status} ${styles[set.status]}`}>
                 {STATUS_LABELS[set.status]}
               </span>
@@ -125,6 +121,7 @@ export default function SetDetailPage(): React.JSX.Element {
 
             {/* Set Info - compact horizontal stats */}
             <div className={styles.setStats}>
+              <span className={styles.stat}>{set.setNumber}</span>
               {set.pieceCount && (
                 <span className={styles.stat}>
                   <strong>{set.pieceCount.toLocaleString()}</strong> pieces
@@ -132,7 +129,7 @@ export default function SetDetailPage(): React.JSX.Element {
               )}
               {set.year && (
                 <span className={styles.stat}>
-                  <strong>{set.year}</strong>
+                  Released <strong>{set.year}</strong>
                 </span>
               )}
               {set.theme && (
@@ -144,25 +141,33 @@ export default function SetDetailPage(): React.JSX.Element {
             </div>
 
             {/* Collection Story */}
-            <div className={styles.storyCard}>
-              <div className={styles.storyHeader}>
-                {set.owners.length > 0 && (
-                  <span className={styles.ownerBadge}>{set.owners.join(' & ')}</span>
-                )}
+            {(set.owners.length > 0 || set.dateReceived || set.occasion || set.hasBeenAssembled) && (
+              <div className={styles.storyCard}>
+                <p className={styles.storyText}>
+                  {set.owners.length > 0 && set.dateReceived ? (
+                    <>
+                      {set.owners.join(' & ')} received this on {formatDate(set.dateReceived)}
+                      {set.occasion && <> for {set.occasion}</>}
+                    </>
+                  ) : set.owners.length > 0 ? (
+                    <>
+                      Belongs to {set.owners.join(' & ')}
+                      {set.occasion && <> — {set.occasion}</>}
+                    </>
+                  ) : set.dateReceived ? (
+                    <>
+                      Received {formatDate(set.dateReceived)}
+                      {set.occasion && <> for {set.occasion}</>}
+                    </>
+                  ) : set.occasion ? (
+                    <>{set.occasion}</>
+                  ) : null}
+                </p>
                 {set.hasBeenAssembled && (
                   <span className={styles.builtBadge}>Built before</span>
                 )}
               </div>
-              {(set.dateReceived || set.occasion) && (
-                <p className={styles.storyText}>
-                  {set.dateReceived && (
-                    <>Received {formatDate(set.dateReceived)}</>
-                  )}
-                  {set.dateReceived && set.occasion && ' — '}
-                  {set.occasion && <>{set.occasion}</>}
-                </p>
-              )}
-            </div>
+            )}
 
             {set.notes && (
               <div className={styles.notesSection}>
