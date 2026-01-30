@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Timestamp } from 'firebase/firestore';
+import { toast } from 'sonner';
 import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './EditSetModal.module.css';
@@ -72,13 +73,22 @@ export function EditSetModal({
     setError(null);
 
     try {
-      const updated = await refreshSetMetadata(set.id);
-      if (updated) {
-        setCurrentSet(updated);
-        setName(updated.name);
+      const result = await refreshSetMetadata(set.id);
+      if (result.set) {
+        setCurrentSet(result.set);
+        setName(result.set.name);
+      }
+      // Show warning toast if background removal failed (but data refresh succeeded)
+      if (result.backgroundRemovalError) {
+        toast.error('Background removal failed', {
+          description: result.backgroundRemovalError,
+        });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh metadata');
+      const message = err instanceof Error ? err.message : 'Failed to refresh metadata';
+      toast.error('Failed to refresh set data', {
+        description: message,
+      });
     } finally {
       setIsRefreshing(false);
     }

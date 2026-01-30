@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Timestamp } from 'firebase/firestore';
+import { toast } from 'sonner';
 import { createSet } from '@/lib/firebase';
 import { getSetDataProvider } from '@/lib/providers';
 import type { SetStatus, SetLookupResult } from '@/types';
@@ -73,8 +74,12 @@ export function AddSetForm({
       } else {
         setLookupError('Set not found. You can still enter the details manually.');
       }
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to lookup set';
       setLookupError('Failed to lookup set. You can still enter the details manually.');
+      toast.error('Set lookup failed', {
+        description: message,
+      });
     } finally {
       setIsLookingUp(false);
     }

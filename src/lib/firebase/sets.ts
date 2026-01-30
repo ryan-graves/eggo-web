@@ -20,6 +20,11 @@ import type { LegoSet, CreateLegoSetInput, UpdateLegoSetInput, DataSource } from
 
 const SETS_PATH = 'sets';
 
+export interface RefreshSetResult {
+  set: LegoSet | null;
+  backgroundRemovalError: string | null;
+}
+
 function getSetsRef() {
   return collection(getFirebaseDb(), SETS_PATH);
 }
@@ -221,11 +226,13 @@ export async function findSetByNumber(
  * Refresh a set's metadata from the external data provider.
  * Updates name, pieceCount, year, theme, subtheme, and imageUrl.
  * Optionally processes images to remove background (if enabled via ENABLE_BACKGROUND_REMOVAL).
+ *
+ * @returns A result object containing the updated set and any background removal error
  */
-export async function refreshSetMetadata(setId: string): Promise<LegoSet | null> {
+export async function refreshSetMetadata(setId: string): Promise<RefreshSetResult> {
   const set = await getSet(setId);
   if (!set) {
-    return null;
+    return { set: null, backgroundRemovalError: null };
   }
 
   const provider = getSetDataProvider();
@@ -237,10 +244,17 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
 
   // Try to remove background from image if available
   let processedImageUrl: string | null = null;
+  let backgroundRemovalError: string | null = null;
+
   if (lookupResult.imageUrl) {
     console.log('[refreshSetMetadata] Attempting background removal for:', lookupResult.imageUrl);
-    processedImageUrl = await removeImageBackground(lookupResult.imageUrl);
-    console.log('[refreshSetMetadata] Background removal result:', processedImageUrl ? 'success' : 'failed/skipped');
+    const bgResult = await removeImageBackground(lookupResult.imageUrl);
+    processedImageUrl = bgResult.processedImageUrl;
+    backgroundRemovalError = bgResult.error;
+    console.log(
+      '[refreshSetMetadata] Background removal result:',
+      bgResult.processedImageUrl ? 'success' : bgResult.skipped ? 'skipped' : 'failed'
+    );
   } else {
     console.log('[refreshSetMetadata] No image URL from provider, skipping background removal');
   }
@@ -266,6 +280,7 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
     updatedAt: serverTimestamp(),
   });
 
-  // Return the updated set
-  return getSet(setId);
+  // Return the updated set and any background removal error
+  const updatedSet = await getSet(setId);
+  return { set: updatedSet, backgroundRemovalError };
 }

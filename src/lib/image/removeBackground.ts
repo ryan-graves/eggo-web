@@ -12,18 +12,24 @@
  * The processed images are stored as data URLs in Firestore.
  */
 
-interface RemoveBackgroundResponse {
+interface RemoveBackgroundApiResponse {
   processedImageUrl?: string;
   error?: string;
+}
+
+export interface RemoveBackgroundResult {
+  processedImageUrl: string | null;
+  error: string | null;
+  skipped: boolean;
 }
 
 /**
  * Remove the background from an image URL using remove.bg API.
  *
  * @param imageUrl - The URL of the image to process
- * @returns A data URL of the processed image with transparent background, or null if failed/disabled
+ * @returns A result object containing the processed image URL, any error message, and whether it was skipped
  */
-export async function removeImageBackground(imageUrl: string): Promise<string | null> {
+export async function removeImageBackground(imageUrl: string): Promise<RemoveBackgroundResult> {
   console.log('[removeBackground] Starting background removal for:', imageUrl);
 
   try {
@@ -41,19 +47,29 @@ export async function removeImageBackground(imageUrl: string): Promise<string | 
       // 503 means the feature is not configured - this is expected in some environments
       if (response.status === 503) {
         console.log('[removeBackground] Feature not configured (503)');
-        return null;
+        return { processedImageUrl: null, error: null, skipped: true };
       }
       const errorText = await response.text();
       console.error(`[removeBackground] API error: ${response.status}`, errorText);
-      return null;
+      return {
+        processedImageUrl: null,
+        error: `Background removal failed (${response.status}): ${errorText}`,
+        skipped: false,
+      };
     }
 
-    const data: RemoveBackgroundResponse = await response.json();
+    const data: RemoveBackgroundApiResponse = await response.json();
     console.log('[removeBackground] Success, got processed image:', !!data.processedImageUrl);
-    return data.processedImageUrl || null;
+
+    if (data.error) {
+      return { processedImageUrl: null, error: data.error, skipped: false };
+    }
+
+    return { processedImageUrl: data.processedImageUrl || null, error: null, skipped: false };
   } catch (error) {
     console.error('[removeBackground] Exception:', error);
-    return null;
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { processedImageUrl: null, error: `Background removal failed: ${message}`, skipped: false };
   }
 }
 

@@ -1,1 +1,5 @@
-export { removeImageBackground, isBackgroundRemovalAvailable } from './removeBackground';
+export {
+  removeImageBackground,
+  isBackgroundRemovalAvailable,
+  type RemoveBackgroundResult,
+} from './removeBackground';
