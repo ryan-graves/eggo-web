@@ -483,10 +483,6 @@
     grid-template-columns: 1fr;
   }
 
-  .dateOccasionRow {
-    flex-direction: column;
-  }
-
   .footer {
     flex-direction: row;
     gap: var(--space-3);

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, deleteField } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -23,6 +23,8 @@ function SettingsContent(): React.JSX.Element {
   const [isCleaningUp, setIsCleaningUp] = useState(false);
   const [imageStatus, setImageStatus] = useState<string | null>(null);
   const [isUpgradingImages, setIsUpgradingImages] = useState(false);
+  const [customImageStatus, setCustomImageStatus] = useState<string | null>(null);
+  const [isClearingCustomImages, setIsClearingCustomImages] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -91,6 +93,33 @@ function SettingsContent(): React.JSX.Element {
       setImageStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsUpgradingImages(false);
+    }
+  };
+
+  const handleClearCustomImages = async () => {
+    setIsClearingCustomImages(true);
+    setCustomImageStatus('Scanning sets...');
+
+    try {
+      const db = getFirebaseDb();
+      const setsRef = collection(db, 'sets');
+      const snapshot = await getDocs(setsRef);
+
+      let cleared = 0;
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        if (data.customImageUrl) {
+          await updateDoc(doc(db, 'sets', docSnap.id), { customImageUrl: deleteField() });
+          cleared++;
+          setCustomImageStatus(`Clearing... (${cleared} so far)`);
+        }
+      }
+
+      setCustomImageStatus(`Done! Cleared ${cleared} custom image${cleared !== 1 ? 's' : ''}. High-res originals will now show.`);
+    } catch (err) {
+      setCustomImageStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsClearingCustomImages(false);
     }
   };
 
@@ -166,6 +195,21 @@ function SettingsContent(): React.JSX.Element {
                 {isUpgradingImages ? 'Upgrading...' : 'Upgrade images to high-res'}
               </button>
               {imageStatus && <p className={styles.cleanupStatus}>{imageStatus}</p>}
+            </div>
+
+            <div className={styles.maintenanceItem}>
+              <p className={styles.settingDescription}>
+                Clear processed images to show high-res originals instead.
+              </p>
+              <button
+                type="button"
+                onClick={handleClearCustomImages}
+                disabled={isClearingCustomImages}
+                className={styles.cleanupButton}
+              >
+                {isClearingCustomImages ? 'Clearing...' : 'Clear processed images'}
+              </button>
+              {customImageStatus && <p className={styles.cleanupStatus}>{customImageStatus}</p>}
             </div>
 
             <div className={styles.maintenanceItem}>
