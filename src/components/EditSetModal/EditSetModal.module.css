@@ -439,28 +439,17 @@
   }
 
   .apiCard {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: var(--space-5);
+    gap: var(--space-3);
+    padding: var(--space-3);
   }
 
-  .apiInfo {
-    align-items: center;
+  .imageWrapper {
+    width: 80px;
+    height: 80px;
   }
 
-  .apiMeta {
-    justify-content: center;
-  }
-
-  .refreshButton {
-    position: static;
-    margin-top: var(--space-2);
-  }
-
-  .refreshSpinner {
-    position: static;
-    margin-top: var(--space-2);
+  .apiName {
+    font-size: var(--font-size-base);
   }
 
   .row {

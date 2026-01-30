@@ -272,8 +272,18 @@ export function EditSetModal({
               />
             </div>
 
-            {/* Occasion & Date */}
+            {/* Date & Occasion */}
             <div className={styles.row}>
+              <div className={styles.field}>
+                <label htmlFor="dateReceived" className={styles.label}>Date Received</label>
+                <input
+                  id="dateReceived"
+                  type="date"
+                  value={dateReceived}
+                  onChange={(e) => setDateReceived(e.target.value)}
+                  className={styles.input}
+                />
+              </div>
               <div className={styles.field}>
                 <label htmlFor="occasion" className={styles.label}>Occasion</label>
                 <input
@@ -282,16 +292,6 @@ export function EditSetModal({
                   value={occasion}
                   onChange={(e) => setOccasion(e.target.value)}
                   placeholder="Birthday, Christmas..."
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.field}>
-                <label htmlFor="dateReceived" className={styles.label}>Date Received</label>
-                <input
-                  id="dateReceived"
-                  type="date"
-                  value={dateReceived}
-                  onChange={(e) => setDateReceived(e.target.value)}
                   className={styles.input}
                 />
               </div>
