@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Timestamp } from 'firebase/firestore';
 import { SetCard } from './SetCard';
 import type { LegoSet } from '@/types';
@@ -9,6 +9,21 @@ jest.mock('next/image', () => ({
   default: function MockImage({ src, alt }: { src: string; alt: string }) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={src} alt={alt} />;
+  },
+}));
+
+// Mock Next.js Link component
+jest.mock('next/link', () => ({
+  __esModule: true,
+  default: function MockLink({
+    children,
+    href,
+  }: {
+    children: React.ReactNode;
+    href: string;
+    className?: string;
+  }) {
+    return <a href={href}>{children}</a>;
   },
 }));
 
@@ -25,8 +40,8 @@ const mockSet: LegoSet = {
   status: 'assembled',
   hasBeenAssembled: true,
   occasion: 'Birthday',
-  dateReceived: Timestamp.fromDate(new Date('2020-01-01')),
-  owner: 'Ryan',
+  dateReceived: '2020-01-01',
+  owners: ['Ryan'],
   dataSource: 'rebrickable',
   createdAt: Timestamp.now(),
   updatedAt: Timestamp.now(),
@@ -78,8 +93,8 @@ describe('SetCard', () => {
     expect(screen.getByText('Ryan')).toBeInTheDocument();
   });
 
-  it('does not render owner when absent', () => {
-    const setWithoutOwner = { ...mockSet, owner: '' };
+  it('does not render owner when empty', () => {
+    const setWithoutOwner = { ...mockSet, owners: [] };
     render(<SetCard set={setWithoutOwner} />);
 
     expect(screen.queryByText('Ryan')).not.toBeInTheDocument();
@@ -97,13 +112,11 @@ describe('SetCard', () => {
     expect(screen.getByText('Star Wars')).toBeInTheDocument();
   });
 
-  it('calls onClick when clicked', () => {
-    const handleClick = jest.fn();
-    render(<SetCard set={mockSet} onClick={handleClick} />);
+  it('links to the set detail page', () => {
+    render(<SetCard set={mockSet} />);
 
-    fireEvent.click(screen.getByRole('button'));
-
-    expect(handleClick).toHaveBeenCalledTimes(1);
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', '/collection/set-1');
   });
 
   it('renders different status labels correctly', () => {

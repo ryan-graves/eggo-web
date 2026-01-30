@@ -7,7 +7,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-4) var(--spacing-6);
+  padding: var(--space-4) var(--space-6);
   background-color: var(--surface-primary);
   border-bottom: 1px solid var(--border-primary);
 }
@@ -33,32 +33,32 @@
 .main {
   max-width: 600px;
   margin: 0 auto;
-  padding: var(--spacing-6);
+  padding: var(--space-6);
 }
 
 .section {
-  margin-bottom: var(--spacing-8);
+  margin-bottom: var(--space-8);
 }
 
 .sectionTitle {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-4) 0;
+  margin: 0 0 var(--space-4) 0;
 }
 
 .card {
   background-color: var(--surface-primary);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-4);
+  padding: var(--space-4);
   box-shadow: var(--shadow-card);
 }
 
 .accountInfo {
   display: flex;
   align-items: center;
-  gap: var(--spacing-3);
-  margin-bottom: var(--spacing-4);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .avatar {
@@ -74,7 +74,7 @@
 .accountName {
   font-weight: var(--font-weight-medium);
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-1) 0;
+  margin: 0 0 var(--space-1) 0;
 }
 
 .accountEmail {
@@ -85,7 +85,7 @@
 
 .signOutButton {
   width: 100%;
-  padding: var(--spacing-2) var(--spacing-4);
+  padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--status-error);
@@ -103,20 +103,20 @@
 .settingDescription {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  margin: 0 0 var(--spacing-4) 0;
+  margin: 0 0 var(--space-4) 0;
 }
 
 .themeOptions {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
+  gap: var(--space-2);
 }
 
 .themeOption {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-3);
-  padding: var(--spacing-3);
+  gap: var(--space-3);
+  padding: var(--space-3);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: background-color 0.2s;
@@ -134,7 +134,7 @@
 .themeContent {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1);
+  gap: var(--space-1);
 }
 
 .themeLabel {
@@ -149,11 +149,51 @@
 
 .aboutText {
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-2) 0;
+  margin: 0 0 var(--space-2) 0;
 }
 
 .versionText {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   margin: 0;
+}
+
+.cleanupButton {
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cleanupButton:hover:not(:disabled) {
+  background-color: var(--surface-tertiary);
+}
+
+.cleanupButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cleanupStatus {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: var(--space-3) 0 0 0;
+}
+
+.maintenanceItem {
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.maintenanceItem:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
 }

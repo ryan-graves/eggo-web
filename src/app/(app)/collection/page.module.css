@@ -98,6 +98,45 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-6);
+  gap: var(--space-4);
+}
+
+.viewToggle {
+  display: flex;
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--space-1);
+}
+
+.viewToggleButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.viewToggleButton:hover {
+  color: var(--text-primary);
+}
+
+.viewToggleButton.active {
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.viewToggleButton svg {
+  flex-shrink: 0;
 }
 
 .sectionTitle {
@@ -135,6 +174,10 @@
   color: var(--text-primary);
 }
 
+.buttonLabel {
+  display: inline;
+}
+
 .addButton {
   padding: var(--space-2) var(--space-4);
   background-color: var(--interactive-primary);
@@ -165,6 +208,7 @@
     flex-direction: column;
     gap: var(--space-3);
     align-items: flex-start;
+    padding: var(--space-3) var(--space-4);
   }
 
   .headerLeft {
@@ -177,23 +221,45 @@
   }
 
   .main {
-    padding: var(--space-4);
+    padding: var(--space-4) 0;
   }
 
   .toolbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding: 0 var(--space-4);
+  }
+
+  .viewToggle {
+    order: 1;
   }
 
   .toolbarActions {
-    width: 100%;
-    flex-direction: column;
+    order: 2;
+    gap: var(--space-2);
   }
 
-  .refreshButton,
+  .buttonLabel {
+    display: none;
+  }
+
+  .refreshButton {
+    padding: var(--space-2);
+  }
+
   .addButton {
-    width: 100%;
-    justify-content: center;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .viewToggleButton {
+    padding: var(--space-2);
+    font-size: var(--font-size-xs);
+  }
+
+  .viewToggleButton svg {
+    width: 14px;
+    height: 14px;
   }
 }

@@ -8,35 +8,28 @@ import { useCollection } from '@/hooks/useCollection';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
 import { CollectionSettingsModal } from '@/components/CollectionSettingsModal';
+import { CollectionHome } from '@/components/CollectionHome';
 import { SetList } from '@/components/SetList';
 import { AddSetForm } from '@/components/AddSetForm';
-import { EditSetModal } from '@/components/EditSetModal';
 import { BulkRefreshModal } from '@/components/BulkRefreshModal';
-import type { LegoSet } from '@/types';
 import styles from './page.module.css';
+
+type ViewMode = 'home' | 'all';
 
 export default function CollectionPage(): React.JSX.Element {
   const { user } = useAuth();
-  const { collections, activeCollection, sets, loading, setActiveCollection } = useCollection();
+  const { collections, activeCollection, sets, loading, setsLoading, setActiveCollection } = useCollection();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingSet, setEditingSet] = useState<LegoSet | null>(null);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
   const [showBulkRefresh, setShowBulkRefresh] = useState(false);
-
-  const handleSetClick = (set: LegoSet) => {
-    setEditingSet(set);
-  };
+  const [viewMode, setViewMode] = useState<ViewMode>('home');
 
   const handleAddSuccess = () => {
     setShowAddForm(false);
   };
 
-  const handleEditSuccess = () => {
-    setEditingSet(null);
-  };
-
-  // Show loading state
-  if (loading) {
+  // Show loading state while collections or sets are loading
+  if (loading || (activeCollection && setsLoading)) {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>Loading your collection...</div>
@@ -88,14 +81,9 @@ export default function CollectionPage(): React.JSX.Element {
               onClick={() => setShowCollectionSettings(true)}
               aria-label="Collection settings"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M6.5 1.5H9.5L10 3.5L12 4.5L14 3.5L15.5 6L14 8L14.5 10.5L12.5 11.5L12 14H4L3.5 11.5L1.5 10.5L2 8L0.5 6L2 3.5L4 4.5L6 3.5L6.5 1.5Z"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                  strokeLinejoin="round"
-                />
-                <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2" />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
             </button>
           )}
@@ -119,7 +107,32 @@ export default function CollectionPage(): React.JSX.Element {
 
       <main className={styles.main}>
         <div className={styles.toolbar}>
-          <h2 className={styles.sectionTitle}>Your Sets</h2>
+          <div className={styles.viewToggle}>
+            <button
+              type="button"
+              className={`${styles.viewToggleButton} ${viewMode === 'home' ? styles.active : ''}`}
+              onClick={() => setViewMode('home')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              Home
+            </button>
+            <button
+              type="button"
+              className={`${styles.viewToggleButton} ${viewMode === 'all' ? styles.active : ''}`}
+              onClick={() => setViewMode('all')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              All Sets
+            </button>
+          </div>
           <div className={styles.toolbarActions}>
             <button
               type="button"
@@ -127,22 +140,11 @@ export default function CollectionPage(): React.JSX.Element {
               className={styles.refreshButton}
               title="Refresh set data from Brickset"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M14 8A6 6 0 1 1 8 2"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M8 2V5L10.5 3.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
               </svg>
-              Refresh Data
+              <span className={styles.buttonLabel}>Refresh</span>
             </button>
             <button
               type="button"
@@ -155,29 +157,20 @@ export default function CollectionPage(): React.JSX.Element {
         </div>
 
         {activeCollection && (
-          <SetList
-            sets={sets}
-            owners={activeCollection.owners}
-            onSetClick={handleSetClick}
-          />
+          viewMode === 'home' ? (
+            <CollectionHome sets={sets} />
+          ) : (
+            <SetList sets={sets} availableOwners={activeCollection.owners} />
+          )
         )}
       </main>
 
       {showAddForm && activeCollection && (
         <AddSetForm
           collectionId={activeCollection.id}
-          owners={activeCollection.owners}
+          availableOwners={activeCollection.owners}
           onSuccess={handleAddSuccess}
           onCancel={() => setShowAddForm(false)}
-        />
-      )}
-
-      {editingSet && activeCollection && (
-        <EditSetModal
-          set={editingSet}
-          owners={activeCollection.owners}
-          onSuccess={handleEditSuccess}
-          onCancel={() => setEditingSet(null)}
         />
       )}
 

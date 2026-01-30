@@ -1,0 +1,1 @@
+export { CollectionHome } from './CollectionHome';

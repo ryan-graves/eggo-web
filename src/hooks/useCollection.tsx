@@ -22,6 +22,7 @@ interface CollectionContextValue {
   activeCollection: Collection | null;
   sets: LegoSet[];
   loading: boolean;
+  setsLoading: boolean;
   error: string | null;
   setActiveCollection: (collection: Collection) => void;
   createNewCollection: (name: string, owners: string[]) => Promise<string>;
@@ -39,6 +40,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
   const [activeCollection, setActiveCollectionState] = useState<Collection | null>(null);
   const [sets, setSets] = useState<LegoSet[]>([]);
   const [loading, setLoading] = useState(true);
+  const [setsLoading, setSetsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Subscribe to user's collections
@@ -47,6 +49,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
     if (!user) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state on logout is intentional
       setLoading(false);
+      setSetsLoading(false);
       setCollections([]);
       setActiveCollectionState(null);
       setSets([]);
@@ -84,11 +87,15 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
   // Subscribe to sets for active collection
   useEffect(() => {
     if (!activeCollection) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting loading state when no collection is intentional
+      setSetsLoading(false);
       return;
     }
 
+    setSetsLoading(true);
     const unsubscribe = subscribeToSetsForCollection(activeCollection.id, (collectionSets) => {
       setSets(collectionSets);
+      setSetsLoading(false);
     });
 
     return () => {
@@ -130,11 +137,12 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       activeCollection,
       sets,
       loading,
+      setsLoading,
       error,
       setActiveCollection,
       createNewCollection,
     }),
-    [collections, activeCollection, sets, loading, error, setActiveCollection, createNewCollection]
+    [collections, activeCollection, sets, loading, setsLoading, error, setActiveCollection, createNewCollection]
   );
 
   return (

@@ -15,9 +15,15 @@ import {
 } from 'firebase/firestore';
 import { getFirebaseDb } from './config';
 import { getSetDataProvider } from '@/lib/providers';
+import { removeImageBackground } from '@/lib/image';
 import type { LegoSet, CreateLegoSetInput, UpdateLegoSetInput, DataSource } from '@/types';
 
 const SETS_PATH = 'sets';
+
+export interface RefreshSetResult {
+  set: LegoSet | null;
+  backgroundRemovalError: string | null;
+}
 
 function getSetsRef() {
   return collection(getFirebaseDb(), SETS_PATH);
@@ -34,6 +40,30 @@ function removeUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> 
   return Object.fromEntries(
     Object.entries(obj).filter(([, value]) => value !== undefined)
   ) as Partial<T>;
+}
+
+/**
+ * Normalize set data to handle migration from owner (string) to owners (string[])
+ * This ensures backward compatibility with existing data in Firestore.
+ */
+function normalizeSetData(data: Record<string, unknown>): Record<string, unknown> {
+  const normalized = { ...data };
+
+  // Migrate owner -> owners if needed
+  if (!normalized.owners) {
+    if (typeof normalized.owner === 'string' && normalized.owner) {
+      normalized.owners = [normalized.owner];
+    } else {
+      normalized.owners = [];
+    }
+  }
+
+  // Ensure owners is always an array
+  if (!Array.isArray(normalized.owners)) {
+    normalized.owners = [];
+  }
+
+  return normalized;
 }
 
 /**
@@ -57,7 +87,8 @@ export async function getSet(setId: string): Promise<LegoSet | null> {
   if (!docSnap.exists()) {
     return null;
   }
-  return { id: docSnap.id, ...docSnap.data() } as LegoSet;
+  const data = normalizeSetData(docSnap.data());
+  return { id: docSnap.id, ...data } as LegoSet;
 }
 
 /**
@@ -70,7 +101,10 @@ export async function getSetsForCollection(collectionId: string): Promise<LegoSe
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+  return snapshot.docs.map((doc) => {
+    const data = normalizeSetData(doc.data());
+    return { id: doc.id, ...data } as LegoSet;
+  });
 }
 
 /**
@@ -86,7 +120,10 @@ export function subscribeToSetsForCollection(
     orderBy('createdAt', 'desc')
   );
   return onSnapshot(q, (snapshot) => {
-    const sets = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+    const sets = snapshot.docs.map((doc) => {
+      const data = normalizeSetData(doc.data());
+      return { id: doc.id, ...data } as LegoSet;
+    });
     callback(sets);
   });
 }
@@ -111,16 +148,20 @@ export async function deleteSet(setId: string): Promise<void> {
 
 /**
  * Get sets by owner within a collection
+ * Uses array-contains since a set can have multiple owners
  */
 export async function getSetsByOwner(collectionId: string, owner: string): Promise<LegoSet[]> {
   const q = query(
     getSetsRef(),
     where('collectionId', '==', collectionId),
-    where('owner', '==', owner),
+    where('owners', 'array-contains', owner),
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+  return snapshot.docs.map((doc) => {
+    const data = normalizeSetData(doc.data());
+    return { id: doc.id, ...data } as LegoSet;
+  });
 }
 
 /**
@@ -137,7 +178,10 @@ export async function getSetsByStatus(
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+  return snapshot.docs.map((doc) => {
+    const data = normalizeSetData(doc.data());
+    return { id: doc.id, ...data } as LegoSet;
+  });
 }
 
 /**
@@ -151,7 +195,10 @@ export async function getSetsByTheme(collectionId: string, theme: string): Promi
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as LegoSet);
+  return snapshot.docs.map((doc) => {
+    const data = normalizeSetData(doc.data());
+    return { id: doc.id, ...data } as LegoSet;
+  });
 }
 
 /**
@@ -171,17 +218,21 @@ export async function findSetByNumber(
     return null;
   }
   const doc = snapshot.docs[0];
-  return { id: doc.id, ...doc.data() } as LegoSet;
+  const data = normalizeSetData(doc.data());
+  return { id: doc.id, ...data } as LegoSet;
 }
 
 /**
- * Refresh a set's metadata from the external data provider
- * Updates name, pieceCount, year, theme, subtheme, and imageUrl
+ * Refresh a set's metadata from the external data provider.
+ * Updates name, pieceCount, year, theme, subtheme, and imageUrl.
+ * Optionally processes images to remove background (if enabled via ENABLE_BACKGROUND_REMOVAL).
+ *
+ * @returns A result object containing the updated set and any background removal error
  */
-export async function refreshSetMetadata(setId: string): Promise<LegoSet | null> {
+export async function refreshSetMetadata(setId: string): Promise<RefreshSetResult> {
   const set = await getSet(setId);
   if (!set) {
-    return null;
+    return { set: null, backgroundRemovalError: null };
   }
 
   const provider = getSetDataProvider();
@@ -189,6 +240,23 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
 
   if (!lookupResult) {
     throw new Error(`Set ${set.setNumber} not found in ${provider.name}`);
+  }
+
+  // Try to remove background from image if available
+  let processedImageUrl: string | null = null;
+  let backgroundRemovalError: string | null = null;
+
+  if (lookupResult.imageUrl) {
+    console.log('[refreshSetMetadata] Attempting background removal for:', lookupResult.imageUrl);
+    const bgResult = await removeImageBackground(lookupResult.imageUrl);
+    processedImageUrl = bgResult.processedImageUrl;
+    backgroundRemovalError = bgResult.error;
+    console.log(
+      '[refreshSetMetadata] Background removal result:',
+      bgResult.processedImageUrl ? 'success' : bgResult.skipped ? 'skipped' : 'failed'
+    );
+  } else {
+    console.log('[refreshSetMetadata] No image URL from provider, skipping background removal');
   }
 
   // Use null values directly to allow clearing stale data in Firestore.
@@ -200,6 +268,8 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
     theme: lookupResult.theme,
     subtheme: lookupResult.subtheme,
     imageUrl: lookupResult.imageUrl,
+    // Store processed image as custom image if background removal succeeded
+    ...(processedImageUrl ? { customImageUrl: processedImageUrl } : {}),
     dataSource: provider.name as DataSource,
     dataSourceId: lookupResult.sourceId,
   } as Record<string, unknown>);
@@ -210,6 +280,7 @@ export async function refreshSetMetadata(setId: string): Promise<LegoSet | null>
     updatedAt: serverTimestamp(),
   });
 
-  // Return the updated set
-  return getSet(setId);
+  // Return the updated set and any background removal error
+  const updatedSet = await getSet(setId);
+  return { set: updatedSet, backgroundRemovalError };
 }

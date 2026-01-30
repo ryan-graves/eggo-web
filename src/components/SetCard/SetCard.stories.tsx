@@ -16,8 +16,8 @@ const mockSet: LegoSet = {
   status: 'assembled',
   hasBeenAssembled: true,
   occasion: 'Birthday',
-  dateReceived: Timestamp.fromDate(new Date('2020-01-01')),
-  owner: 'Ryan',
+  dateReceived: '2020-01-01',
+  owners: ['Ryan'],
   dataSource: 'rebrickable',
   createdAt: Timestamp.now(),
   updatedAt: Timestamp.now(),
@@ -30,9 +30,6 @@ const meta: Meta<typeof SetCard> = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-  argTypes: {
-    onClick: { action: 'clicked' },
-  },
 };
 
 export default meta;
@@ -94,7 +91,16 @@ export const NoOwner: Story = {
   args: {
     set: {
       ...mockSet,
-      owner: '',
+      owners: [],
+    },
+  },
+};
+
+export const MultipleOwners: Story = {
+  args: {
+    set: {
+      ...mockSet,
+      owners: ['Ryan', 'Alyssa'],
     },
   },
 };

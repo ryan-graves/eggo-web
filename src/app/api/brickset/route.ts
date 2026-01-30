@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const method = searchParams.get('method');
   const params = searchParams.get('params');
 
-  // Use server-only env var only - never expose API keys to client
+  // Server-only env var - never expose API keys to client
   const apiKey = process.env.BRICKSET_API_KEY;
 
   if (!apiKey) {

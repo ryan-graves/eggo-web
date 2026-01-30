@@ -52,7 +52,7 @@ describe('BricksetProvider', () => {
         pieceCount: 7541,
         theme: 'Star Wars',
         subtheme: 'Ultimate Collector Series',
-        imageUrl: 'https://images.brickset.com/sets/images/75192-1.jpg',
+        imageUrl: 'https://images.brickset.com/sets/large/75192-1.jpg',
         sourceId: '75192-1',
         dataSource: 'brickset',
       });
@@ -246,7 +246,8 @@ describe('BricksetProvider', () => {
 
       const result = await provider.lookupSet('12345');
 
-      expect(result!.imageUrl).toBe('https://images.brickset.com/sets/small/12345-1.jpg');
+      // Thumbnail URLs are upgraded to large for better quality
+      expect(result!.imageUrl).toBe('https://images.brickset.com/sets/large/12345-1.jpg');
     });
   });
 
@@ -388,7 +389,8 @@ describe('BricksetProvider', () => {
 
       const url = await provider.getImageUrl('75192');
 
-      expect(url).toBe('https://images.brickset.com/sets/images/75192-1.jpg');
+      // URLs are upgraded to large for better quality
+      expect(url).toBe('https://images.brickset.com/sets/large/75192-1.jpg');
     });
 
     it('returns null for non-existent set', async () => {

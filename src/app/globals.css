@@ -19,24 +19,35 @@ body {
   color: var(--text-primary);
   background-color: var(--surface-background);
   font-family:
+    var(--font-inter),
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
     Roboto,
-    'Helvetica Neue',
-    Arial,
     sans-serif;
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01';
+  /* Prevent pull-to-refresh and scroll bleed on iOS */
+  overscroll-behavior: none;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 a {
   color: var(--text-link);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: color var(--transition-normal);
+  /* Prevent tap highlight on iOS */
+  -webkit-tap-highlight-color: transparent;
 }
 
 a:hover {
@@ -47,6 +58,15 @@ button {
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
+  transition: all var(--transition-normal);
+  /* Prevent tap highlight and double-tap zoom delay on iOS */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Active state for touch feedback */
+button:active:not(:disabled) {
+  opacity: 0.8;
 }
 
 img {
@@ -59,4 +79,26 @@ img {
 :focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Selection */
+::selection {
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
+}
+
+/* Prevent iOS zoom on input focus - inputs must be 16px minimum */
+@media screen and (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
