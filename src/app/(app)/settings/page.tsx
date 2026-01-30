@@ -25,6 +25,8 @@ function SettingsContent(): React.JSX.Element {
   const [isUpgradingImages, setIsUpgradingImages] = useState(false);
   const [customImageStatus, setCustomImageStatus] = useState<string | null>(null);
   const [isClearingCustomImages, setIsClearingCustomImages] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState<string | null>(null);
+  const [isRefreshingAll, setIsRefreshingAll] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -123,6 +125,71 @@ function SettingsContent(): React.JSX.Element {
     }
   };
 
+  const handleRefreshAllImages = async () => {
+    setIsRefreshingAll(true);
+    setRefreshStatus('Scanning sets...');
+
+    try {
+      const db = getFirebaseDb();
+      const setsRef = collection(db, 'sets');
+      const snapshot = await getDocs(setsRef);
+
+      const setsWithImages = snapshot.docs.filter((docSnap) => {
+        const data = docSnap.data();
+        return data.imageUrl && !data.customImageUrl;
+      });
+
+      setRefreshStatus(`Found ${setsWithImages.length} set${setsWithImages.length !== 1 ? 's' : ''} without processed images...`);
+
+      let processed = 0;
+      let succeeded = 0;
+      let failed = 0;
+
+      for (const docSnap of setsWithImages) {
+        const data = docSnap.data();
+        processed++;
+        setRefreshStatus(`Processing ${processed}/${setsWithImages.length}: ${data.name || data.setNumber}...`);
+
+        try {
+          const response = await fetch('/api/remove-background', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl: data.imageUrl }),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.processedImageUrl) {
+              await updateDoc(doc(db, 'sets', docSnap.id), {
+                customImageUrl: result.processedImageUrl,
+              });
+              succeeded++;
+            } else {
+              failed++;
+            }
+          } else {
+            failed++;
+          }
+        } catch {
+          failed++;
+        }
+
+        // Small delay to avoid overwhelming the API
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+
+      setRefreshStatus(
+        `Done! Processed ${succeeded} image${succeeded !== 1 ? 's' : ''}` +
+          (failed > 0 ? `, ${failed} failed` : '') +
+          '.'
+      );
+    } catch (err) {
+      setRefreshStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsRefreshingAll(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -182,6 +249,21 @@ function SettingsContent(): React.JSX.Element {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Data Maintenance</h2>
           <div className={styles.card}>
+            <div className={styles.maintenanceItem}>
+              <p className={styles.settingDescription}>
+                Remove backgrounds from set images (for dark mode compatibility).
+              </p>
+              <button
+                type="button"
+                onClick={handleRefreshAllImages}
+                disabled={isRefreshingAll}
+                className={styles.cleanupButton}
+              >
+                {isRefreshingAll ? 'Processing...' : 'Remove backgrounds from all images'}
+              </button>
+              {refreshStatus && <p className={styles.cleanupStatus}>{refreshStatus}</p>}
+            </div>
+
             <div className={styles.maintenanceItem}>
               <p className={styles.settingDescription}>
                 Upgrade set images to high resolution (Brickset large format).

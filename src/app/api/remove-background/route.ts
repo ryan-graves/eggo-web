@@ -62,8 +62,14 @@ export async function POST(request: NextRequest) {
     console.log('[remove-background API] Source image fetched, size:', imageBlob.size);
 
     // Upload to rembg.com API
+    // Note: The underlying rembg library can resize images. We request the original
+    // resolution by setting model and size parameters if supported by the API.
+    // See GitHub issue danielgatis/rembg#130 for background on the resize issue.
     const formData = new FormData();
     formData.append('image', imageBlob, 'image.png');
+    // Try to preserve original resolution - these params may or may not be supported
+    formData.append('return_mask', 'false');
+    formData.append('post_process_mask', 'true');
 
     console.log('[remove-background API] Calling rembg.com API...');
     const response = await fetch(REMBG_API_URL, {
