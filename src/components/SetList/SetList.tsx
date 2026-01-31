@@ -1,11 +1,27 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import type { Timestamp } from 'firebase/firestore';
 import { SetCard } from '@/components/SetCard';
 import { FilterSheet } from '@/components/FilterSheet';
 import { FilterTags } from '@/components/FilterTags';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './SetList.module.css';
+
+/**
+ * Safely convert a dateReceived value to a sortable string.
+ * Handles both string (YYYY-MM-DD) and legacy Firestore Timestamp formats.
+ */
+function getDateString(dateReceived: string | Timestamp | null | undefined): string {
+  if (!dateReceived) return '';
+  if (typeof dateReceived === 'string') return dateReceived;
+  // Handle Firestore Timestamp objects
+  if (typeof dateReceived === 'object' && 'toDate' in dateReceived) {
+    const date = dateReceived.toDate();
+    return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+  }
+  return '';
+}
 
 interface SetListProps {
   sets: LegoSet[];
@@ -95,7 +111,8 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
           break;
         case 'dateReceived':
           // YYYY-MM-DD strings sort correctly with localeCompare
-          comparison = (a.dateReceived || '').localeCompare(b.dateReceived || '');
+          // Use helper to handle both string and legacy Timestamp formats
+          comparison = getDateString(a.dateReceived).localeCompare(getDateString(b.dateReceived));
           break;
       }
 
