@@ -6,6 +6,7 @@ import {
   subscribeToAuthChanges,
   signInWithGoogle as firebaseSignInWithGoogle,
   signOut as firebaseSignOut,
+  isFirebaseConfigured,
 } from '@/lib/firebase';
 
 interface AuthContextValue {
@@ -28,12 +29,27 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = subscribeToAuthChanges((firebaseUser) => {
-      setUser(firebaseUser);
+    // Check if Firebase is configured before attempting to subscribe
+    if (!isFirebaseConfigured()) {
+      console.error('Firebase is not configured. Check environment variables.');
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Setting error state on config failure is intentional
+      setError('Firebase is not configured. Please check environment variables.');
       setLoading(false);
-    });
+      return;
+    }
 
-    return unsubscribe;
+    try {
+      const unsubscribe = subscribeToAuthChanges((firebaseUser) => {
+        setUser(firebaseUser);
+        setLoading(false);
+      });
+
+      return unsubscribe;
+    } catch (err) {
+      console.error('Failed to initialize Firebase Auth:', err);
+      setError(err instanceof Error ? err.message : 'Failed to initialize authentication');
+      setLoading(false);
+    }
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
