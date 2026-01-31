@@ -38,7 +38,7 @@ interface CollectionProviderProps {
 }
 
 export function CollectionProvider({ children }: CollectionProviderProps): React.JSX.Element {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [activeCollection, setActiveCollectionState] = useState<Collection | null>(null);
   const [sets, setSets] = useState<LegoSet[]>([]);
@@ -155,8 +155,8 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
     [user]
   );
 
-  // Compute isInitializing: true only until we have loaded collections AND sets for the first time
-  const isInitializing = !collectionsInitialized || (activeCollection !== null && !setsInitialized);
+  // Compute isInitializing: true until auth is resolved AND we have loaded collections AND sets
+  const isInitializing = authLoading || !collectionsInitialized || (activeCollection !== null && !setsInitialized);
 
   const value = useMemo(
     () => ({

@@ -12,9 +12,37 @@ import { CollectionHome } from '@/components/CollectionHome';
 import { SetList } from '@/components/SetList';
 import { AddSetForm } from '@/components/AddSetForm';
 import { BulkRefreshModal } from '@/components/BulkRefreshModal';
+import { SetCardSkeleton } from '@/components/SetCardSkeleton';
 import styles from './page.module.css';
 
 type ViewMode = 'home' | 'all';
+
+function CollectionSkeleton(): React.JSX.Element {
+  return (
+    <div className={styles.page}>
+      <header className={styles.skeletonHeader}>
+        <div className={styles.skeletonHeaderLeft}>
+          <div className={`${styles.skeleton} ${styles.skeletonLogo}`} />
+          <div className={`${styles.skeleton} ${styles.skeletonSelector}`} />
+        </div>
+        <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
+      </header>
+
+      <main className={styles.skeletonMain}>
+        <div className={styles.skeletonToolbar}>
+          <div className={`${styles.skeleton} ${styles.skeletonToggle}`} />
+          <div className={`${styles.skeleton} ${styles.skeletonButton}`} />
+        </div>
+
+        <div className={styles.skeletonGrid}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SetCardSkeleton key={i} />
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
 
 export default function CollectionPage(): React.JSX.Element {
   const { user } = useAuth();
@@ -28,13 +56,9 @@ export default function CollectionPage(): React.JSX.Element {
     setShowAddForm(false);
   };
 
-  // Show loading state only during initial app load
+  // Show skeleton UI during initial app load
   if (isInitializing) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.loading}>Loading your collection...</div>
-      </div>
-    );
+    return <CollectionSkeleton />;
   }
 
   // Show create collection flow if user has no collections
@@ -65,7 +89,7 @@ export default function CollectionPage(): React.JSX.Element {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.content}`}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <h1 className={styles.title}>Eggo</h1>

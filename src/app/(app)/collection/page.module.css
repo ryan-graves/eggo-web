@@ -194,16 +194,120 @@
   background-color: var(--interactive-primary-hover);
 }
 
-.loading {
+/* Skeleton loading styles */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-secondary) 25%,
+    var(--surface-tertiary) 50%,
+    var(--surface-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeletonHeader {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  color: var(--text-secondary);
-  font-size: var(--font-size-lg);
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--surface-primary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.skeletonHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.skeletonLogo {
+  width: 60px;
+  height: 24px;
+}
+
+.skeletonSelector {
+  width: 160px;
+  height: 32px;
+  border-radius: var(--radius-md);
+}
+
+.skeletonAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+}
+
+.skeletonMain {
+  flex: 1;
+  padding: var(--space-6);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.skeletonToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.skeletonToggle {
+  width: 180px;
+  height: 40px;
+  border-radius: var(--radius-md);
+}
+
+.skeletonButton {
+  width: 100px;
+  height: 36px;
+  border-radius: var(--radius-md);
+}
+
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+/* Content transitions */
+.content {
+  animation: fadeIn var(--transition-normal);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {
+  .skeletonHeader {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .skeletonMain {
+    padding: var(--space-4);
+  }
+
+  .skeletonGrid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
   .header {
     flex-direction: column;
     gap: var(--space-3);

@@ -1,0 +1,124 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-secondary) 25%,
+    var(--surface-tertiary) 50%,
+    var(--surface-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  width: 100%;
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  padding: var(--space-4);
+}
+
+.imageSkeleton {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-md);
+}
+
+.content {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.nameSkeleton {
+  height: 1.25rem;
+  width: 80%;
+}
+
+.setNumberSkeleton {
+  height: 0.875rem;
+  width: 30%;
+}
+
+.meta {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.statusSkeleton {
+  height: 1.25rem;
+  width: 4.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.ownerSkeleton {
+  height: 1.25rem;
+  width: 3rem;
+  border-radius: var(--radius-full);
+}
+
+.details {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.detailSkeleton {
+  height: 0.75rem;
+  width: 3.5rem;
+}
+
+/* Compact mode for carousels */
+.compact {
+  border-radius: var(--radius-md);
+  height: 100%;
+}
+
+.compact .imageContainer {
+  aspect-ratio: 1 / 1;
+  padding: var(--space-3);
+  flex-shrink: 0;
+}
+
+.compact .content {
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.compact .nameSkeleton {
+  height: 1rem;
+  width: 70%;
+}
+
+.compact .setNumberSkeleton {
+  height: 0.75rem;
+  width: 25%;
+}
+
+.statusCompactSkeleton {
+  height: 1rem;
+  width: 4rem;
+  margin-top: auto;
+  border-radius: var(--radius-sm);
+}
