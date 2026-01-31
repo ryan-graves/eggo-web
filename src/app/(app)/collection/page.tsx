@@ -18,7 +18,7 @@ type ViewMode = 'home' | 'all';
 
 export default function CollectionPage(): React.JSX.Element {
   const { user } = useAuth();
-  const { collections, activeCollection, sets, loading, setsLoading, setActiveCollection } = useCollection();
+  const { collections, activeCollection, sets, isInitializing, setActiveCollection } = useCollection();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
   const [showBulkRefresh, setShowBulkRefresh] = useState(false);
@@ -28,8 +28,8 @@ export default function CollectionPage(): React.JSX.Element {
     setShowAddForm(false);
   };
 
-  // Show loading state while collections or sets are loading
-  if (loading || (activeCollection && setsLoading)) {
+  // Show loading state only during initial app load
+  if (isInitializing) {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>Loading your collection...</div>

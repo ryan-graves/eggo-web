@@ -20,7 +20,7 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 
 export default function SetDetailPage(): React.JSX.Element {
   const params = useParams();
-  const { sets, activeCollection, loading, setsLoading } = useCollection();
+  const { sets, activeCollection, isInitializing } = useCollection();
   const [showEditModal, setShowEditModal] = useState(false);
 
   const setId = params.setId as string;
@@ -30,7 +30,7 @@ export default function SetDetailPage(): React.JSX.Element {
     setShowEditModal(false);
   };
 
-  if (loading || setsLoading) {
+  if (isInitializing) {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>Loading...</div>

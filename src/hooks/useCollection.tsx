@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -21,8 +22,10 @@ interface CollectionContextValue {
   collections: Collection[];
   activeCollection: Collection | null;
   sets: LegoSet[];
-  loading: boolean;
-  setsLoading: boolean;
+  /** True only during initial data load, false after first successful load */
+  isInitializing: boolean;
+  /** True while fetching sets for a new collection (after initial load) */
+  isSwitchingCollection: boolean;
   error: string | null;
   setActiveCollection: (collection: Collection) => void;
   createNewCollection: (name: string, owners: string[]) => Promise<string>;
@@ -39,24 +42,30 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
   const [collections, setCollections] = useState<Collection[]>([]);
   const [activeCollection, setActiveCollectionState] = useState<Collection | null>(null);
   const [sets, setSets] = useState<LegoSet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [setsLoading, setSetsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Track initialization state separately from loading
+  const [collectionsInitialized, setCollectionsInitialized] = useState(false);
+  const [setsInitialized, setSetsInitialized] = useState(false);
+  const [isSwitchingCollection, setIsSwitchingCollection] = useState(false);
+
+  // Track which collection's sets we currently have loaded
+  const loadedCollectionIdRef = useRef<string | null>(null);
 
   // Subscribe to user's collections
   useEffect(() => {
     // No user - reset state immediately (valid synchronous update for auth state change)
     if (!user) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state on logout is intentional
-      setLoading(false);
-      setSetsLoading(false);
+      setCollectionsInitialized(false);
+      setSetsInitialized(false);
       setCollections([]);
       setActiveCollectionState(null);
       setSets([]);
+      loadedCollectionIdRef.current = null;
       return;
     }
 
-    setLoading(true);
     const unsubscribe = subscribeToCollectionsForUser(user.uid, (userCollections) => {
       setCollections(userCollections);
 
@@ -72,37 +81,52 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
         return current;
       });
 
-      setLoading(false);
+      // Mark collections as initialized after first successful load
+      setCollectionsInitialized(true);
     });
 
     // Cleanup: unsubscribe and reset state when user changes
     return () => {
       unsubscribe();
+      setCollectionsInitialized(false);
+      setSetsInitialized(false);
       setCollections([]);
       setActiveCollectionState(null);
       setSets([]);
+      loadedCollectionIdRef.current = null;
     };
   }, [user]);
 
   // Subscribe to sets for active collection
   useEffect(() => {
     if (!activeCollection) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting loading state when no collection is intentional
-      setSetsLoading(false);
+      // No collection selected - clear sets but preserve initialized state
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state when no collection is intentional
+      setSets([]);
+      loadedCollectionIdRef.current = null;
       return;
     }
 
-    setSetsLoading(true);
+    const isNewCollection = loadedCollectionIdRef.current !== activeCollection.id;
+
+    // Only show switching indicator after initial load and when changing collections
+    if (isNewCollection && setsInitialized) {
+      setIsSwitchingCollection(true);
+    }
+
     const unsubscribe = subscribeToSetsForCollection(activeCollection.id, (collectionSets) => {
       setSets(collectionSets);
-      setSetsLoading(false);
+      loadedCollectionIdRef.current = activeCollection.id;
+      setSetsInitialized(true);
+      setIsSwitchingCollection(false);
     });
 
     return () => {
       unsubscribe();
-      setSets([]);
+      // Don't clear sets on cleanup - keep showing previous data until new data arrives
+      // This prevents the flash of empty state when switching collections
     };
-  }, [activeCollection]);
+  }, [activeCollection, setsInitialized]);
 
   const setActiveCollection = useCallback((collection: Collection) => {
     setActiveCollectionState(collection);
@@ -131,18 +155,21 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
     [user]
   );
 
+  // Compute isInitializing: true only until we have loaded collections AND sets for the first time
+  const isInitializing = !collectionsInitialized || (activeCollection !== null && !setsInitialized);
+
   const value = useMemo(
     () => ({
       collections,
       activeCollection,
       sets,
-      loading,
-      setsLoading,
+      isInitializing,
+      isSwitchingCollection,
       error,
       setActiveCollection,
       createNewCollection,
     }),
-    [collections, activeCollection, sets, loading, setsLoading, error, setActiveCollection, createNewCollection]
+    [collections, activeCollection, sets, isInitializing, isSwitchingCollection, error, setActiveCollection, createNewCollection]
   );
 
   return (
