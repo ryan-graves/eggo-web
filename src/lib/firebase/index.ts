@@ -1,4 +1,4 @@
-export { getFirebaseAuth, getFirebaseDb } from './config';
+export { getFirebaseAuth, getFirebaseDb, isFirebaseConfigured } from './config';
 export { signInWithGoogle, signOut, subscribeToAuthChanges, getCurrentUser } from './auth';
 export {
   createCollection,
