@@ -216,29 +216,15 @@
   border-radius: var(--radius-sm);
 }
 
-.skeletonHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4) var(--space-6);
-  background-color: var(--surface-primary);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.skeletonHeaderLeft {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.skeletonLogo {
-  width: 60px;
-  height: 24px;
-}
-
 .skeletonSelector {
   width: 160px;
   height: 32px;
+  border-radius: var(--radius-full);
+}
+
+.skeletonSettingsIcon {
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-md);
 }
 
@@ -246,21 +232,12 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
+  flex-shrink: 0;
 }
 
-.skeletonMain {
-  flex: 1;
-  padding: var(--space-6);
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.skeletonToolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-6);
+.skeletonUserName {
+  width: 80px;
+  height: 16px;
 }
 
 .skeletonToggle {
@@ -269,16 +246,37 @@
   border-radius: var(--radius-md);
 }
 
-.skeletonButton {
-  width: 100px;
+.skeletonRefreshButton {
+  width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
 }
 
-.skeletonGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+.skeletonAddButton {
+  width: 90px;
+  height: 36px;
+  border-radius: var(--radius-md);
+}
+
+.skeletonSection {
+  margin-bottom: var(--space-8);
+}
+
+.skeletonSectionTitle {
+  width: 140px;
+  height: 20px;
+  margin-bottom: var(--space-4);
+}
+
+.skeletonCarousel {
+  display: flex;
   gap: var(--space-4);
+  overflow: hidden;
+}
+
+.skeletonCarousel > * {
+  flex: 0 0 180px;
+  height: 260px;
 }
 
 /* Content transitions */
@@ -296,16 +294,13 @@
 }
 
 @media (max-width: 768px) {
-  .skeletonHeader {
-    padding: var(--space-3) var(--space-4);
+  .skeletonUserName {
+    display: none;
   }
 
-  .skeletonMain {
-    padding: var(--space-4);
-  }
-
-  .skeletonGrid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  .skeletonCarousel > * {
+    flex: 0 0 150px;
+    height: 220px;
   }
 
   .header {

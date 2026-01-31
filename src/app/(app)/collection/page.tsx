@@ -20,24 +20,47 @@ type ViewMode = 'home' | 'all';
 function CollectionSkeleton(): React.JSX.Element {
   return (
     <div className={styles.page}>
-      <header className={styles.skeletonHeader}>
-        <div className={styles.skeletonHeaderLeft}>
-          <div className={`${styles.skeleton} ${styles.skeletonLogo}`} />
+      {/* Use actual header classes to prevent layout shift */}
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Eggo</h1>
           <div className={`${styles.skeleton} ${styles.skeletonSelector}`} />
+          <div className={`${styles.skeleton} ${styles.skeletonSettingsIcon}`} />
         </div>
-        <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
+        <div className={styles.userInfo}>
+          <div className={styles.settingsLink}>
+            <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
+            <div className={`${styles.skeleton} ${styles.skeletonUserName}`} />
+          </div>
+        </div>
       </header>
 
-      <main className={styles.skeletonMain}>
-        <div className={styles.skeletonToolbar}>
+      <main className={styles.main}>
+        <div className={styles.toolbar}>
           <div className={`${styles.skeleton} ${styles.skeletonToggle}`} />
-          <div className={`${styles.skeleton} ${styles.skeletonButton}`} />
+          <div className={styles.toolbarActions}>
+            <div className={`${styles.skeleton} ${styles.skeletonRefreshButton}`} />
+            <div className={`${styles.skeleton} ${styles.skeletonAddButton}`} />
+          </div>
         </div>
 
-        <div className={styles.skeletonGrid}>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <SetCardSkeleton key={i} />
-          ))}
+        {/* Skeleton section title */}
+        <div className={styles.skeletonSection}>
+          <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
+          <div className={styles.skeletonCarousel}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SetCardSkeleton key={i} compact />
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.skeletonSection}>
+          <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
+          <div className={styles.skeletonCarousel}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SetCardSkeleton key={i} compact />
+            ))}
+          </div>
         </div>
       </main>
     </div>
