@@ -1,9 +1,25 @@
 'use client';
 
 import { useMemo } from 'react';
+import type { Timestamp } from 'firebase/firestore';
 import { SetCarousel } from '@/components/SetCarousel';
 import type { LegoSet } from '@/types';
 import styles from './CollectionHome.module.css';
+
+/**
+ * Safely convert a dateReceived value to a sortable string.
+ * Handles both string (YYYY-MM-DD) and legacy Firestore Timestamp formats.
+ */
+function getDateString(dateReceived: string | Timestamp | null | undefined): string {
+  if (!dateReceived) return '';
+  if (typeof dateReceived === 'string') return dateReceived;
+  // Handle Firestore Timestamp objects
+  if (typeof dateReceived === 'object' && 'toDate' in dateReceived) {
+    const date = dateReceived.toDate();
+    return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+  }
+  return '';
+}
 
 interface CollectionHomeProps {
   sets: LegoSet[];
@@ -51,9 +67,9 @@ const SECTIONS: Section[] = [
       [...sets]
         .filter((s) => s.dateReceived)
         .sort((a, b) => {
-          // YYYY-MM-DD strings sort correctly with localeCompare
-          const dateA = a.dateReceived || '';
-          const dateB = b.dateReceived || '';
+          // Use helper to handle both string and legacy Timestamp formats
+          const dateA = getDateString(a.dateReceived);
+          const dateB = getDateString(b.dateReceived);
           return dateB.localeCompare(dateA);
         }),
     emptyMessage: 'No sets with dates yet',
