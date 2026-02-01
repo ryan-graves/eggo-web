@@ -57,7 +57,7 @@ export default function SetDetailPage(): React.JSX.Element {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link href="/collection" className={styles.backButton}>
+        <Link href="/collection" className={styles.backButton} aria-label="Back to collection">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path
               d="M12.5 15L7.5 10L12.5 5"
@@ -67,9 +67,9 @@ export default function SetDetailPage(): React.JSX.Element {
               strokeLinejoin="round"
             />
           </svg>
-          Back
         </Link>
-        <button type="button" onClick={() => setShowEditModal(true)} className={styles.editButton}>
+        <h1 className={styles.title}>{set.name}</h1>
+        <button type="button" onClick={() => setShowEditModal(true)} className={styles.editButton} aria-label="Edit set">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path
               d="M11.5 2.5L13.5 4.5M10 14H14M2 10L10.5 1.5C11.3284 0.671573 12.6716 0.671573 13.5 1.5C14.3284 2.32843 14.3284 3.67157 13.5 4.5L5 13L1 14L2 10Z"
@@ -79,7 +79,6 @@ export default function SetDetailPage(): React.JSX.Element {
               strokeLinejoin="round"
             />
           </svg>
-          Edit
         </button>
       </header>
 

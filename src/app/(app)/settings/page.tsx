@@ -239,8 +239,7 @@ function SettingsContent(): React.JSX.Element {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Settings</h1>
-        <Link href="/collection" className={styles.backButton}>
+        <Link href="/collection" className={styles.backButton} aria-label="Back to collection">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path
               d="M12.5 15L7.5 10L12.5 5"
@@ -250,8 +249,8 @@ function SettingsContent(): React.JSX.Element {
               strokeLinejoin="round"
             />
           </svg>
-          Collection
         </Link>
+        <h1 className={styles.title}>Settings</h1>
       </header>
 
       <main className={styles.main}>
