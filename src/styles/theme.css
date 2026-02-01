@@ -196,19 +196,19 @@
   letter-spacing: -0.01em;
 }
 
-/* Larger heading sizes with preserved line heights */
+/* Slightly larger heading sizes with preserved line heights */
 [data-ui-theme='glass'] h1 {
-  font-size: 2.5rem;
+  font-size: 1.75rem;
   line-height: 1.2;
 }
 
 [data-ui-theme='glass'] h2 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   line-height: 1.3;
 }
 
 [data-ui-theme='glass'] h3 {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   line-height: 1.4;
 }
 
