@@ -148,39 +148,47 @@
  *
  * A minimal monochrome theme with serif headings.
  * Works with both light and dark color modes.
+ * Uses higher specificity selectors to ensure proper override.
  */
+
+/* Glass theme base - applies to all glass theme instances */
 [data-ui-theme='glass'] {
   /* Heading font */
   --font-heading: var(--font-instrument-serif), Georgia, serif;
+}
 
-  /* Monochrome interactive colors - dark mode default */
+/* Glass theme in DARK mode - explicit selectors for all dark mode cases */
+[data-theme='dark'][data-ui-theme='glass'],
+:root[data-ui-theme='glass']:not([data-theme='light']) {
+  /* Light buttons with dark text for dark backgrounds */
   --interactive-primary: var(--color-gray-100);
   --interactive-primary-hover: #ffffff;
   --interactive-primary-bg: rgba(255, 255, 255, 0.1);
-  --text-inverse: var(--color-gray-900); /* Dark text for light buttons */
+  --text-inverse: var(--color-gray-900);
   --text-link: var(--color-gray-300);
   --text-link-hover: var(--color-gray-100);
   --border-focus: var(--color-gray-400);
 }
 
-/* Glass theme in light mode */
-[data-theme='light'][data-ui-theme='glass'],
-:root:not([data-theme='dark']):not([data-theme='light'])[data-ui-theme='glass'] {
+/* Glass theme in LIGHT mode - explicit selectors for all light mode cases */
+[data-theme='light'][data-ui-theme='glass'] {
+  /* Dark buttons with light text for light backgrounds */
   --interactive-primary: var(--color-gray-900);
   --interactive-primary-hover: #000000;
   --interactive-primary-bg: rgba(0, 0, 0, 0.05);
-  --text-inverse: #ffffff; /* Light text for dark buttons */
+  --text-inverse: #ffffff;
   --text-link: var(--color-gray-700);
   --text-link-hover: var(--color-gray-900);
   --border-focus: var(--color-gray-600);
 }
 
+/* Glass theme with system preference light mode (when data-theme not explicitly set) */
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']):not([data-theme='light'])[data-ui-theme='glass'] {
+  :root[data-ui-theme='glass']:not([data-theme='dark']):not([data-theme='light']) {
     --interactive-primary: var(--color-gray-900);
     --interactive-primary-hover: #000000;
     --interactive-primary-bg: rgba(0, 0, 0, 0.05);
-    --text-inverse: #ffffff; /* Light text for dark buttons */
+    --text-inverse: #ffffff;
     --text-link: var(--color-gray-700);
     --text-link-hover: var(--color-gray-900);
     --border-focus: var(--color-gray-600);
