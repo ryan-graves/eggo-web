@@ -11,35 +11,25 @@ export function useViewTransition() {
   const router = useTransitionRouter();
 
   /**
-   * Navigate forward with slide-from-right animation
+   * Navigate to a new page with view transition
    */
   const navigateTo = useCallback(
     (href: string) => {
-      // Ensure forward direction (remove back class)
-      document.documentElement.classList.remove('nav-back');
       router.push(href);
     },
     [router]
   );
 
   /**
-   * Navigate back with slide-from-left animation
+   * Navigate back with view transition
    */
   const navigateBack = useCallback(
     (fallbackHref?: string) => {
-      // Set direction for CSS animation
-      document.documentElement.classList.add('nav-back');
-
       if (fallbackHref) {
         router.push(fallbackHref);
       } else {
         router.back();
       }
-
-      // Clean up after transition completes
-      setTimeout(() => {
-        document.documentElement.classList.remove('nav-back');
-      }, 300);
     },
     [router]
   );
