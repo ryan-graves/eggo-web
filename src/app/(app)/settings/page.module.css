@@ -132,6 +132,25 @@
   opacity: 0.9;
 }
 
+.settingGroup {
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.settingGroup:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.settingGroupTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-3) 0;
+}
+
 .settingDescription {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);

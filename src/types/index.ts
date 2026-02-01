@@ -16,6 +16,20 @@ export type SetStatus =
 export type ThemePreference = 'system' | 'light' | 'dark';
 
 /**
+ * UI theme/style preference
+ */
+export type UITheme = 'clean' | 'glass';
+
+/**
+ * User preferences stored in Firestore
+ */
+export interface UserPreferences {
+  theme: ThemePreference;
+  uiTheme: UITheme;
+  updatedAt: Timestamp;
+}
+
+/**
  * Source of set data
  */
 export type DataSource = 'rebrickable' | 'brickset' | 'bricklink' | 'manual';

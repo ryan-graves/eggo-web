@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { collection, getDocs, updateDoc, doc, deleteField, Timestamp } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme, useUITheme } from '@/hooks/useTheme';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import type { ThemePreference } from '@/types';
+import type { ThemePreference, UITheme } from '@/types';
 import styles from './page.module.css';
 
 const THEME_OPTIONS: { value: ThemePreference; label: string; description: string }[] = [
@@ -16,9 +16,15 @@ const THEME_OPTIONS: { value: ThemePreference; label: string; description: strin
   { value: 'dark', label: 'Dark', description: 'Always use dark mode' },
 ];
 
+const UI_THEME_OPTIONS: { value: UITheme; label: string; description: string }[] = [
+  { value: 'clean', label: 'Clean', description: 'Default style with accent colors' },
+  { value: 'glass', label: 'Glass', description: 'Minimal monochrome with serif headings' },
+];
+
 function SettingsContent(): React.JSX.Element {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { uiTheme, setUITheme } = useUITheme();
   const [cleanupStatus, setCleanupStatus] = useState<string | null>(null);
   const [isCleaningUp, setIsCleaningUp] = useState(false);
   const [imageStatus, setImageStatus] = useState<string | null>(null);
@@ -277,26 +283,48 @@ function SettingsContent(): React.JSX.Element {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Appearance</h2>
           <div className={styles.card}>
-            <p className={styles.settingDescription}>
-              Choose how Eggo looks to you. Select a theme or let your device decide.
-            </p>
-            <div className={styles.themeOptions}>
-              {THEME_OPTIONS.map((option) => (
-                <label key={option.value} className={styles.themeOption}>
-                  <input
-                    type="radio"
-                    name="theme"
-                    value={option.value}
-                    checked={theme === option.value}
-                    onChange={() => setTheme(option.value)}
-                    className={styles.themeRadio}
-                  />
-                  <span className={styles.themeContent}>
-                    <span className={styles.themeLabel}>{option.label}</span>
-                    <span className={styles.themeDescription}>{option.description}</span>
-                  </span>
-                </label>
-              ))}
+            <div className={styles.settingGroup}>
+              <h3 className={styles.settingGroupTitle}>Color Mode</h3>
+              <div className={styles.themeOptions}>
+                {THEME_OPTIONS.map((option) => (
+                  <label key={option.value} className={styles.themeOption}>
+                    <input
+                      type="radio"
+                      name="theme"
+                      value={option.value}
+                      checked={theme === option.value}
+                      onChange={() => setTheme(option.value)}
+                      className={styles.themeRadio}
+                    />
+                    <span className={styles.themeContent}>
+                      <span className={styles.themeLabel}>{option.label}</span>
+                      <span className={styles.themeDescription}>{option.description}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.settingGroup}>
+              <h3 className={styles.settingGroupTitle}>UI Style</h3>
+              <div className={styles.themeOptions}>
+                {UI_THEME_OPTIONS.map((option) => (
+                  <label key={option.value} className={styles.themeOption}>
+                    <input
+                      type="radio"
+                      name="uiTheme"
+                      value={option.value}
+                      checked={uiTheme === option.value}
+                      onChange={() => setUITheme(option.value)}
+                      className={styles.themeRadio}
+                    />
+                    <span className={styles.themeContent}>
+                      <span className={styles.themeLabel}>{option.label}</span>
+                      <span className={styles.themeDescription}>{option.description}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
         </section>

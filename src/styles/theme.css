@@ -142,3 +142,56 @@
     --shadow-dropdown: var(--shadow-lg);
   }
 }
+
+/*
+ * Glass UI Theme
+ *
+ * A minimal monochrome theme with serif headings.
+ * Works with both light and dark color modes.
+ */
+[data-ui-theme='glass'] {
+  /* Heading font */
+  --font-heading: var(--font-instrument-serif), Georgia, serif;
+
+  /* Monochrome interactive colors - dark mode */
+  --interactive-primary: var(--color-gray-100);
+  --interactive-primary-hover: #ffffff;
+  --interactive-primary-bg: rgba(255, 255, 255, 0.1);
+  --text-link: var(--color-gray-300);
+  --text-link-hover: var(--color-gray-100);
+  --border-focus: var(--color-gray-400);
+}
+
+/* Glass theme in light mode */
+[data-theme='light'][data-ui-theme='glass'],
+:root:not([data-theme='dark']):not([data-theme='light'])[data-ui-theme='glass'] {
+  --interactive-primary: var(--color-gray-900);
+  --interactive-primary-hover: #000000;
+  --interactive-primary-bg: rgba(0, 0, 0, 0.05);
+  --text-link: var(--color-gray-700);
+  --text-link-hover: var(--color-gray-900);
+  --border-focus: var(--color-gray-600);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']):not([data-theme='light'])[data-ui-theme='glass'] {
+    --interactive-primary: var(--color-gray-900);
+    --interactive-primary-hover: #000000;
+    --interactive-primary-bg: rgba(0, 0, 0, 0.05);
+    --text-link: var(--color-gray-700);
+    --text-link-hover: var(--color-gray-900);
+    --border-focus: var(--color-gray-600);
+  }
+}
+
+/* Apply heading font to headings in glass theme */
+[data-ui-theme='glass'] h1,
+[data-ui-theme='glass'] h2,
+[data-ui-theme='glass'] h3,
+[data-ui-theme='glass'] h4,
+[data-ui-theme='glass'] h5,
+[data-ui-theme='glass'] h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
