@@ -176,8 +176,8 @@
 }
 
 .skeletonSelector {
-  width: 180px;
-  height: 32px;
+  width: 200px;
+  height: 28px;
   border-radius: var(--radius-md);
 }
 
@@ -189,8 +189,8 @@
 }
 
 .skeletonToggle {
-  width: 180px;
-  height: 40px;
+  width: 175px;
+  height: 36px;
   border-radius: var(--radius-md);
 }
 
@@ -201,7 +201,7 @@
 }
 
 .skeletonAddButton {
-  width: 90px;
+  width: 85px;
   height: 36px;
   border-radius: var(--radius-md);
 }
