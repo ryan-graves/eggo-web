@@ -9,6 +9,10 @@ export {
   deleteCollection,
   addMemberToCollection,
   removeMemberFromCollection,
+  getCollectionByShareToken,
+  enablePublicSharing,
+  disablePublicSharing,
+  updatePublicViewSettings,
 } from './collections';
 export {
   createSet,

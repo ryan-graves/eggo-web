@@ -8,12 +8,13 @@ import {
   deleteDoc,
   query,
   where,
+  limit,
   onSnapshot,
   serverTimestamp,
   type Unsubscribe,
 } from 'firebase/firestore';
 import { getFirebaseDb } from './config';
-import type { Collection } from '@/types';
+import type { Collection, PublicViewSettings } from '@/types';
 
 const COLLECTIONS_PATH = 'collections';
 
@@ -124,5 +125,82 @@ export async function removeMemberFromCollection(
   }
   await updateCollection(collectionId, {
     memberUserIds: collectionData.memberUserIds.filter((id) => id !== userId),
+  });
+}
+
+/**
+ * Generate a unique share token for public sharing
+ */
+function generateShareToken(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let token = '';
+  for (let i = 0; i < 12; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+/**
+ * Get a collection by its public share token
+ */
+export async function getCollectionByShareToken(shareToken: string): Promise<Collection | null> {
+  const q = query(
+    getCollectionsRef(),
+    where('publicShareToken', '==', shareToken),
+    where('isPublic', '==', true),
+    limit(1)
+  );
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) {
+    return null;
+  }
+  return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Collection;
+}
+
+/**
+ * Enable public sharing for a collection
+ */
+export async function enablePublicSharing(
+  collectionId: string,
+  viewSettings: PublicViewSettings
+): Promise<string> {
+  const collectionData = await getCollection(collectionId);
+  if (!collectionData) {
+    throw new Error('Collection not found');
+  }
+
+  // Use existing token if available, otherwise generate new one
+  const shareToken = collectionData.publicShareToken || generateShareToken();
+
+  await updateDoc(getCollectionDocRef(collectionId), {
+    isPublic: true,
+    publicShareToken: shareToken,
+    publicViewSettings: viewSettings,
+    updatedAt: serverTimestamp(),
+  });
+
+  return shareToken;
+}
+
+/**
+ * Disable public sharing for a collection
+ */
+export async function disablePublicSharing(collectionId: string): Promise<void> {
+  await updateDoc(getCollectionDocRef(collectionId), {
+    isPublic: false,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Update public view settings for a collection
+ */
+export async function updatePublicViewSettings(
+  collectionId: string,
+  viewSettings: PublicViewSettings
+): Promise<void> {
+  await updateDoc(getCollectionDocRef(collectionId), {
+    publicViewSettings: viewSettings,
+    updatedAt: serverTimestamp(),
   });
 }

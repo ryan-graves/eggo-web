@@ -1,0 +1,112 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  gap: var(--space-3);
+  background-color: var(--surface-background);
+  padding-bottom: 80px; /* Space for the banner */
+}
+
+.header {
+  position: sticky;
+  top: var(--space-3);
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-2xl);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+  text-align: center;
+}
+
+.publicBadge {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--status-info-bg);
+  color: var(--status-info);
+  border-radius: var(--radius-full);
+}
+
+.main {
+  flex: 1;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: var(--text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: var(--space-4);
+  text-align: center;
+  padding: var(--space-6);
+}
+
+.error h1 {
+  font-size: var(--font-size-2xl);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.error p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.ctaLink {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--interactive-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-inverse);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+.ctaLink:hover {
+  background-color: var(--interactive-primary-hover);
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: var(--space-2);
+    gap: var(--space-2);
+  }
+
+  .header {
+    top: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .title {
+    font-size: var(--font-size-lg);
+  }
+}
