@@ -6,17 +6,23 @@
 
 .header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--space-3);
   padding: var(--space-4) var(--space-6);
   background-color: var(--surface-primary);
   border-bottom: 1px solid var(--border-primary);
 }
 
-.headerLeft {
+.headerTop {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  justify-content: space-between;
+  width: 100%;
+}
+
+.headerBottom {
+  display: flex;
+  align-items: center;
 }
 
 .title {
@@ -62,27 +68,6 @@
 
 .settingsLink:hover {
   background-color: var(--surface-secondary);
-}
-
-.collectionSettingsButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: none;
-  border: none;
-  border-radius: var(--radius-md);
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.collectionSettingsButton:hover {
-  background-color: var(--surface-secondary);
-  color: var(--text-primary);
 }
 
 .main {
@@ -217,14 +202,8 @@
 }
 
 .skeletonSelector {
-  width: 160px;
+  width: 180px;
   height: 32px;
-  border-radius: var(--radius-full);
-}
-
-.skeletonSettingsIcon {
-  width: 28px;
-  height: 28px;
   border-radius: var(--radius-md);
 }
 
@@ -304,15 +283,7 @@
   }
 
   .header {
-    flex-direction: column;
-    gap: var(--space-3);
-    align-items: flex-start;
     padding: var(--space-3) var(--space-4);
-  }
-
-  .headerLeft {
-    width: 100%;
-    justify-content: space-between;
   }
 
   .userName {
