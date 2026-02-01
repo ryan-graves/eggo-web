@@ -51,9 +51,7 @@
 }
 
 .headerSpacer {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 .main {
