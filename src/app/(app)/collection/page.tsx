@@ -26,7 +26,9 @@ function CollectionSkeleton(): React.JSX.Element {
           <h1 className={styles.title}>Eggo</h1>
           <div className={`${styles.skeleton} ${styles.skeletonSelector}`} />
         </div>
-        <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
+        <div className={styles.skeletonAvatarWrapper}>
+          <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
+        </div>
       </header>
 
       <main className={styles.main}>
