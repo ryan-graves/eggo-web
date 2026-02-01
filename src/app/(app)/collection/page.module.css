@@ -43,11 +43,13 @@
   justify-content: center;
   padding: var(--space-1);
   border-radius: var(--radius-full);
-  transition: opacity var(--transition-fast);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.avatarLink:hover {
-  opacity: 0.8;
+.avatarLink:hover,
+.avatarLink:active {
+  opacity: 0.7;
 }
 
 .main {
