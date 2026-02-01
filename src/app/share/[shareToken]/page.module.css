@@ -5,7 +5,7 @@
   padding: var(--space-3);
   gap: var(--space-3);
   background-color: var(--surface-background);
-  padding-bottom: 80px; /* Space for the banner */
+  padding-bottom: 56px; /* Space for the banner */
 }
 
 .header {
