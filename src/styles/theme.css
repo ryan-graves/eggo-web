@@ -195,3 +195,27 @@
   font-weight: 400;
   letter-spacing: -0.01em;
 }
+
+/* Larger heading sizes with preserved line heights */
+[data-ui-theme='glass'] h1 {
+  font-size: 2.5rem;
+  line-height: 1.2;
+}
+
+[data-ui-theme='glass'] h2 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+[data-ui-theme='glass'] h3 {
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+/* Capsule-shaped buttons in glass theme */
+[data-ui-theme='glass'] button,
+[data-ui-theme='glass'] [role='button'],
+[data-ui-theme='glass'] a[class*='button' i],
+[data-ui-theme='glass'] a[class*='Button' i] {
+  border-radius: 9999px !important;
+}
