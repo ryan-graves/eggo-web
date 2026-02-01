@@ -2,21 +2,22 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-md);
 }
 
 .singleContainer {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-md);
 }
 
 .singleCollection {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
   padding: var(--space-1) var(--space-3);
-  background-color: var(--surface-secondary);
-  border-radius: var(--radius-md);
 }
 
 .settingsButton {
@@ -25,9 +26,10 @@
   justify-content: center;
   width: 28px;
   height: 28px;
+  margin-right: var(--space-1);
   background: none;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--text-tertiary);
   cursor: pointer;
   transition:
@@ -36,7 +38,7 @@
 }
 
 .settingsButton:hover {
-  background-color: var(--surface-secondary);
+  background-color: var(--surface-tertiary);
   color: var(--text-primary);
 }
 
@@ -44,20 +46,16 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--surface-secondary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  background: none;
+  border: none;
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    border-color var(--transition-fast);
 }
 
 .trigger:hover {
-  background-color: var(--surface-tertiary);
+  color: var(--text-primary);
 }
 
 .trigger:focus-visible {

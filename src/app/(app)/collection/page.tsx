@@ -22,18 +22,11 @@ function CollectionSkeleton(): React.JSX.Element {
     <div className={styles.page}>
       {/* Use actual header classes to prevent layout shift */}
       <header className={styles.header}>
-        <div className={styles.headerTop}>
+        <div className={styles.headerLeft}>
           <h1 className={styles.title}>Eggo</h1>
-          <div className={styles.userInfo}>
-            <div className={styles.settingsLink}>
-              <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
-              <div className={`${styles.skeleton} ${styles.skeletonUserName}`} />
-            </div>
-          </div>
-        </div>
-        <div className={styles.headerBottom}>
           <div className={`${styles.skeleton} ${styles.skeletonSelector}`} />
         </div>
+        <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
       </header>
 
       <main className={styles.main}>
@@ -90,24 +83,21 @@ export default function CollectionPage(): React.JSX.Element {
     return (
       <div className={styles.page}>
         <header className={styles.header}>
-          <div className={styles.headerTop}>
+          <div className={styles.headerLeft}>
             <h1 className={styles.title}>Eggo</h1>
-            <div className={styles.userInfo}>
-              <Link href="/settings" className={styles.settingsLink}>
-                {user?.photoURL && (
-                  <Image
-                    src={user.photoURL}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className={styles.avatar}
-                    referrerPolicy="no-referrer"
-                  />
-                )}
-                <span className={styles.userName}>{user?.displayName || user?.email}</span>
-              </Link>
-            </div>
           </div>
+          <Link href="/settings" className={styles.avatarLink}>
+            {user?.photoURL && (
+              <Image
+                src={user.photoURL}
+                alt=""
+                width={32}
+                height={32}
+                className={styles.avatar}
+                referrerPolicy="no-referrer"
+              />
+            )}
+          </Link>
         </header>
         <CreateCollection />
       </div>
@@ -117,25 +107,8 @@ export default function CollectionPage(): React.JSX.Element {
   return (
     <div className={`${styles.page} ${styles.content}`}>
       <header className={styles.header}>
-        <div className={styles.headerTop}>
+        <div className={styles.headerLeft}>
           <h1 className={styles.title}>Eggo</h1>
-          <div className={styles.userInfo}>
-            <Link href="/settings" className={styles.settingsLink}>
-              {user?.photoURL && (
-                <Image
-                  src={user.photoURL}
-                  alt=""
-                  width={32}
-                  height={32}
-                  className={styles.avatar}
-                  referrerPolicy="no-referrer"
-                />
-              )}
-              <span className={styles.userName}>{user?.displayName || user?.email}</span>
-            </Link>
-          </div>
-        </div>
-        <div className={styles.headerBottom}>
           <CollectionSelector
             collections={collections}
             activeCollection={activeCollection}
@@ -143,6 +116,18 @@ export default function CollectionPage(): React.JSX.Element {
             onSettingsClick={activeCollection ? () => setShowCollectionSettings(true) : undefined}
           />
         </div>
+        <Link href="/settings" className={styles.avatarLink}>
+          {user?.photoURL && (
+            <Image
+              src={user.photoURL}
+              alt=""
+              width={32}
+              height={32}
+              className={styles.avatar}
+              referrerPolicy="no-referrer"
+            />
+          )}
+        </Link>
       </header>
 
       <main className={styles.main}>

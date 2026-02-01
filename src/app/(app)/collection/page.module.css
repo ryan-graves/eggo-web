@@ -6,23 +6,17 @@
 
 .header {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-6);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
   background-color: var(--surface-primary);
   border-bottom: 1px solid var(--border-primary);
 }
 
-.headerTop {
+.headerLeft {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.headerBottom {
-  display: flex;
-  align-items: center;
+  gap: var(--space-3);
 }
 
 .title {
@@ -31,43 +25,23 @@
   color: var(--text-primary);
 }
 
-.collectionName {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--surface-secondary);
-  border-radius: var(--radius-md);
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
 .avatar {
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
 }
 
-.userName {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
-
-.settingsLink {
+.avatarLink {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  transition: background-color var(--transition-fast);
+  justify-content: center;
+  padding: var(--space-1);
+  border-radius: var(--radius-full);
+  transition: opacity var(--transition-fast);
 }
 
-.settingsLink:hover {
-  background-color: var(--surface-secondary);
+.avatarLink:hover {
+  opacity: 0.8;
 }
 
 .main {
@@ -214,11 +188,6 @@
   flex-shrink: 0;
 }
 
-.skeletonUserName {
-  width: 80px;
-  height: 16px;
-}
-
 .skeletonToggle {
   width: 180px;
   height: 40px;
@@ -273,21 +242,9 @@
 }
 
 @media (max-width: 768px) {
-  .skeletonUserName {
-    display: none;
-  }
-
   .skeletonCarousel > * {
     flex: 0 0 150px;
     height: 220px;
-  }
-
-  .header {
-    padding: var(--space-3) var(--space-4);
-  }
-
-  .userName {
-    display: none;
   }
 
   .main {
