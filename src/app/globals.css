@@ -107,3 +107,80 @@ img {
     font-size: 16px !important;
   }
 }
+
+/* View Transitions API */
+@view-transition {
+  navigation: auto;
+}
+
+/* Default crossfade - reduce motion users */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-out;
+}
+
+/* Slide animations for navigation */
+@media (prefers-reduced-motion: no-preference) {
+  /* Forward navigation (entering set detail) - slide from right */
+  ::view-transition-old(root) {
+    animation: slide-out-left 250ms ease-out;
+  }
+
+  ::view-transition-new(root) {
+    animation: slide-in-right 250ms ease-out;
+  }
+
+  /* Back navigation - slide from left */
+  :root[data-nav-direction="back"]::view-transition-old(root) {
+    animation: slide-out-right 250ms ease-out;
+  }
+
+  :root[data-nav-direction="back"]::view-transition-new(root) {
+    animation: slide-in-left 250ms ease-out;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(30%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-30%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(10%);
+    opacity: 0;
+  }
+}

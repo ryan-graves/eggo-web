@@ -22,6 +22,15 @@ export function CollectionSettingsModal({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onCancel();
+    }, 200);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,11 +81,17 @@ export function CollectionSettingsModal({
   };
 
   return (
-    <div className={styles.overlay} onClick={onCancel}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      onClick={handleClose}
+    >
+      <div
+        className={`${styles.modal} ${isClosing ? styles.modalClosing : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.header}>
           <h2 className={styles.title}>Collection Settings</h2>
-          <button type="button" className={styles.closeButton} onClick={onCancel}>
+          <button type="button" className={styles.closeButton} onClick={handleClose}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
                 d="M15 5L5 15M5 5L15 15"
@@ -155,7 +170,7 @@ export function CollectionSettingsModal({
               <button
                 type="button"
                 className={styles.cancelButton}
-                onClick={onCancel}
+                onClick={handleClose}
                 disabled={isSubmitting}
               >
                 Cancel

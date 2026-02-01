@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { collection, getDocs, updateDoc, doc, deleteField, Timestamp } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme, useUITheme } from '@/hooks/useTheme';
+import { useBackNavigation } from '@/hooks/useBackNavigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import type { ThemePreference, UITheme } from '@/types';
 import styles from './page.module.css';
@@ -25,6 +25,7 @@ function SettingsContent(): React.JSX.Element {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const { uiTheme, setUITheme } = useUITheme();
+  const { goBack } = useBackNavigation();
   const [cleanupStatus, setCleanupStatus] = useState<string | null>(null);
   const [isCleaningUp, setIsCleaningUp] = useState(false);
   const [imageStatus, setImageStatus] = useState<string | null>(null);
@@ -245,7 +246,12 @@ function SettingsContent(): React.JSX.Element {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link href="/collection" className={styles.backButton} aria-label="Back to collection">
+        <button
+          type="button"
+          onClick={() => goBack('/collection')}
+          className={styles.backButton}
+          aria-label="Back to collection"
+        >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path
               d="M12.5 15L7.5 10L12.5 5"
@@ -255,7 +261,7 @@ function SettingsContent(): React.JSX.Element {
               strokeLinejoin="round"
             />
           </svg>
-        </Link>
+        </button>
         <h1 className={styles.title}>Settings</h1>
         <div className={styles.headerSpacer} aria-hidden="true" />
       </header>
