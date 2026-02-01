@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection } from '@/hooks/useCollection';
@@ -20,6 +20,7 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 
 export default function SetDetailPage(): React.JSX.Element {
   const params = useParams();
+  const router = useRouter();
   const { sets, activeCollection, isInitializing } = useCollection();
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -57,7 +58,12 @@ export default function SetDetailPage(): React.JSX.Element {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link href="/collection" className={styles.backButton} aria-label="Back to collection">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className={styles.backButton}
+          aria-label="Back to collection"
+        >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path
               d="M12.5 15L7.5 10L12.5 5"
@@ -67,7 +73,7 @@ export default function SetDetailPage(): React.JSX.Element {
               strokeLinejoin="round"
             />
           </svg>
-        </Link>
+        </button>
         <h1 className={styles.title}>{set.name}</h1>
         <button type="button" onClick={() => setShowEditModal(true)} className={styles.editButton} aria-label="Edit set">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
