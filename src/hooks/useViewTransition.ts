@@ -1,23 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useTransitionRouter } from 'next-view-transitions';
 import { useCallback } from 'react';
-
-function supportsViewTransitions(): boolean {
-  return typeof document !== 'undefined' && 'startViewTransition' in document;
-}
-
-function startViewTransition(callback: () => void): { finished: Promise<void> } {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (document as any).startViewTransition(callback);
-}
 
 /**
  * Hook for navigating with view transitions
- * Provides animated page transitions using the View Transitions API
+ * Uses next-view-transitions for proper async handling with Next.js
  */
 export function useViewTransition() {
-  const router = useRouter();
+  const router = useTransitionRouter();
 
   /**
    * Navigate forward with slide-from-right animation
@@ -26,14 +17,7 @@ export function useViewTransition() {
     (href: string) => {
       // Remove any lingering back direction
       document.documentElement.removeAttribute('data-nav-direction');
-
-      if (supportsViewTransitions()) {
-        startViewTransition(() => {
-          router.push(href);
-        });
-      } else {
-        router.push(href);
-      }
+      router.push(href);
     },
     [router]
   );
@@ -46,34 +30,21 @@ export function useViewTransition() {
       // Set direction for CSS animation
       document.documentElement.setAttribute('data-nav-direction', 'back');
 
-      const navigate = () => {
-        if (fallbackHref) {
-          router.push(fallbackHref);
-        } else {
-          router.back();
-        }
-      };
-
-      if (supportsViewTransitions()) {
-        const transition = startViewTransition(navigate);
-
-        // Clean up after transition completes
-        transition.finished
-          .then(() => {
-            document.documentElement.removeAttribute('data-nav-direction');
-          })
-          .catch(() => {
-            document.documentElement.removeAttribute('data-nav-direction');
-          });
+      if (fallbackHref) {
+        router.push(fallbackHref);
       } else {
-        navigate();
-        document.documentElement.removeAttribute('data-nav-direction');
+        router.back();
       }
+
+      // Clean up after a delay (transition should be done)
+      setTimeout(() => {
+        document.documentElement.removeAttribute('data-nav-direction');
+      }, 300);
     },
     [router]
   );
 
-  return { navigateTo, navigateBack };
+  return { navigateTo, navigateBack, router };
 }
 
 /**

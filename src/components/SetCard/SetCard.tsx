@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useViewTransition } from '@/hooks/useViewTransition';
+import { Link } from 'next-view-transitions';
 import type { LegoSet } from '@/types';
 import styles from './SetCard.module.css';
 
@@ -19,22 +19,11 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 };
 
 export function SetCard({ set, compact = false }: SetCardProps): React.JSX.Element {
-  const { navigateTo } = useViewTransition();
   const imageUrl = set.customImageUrl || set.imageUrl;
   const cardClassName = compact ? `${styles.card} ${styles.compact}` : styles.card;
 
-  const handleClick = () => {
-    navigateTo(`/collection/${set.id}`);
-  };
-
   return (
-    <article
-      onClick={handleClick}
-      onKeyDown={(e) => e.key === 'Enter' && handleClick()}
-      role="link"
-      tabIndex={0}
-      className={cardClassName}
-    >
+    <Link href={`/collection/${set.id}`} className={cardClassName}>
       <div className={styles.imageContainer}>
         <div className={styles.imageInner}>
           {imageUrl ? (
@@ -79,6 +68,6 @@ export function SetCard({ set, compact = false }: SetCardProps): React.JSX.Eleme
           </span>
         )}
       </div>
-    </article>
+    </Link>
   );
 }
