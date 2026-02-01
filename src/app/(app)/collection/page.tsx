@@ -12,13 +12,60 @@ import { CollectionHome } from '@/components/CollectionHome';
 import { SetList } from '@/components/SetList';
 import { AddSetForm } from '@/components/AddSetForm';
 import { BulkRefreshModal } from '@/components/BulkRefreshModal';
+import { SetCardSkeleton } from '@/components/SetCardSkeleton';
 import styles from './page.module.css';
 
 type ViewMode = 'home' | 'all';
 
+function CollectionSkeleton(): React.JSX.Element {
+  return (
+    <div className={styles.page}>
+      {/* Use actual header classes to prevent layout shift */}
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Eggo</h1>
+          <div className={`${styles.skeleton} ${styles.skeletonSelector}`} />
+        </div>
+        <div className={styles.skeletonAvatarWrapper}>
+          <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
+        </div>
+      </header>
+
+      <main className={styles.main}>
+        <div className={styles.toolbar}>
+          <div className={`${styles.skeleton} ${styles.skeletonToggle}`} />
+          <div className={styles.toolbarActions}>
+            <div className={`${styles.skeleton} ${styles.skeletonRefreshButton}`} />
+            <div className={`${styles.skeleton} ${styles.skeletonAddButton}`} />
+          </div>
+        </div>
+
+        {/* Skeleton section title */}
+        <div className={styles.skeletonSection}>
+          <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
+          <div className={styles.skeletonCarousel}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SetCardSkeleton key={i} compact />
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.skeletonSection}>
+          <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
+          <div className={styles.skeletonCarousel}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SetCardSkeleton key={i} compact />
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 export default function CollectionPage(): React.JSX.Element {
   const { user } = useAuth();
-  const { collections, activeCollection, sets, loading, setsLoading, setActiveCollection } = useCollection();
+  const { collections, activeCollection, sets, isInitializing, setActiveCollection } = useCollection();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
   const [showBulkRefresh, setShowBulkRefresh] = useState(false);
@@ -28,13 +75,9 @@ export default function CollectionPage(): React.JSX.Element {
     setShowAddForm(false);
   };
 
-  // Show loading state while collections or sets are loading
-  if (loading || (activeCollection && setsLoading)) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.loading}>Loading your collection...</div>
-      </div>
-    );
+  // Show skeleton UI during initial app load
+  if (isInitializing) {
+    return <CollectionSkeleton />;
   }
 
   // Show create collection flow if user has no collections
@@ -42,54 +85,10 @@ export default function CollectionPage(): React.JSX.Element {
     return (
       <div className={styles.page}>
         <header className={styles.header}>
-          <h1 className={styles.title}>Eggo</h1>
-          <div className={styles.userInfo}>
-            <Link href="/settings" className={styles.settingsLink}>
-              {user?.photoURL && (
-                <Image
-                  src={user.photoURL}
-                  alt=""
-                  width={32}
-                  height={32}
-                  className={styles.avatar}
-                  referrerPolicy="no-referrer"
-                />
-              )}
-              <span className={styles.userName}>{user?.displayName || user?.email}</span>
-            </Link>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.title}>Eggo</h1>
           </div>
-        </header>
-        <CreateCollection />
-      </div>
-    );
-  }
-
-  return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.title}>Eggo</h1>
-          <CollectionSelector
-            collections={collections}
-            activeCollection={activeCollection}
-            onSelect={setActiveCollection}
-          />
-          {activeCollection && (
-            <button
-              type="button"
-              className={styles.collectionSettingsButton}
-              onClick={() => setShowCollectionSettings(true)}
-              aria-label="Collection settings"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
-            </button>
-          )}
-        </div>
-        <div className={styles.userInfo}>
-          <Link href="/settings" className={styles.settingsLink}>
+          <Link href="/settings" className={styles.avatarLink}>
             {user?.photoURL && (
               <Image
                 src={user.photoURL}
@@ -100,9 +99,37 @@ export default function CollectionPage(): React.JSX.Element {
                 referrerPolicy="no-referrer"
               />
             )}
-            <span className={styles.userName}>{user?.displayName || user?.email}</span>
           </Link>
+        </header>
+        <CreateCollection />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${styles.page} ${styles.content}`}>
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>Eggo</h1>
+          <CollectionSelector
+            collections={collections}
+            activeCollection={activeCollection}
+            onSelect={setActiveCollection}
+            onSettingsClick={activeCollection ? () => setShowCollectionSettings(true) : undefined}
+          />
         </div>
+        <Link href="/settings" className={styles.avatarLink}>
+          {user?.photoURL && (
+            <Image
+              src={user.photoURL}
+              alt=""
+              width={32}
+              height={32}
+              className={styles.avatar}
+              referrerPolicy="no-referrer"
+            />
+          )}
+        </Link>
       </header>
 
       <main className={styles.main}>

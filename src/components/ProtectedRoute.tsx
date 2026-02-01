@@ -3,7 +3,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import styles from './ProtectedRoute.module.css';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -19,22 +18,14 @@ export function ProtectedRoute({ children }: ProtectedRouteProps): React.JSX.Ele
     }
   }, [user, loading, router]);
 
-  if (loading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <p>Loading...</p>
-      </div>
-    );
+  // While loading or authenticated, render children
+  // Children (CollectionPage) will handle showing skeleton loaders via isInitializing
+  // This eliminates the double-loading-state flicker
+  if (loading || user) {
+    return <>{children}</>;
   }
 
-  if (!user) {
-    return (
-      <div className={styles.loading}>
-        <p>Redirecting to login...</p>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
+  // Not loading and no user - will redirect via useEffect
+  // Return null briefly while redirect happens
+  return <></>;
 }

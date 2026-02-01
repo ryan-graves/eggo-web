@@ -3,21 +3,23 @@
   flex-direction: column;
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
   transition:
     border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
+    box-shadow var(--transition-fast);
   text-align: left;
   text-decoration: none;
   color: inherit;
   width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .card:active {
-  transform: scale(0.98);
+  opacity: 0.7;
 }
 
 /* Only apply hover styles on devices that support hover */
@@ -36,12 +38,13 @@
 .imageContainer {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
 }
 
 .imageInner {
   position: absolute;
-  inset: var(--space-4);
+  inset: var(--space-3);
 }
 
 .image {
@@ -59,14 +62,15 @@
 }
 
 .content {
-  padding: var(--space-4);
+  padding: var(--space-2) var(--space-3) var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
+  flex: 1;
 }
 
 .name {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   line-height: var(--line-height-tight);
@@ -75,23 +79,26 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin: 0;
 }
 
 .setNumber {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
+  margin: 0;
 }
 
 .meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-1);
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-2);
 }
 
 .status {
-  font-size: var(--font-size-xs);
-  padding: var(--space-1) var(--space-2);
+  font-size: 10px;
+  padding: 2px var(--space-1);
   border-radius: var(--radius-sm);
   font-weight: var(--font-weight-medium);
 }
@@ -122,51 +129,23 @@
 }
 
 .owner {
-  font-size: var(--font-size-xs);
-  padding: var(--space-1) var(--space-2);
+  font-size: 10px;
+  padding: 2px var(--space-1);
   background-color: transparent;
   border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
 }
 
 .details {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-2);
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
-  margin-top: var(--space-1);
 }
 
-/* Compact mode for carousels */
+/* Compact mode for carousels - minimal status badge */
 .compact {
-  border-radius: var(--radius-md);
-  height: 100%;
-}
-
-.compact .imageContainer {
-  aspect-ratio: 1 / 1;
-  flex-shrink: 0;
-}
-
-.compact .imageInner {
-  inset: var(--space-3);
-}
-
-.compact .content {
-  padding: var(--space-2) var(--space-3) var(--space-3);
-  gap: var(--space-1);
-  flex: 1;
-}
-
-.compact .name {
-  font-size: var(--font-size-sm);
-  -webkit-line-clamp: 2;
-}
-
-.compact .setNumber {
-  font-size: var(--font-size-xs);
-  margin: 0;
 }
 
 .statusCompact {

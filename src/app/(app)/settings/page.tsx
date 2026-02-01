@@ -237,12 +237,21 @@ function SettingsContent(): React.JSX.Element {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Settings</h1>
-        <Link href="/collection" className={styles.backLink}>
-          Back to Collection
+        <Link href="/collection" className={styles.backButton} aria-label="Back to collection">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path
+              d="M12.5 15L7.5 10L12.5 5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </Link>
+        <h1 className={styles.title}>Settings</h1>
+        <div className={styles.headerSpacer} aria-hidden="true" />
       </header>
 
       <main className={styles.main}>

@@ -1,39 +1,71 @@
-.container {
+.page {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  gap: var(--space-3);
   background-color: var(--surface-background);
 }
 
 .header {
+  position: sticky;
+  top: var(--space-3);
+  z-index: 100;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: var(--space-4) var(--space-6);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
   background-color: var(--surface-primary);
-  border-bottom: 1px solid var(--border-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-2xl);
 }
 
 .title {
   font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin: 0;
+  padding: 0 var(--space-3);
 }
 
-.backLink {
-  color: var(--text-link);
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background-color: var(--surface-secondary);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
   text-decoration: none;
-  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.backLink:hover {
-  color: var(--text-link-hover);
-  text-decoration: underline;
+.backButton:hover {
+  background-color: var(--surface-tertiary);
+  color: var(--text-primary);
+}
+
+.backButton:active {
+  opacity: 0.7;
+}
+
+.headerSpacer {
+  flex: 1;
 }
 
 .main {
   max-width: 600px;
   margin: 0 auto;
-  padding: var(--space-6);
+  padding: var(--space-4);
+  width: 100%;
 }
 
 .section {
@@ -196,4 +228,20 @@
   padding-bottom: 0;
   margin-bottom: 0;
   border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: var(--space-2);
+    gap: var(--space-2);
+  }
+
+  .header {
+    top: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .main {
+    padding: var(--space-3);
+  }
 }
