@@ -25,6 +25,7 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin: 0;
+  padding: 0 var(--space-3);
 }
 
 .backButton {
