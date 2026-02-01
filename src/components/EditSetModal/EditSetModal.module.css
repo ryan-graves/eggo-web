@@ -223,11 +223,14 @@
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
+  font-family: inherit;
   color: var(--text-primary);
   background-color: var(--surface-primary);
   width: auto;
   height: 40px;
   box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .dateInput:focus {
