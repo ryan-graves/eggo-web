@@ -1,5 +1,9 @@
 .page {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  gap: var(--space-3);
   background-color: var(--surface-background);
   animation: slideIn var(--transition-normal) ease-out;
 }
@@ -16,15 +20,16 @@
 }
 
 .header {
+  position: sticky;
+  top: var(--space-3);
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-3) var(--space-4);
   background-color: var(--surface-primary);
-  border-bottom: 1px solid var(--border-primary);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-2xl);
 }
 
 .backButton {
