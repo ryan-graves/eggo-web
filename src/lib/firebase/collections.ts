@@ -144,6 +144,11 @@ function generateShareToken(): string {
  * Get a collection by its public share token
  */
 export async function getCollectionByShareToken(shareToken: string): Promise<Collection | null> {
+  // Validate token format (must be 12 alphanumeric characters)
+  if (!shareToken || shareToken.length !== 12 || !/^[A-Za-z0-9]+$/.test(shareToken)) {
+    return null;
+  }
+
   const q = query(
     getCollectionsRef(),
     where('publicShareToken', '==', shareToken),
