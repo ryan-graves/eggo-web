@@ -50,6 +50,12 @@
   color: var(--text-primary);
 }
 
+.headerSpacer {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
 .main {
   max-width: 600px;
   margin: 0 auto;

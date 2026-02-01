@@ -251,6 +251,7 @@ function SettingsContent(): React.JSX.Element {
           </svg>
         </Link>
         <h1 className={styles.title}>Settings</h1>
+        <div className={styles.headerSpacer} aria-hidden="true" />
       </header>
 
       <main className={styles.main}>
