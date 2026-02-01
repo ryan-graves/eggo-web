@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { createSet } from '@/lib/firebase';
@@ -33,6 +33,7 @@ export function AddSetForm({
   const [lookupResult, setLookupResult] = useState<SetLookupResult | null>(null);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
 
   // Form fields
   const [name, setName] = useState('');
@@ -52,6 +53,24 @@ export function AddSetForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onCancel();
+    }, 200);
+  };
 
   const handleLookup = async () => {
     if (!setNumber.trim()) {
@@ -129,16 +148,22 @@ export function AddSetForm({
   };
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
+    <div
+      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      onClick={handleClose}
+    >
+      <div
+        className={`${styles.modal} ${isClosing ? styles.modalClosing : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.header}>
           <h2 className={styles.title}>Add Set</h2>
-          <button type="button" onClick={onCancel} className={styles.closeButton}>
+          <button type="button" onClick={handleClose} className={styles.closeButton}>
             ×
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form id="add-set-form" onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.lookupSection}>
             <div className={styles.lookupRow}>
               <input
@@ -284,15 +309,21 @@ export function AddSetForm({
 
           {submitError && <p className={styles.error}>{submitError}</p>}
 
-          <div className={styles.actions}>
-            <button type="button" onClick={onCancel} className={styles.cancelButton}>
-              Cancel
-            </button>
-            <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-              {isSubmitting ? 'Adding...' : 'Add Set'}
-            </button>
-          </div>
         </form>
+
+        <div className={styles.actions}>
+          <button type="button" onClick={handleClose} className={styles.cancelButton}>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="add-set-form"
+            className={styles.submitButton}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Adding...' : 'Add Set'}
+          </button>
+        </div>
       </div>
     </div>
   );

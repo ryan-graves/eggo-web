@@ -108,42 +108,38 @@ img {
   }
 }
 
-/* View Transitions API */
-@view-transition {
-  navigation: auto;
-}
-
-/* Default crossfade - reduce motion users */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 200ms;
-  animation-timing-function: ease-out;
-}
-
-/* Slide animations for navigation */
+/* View Transitions - manually triggered via startViewTransition() */
 @media (prefers-reduced-motion: no-preference) {
   /* Forward navigation (entering set detail) - slide from right */
   ::view-transition-old(root) {
-    animation: slide-out-left 250ms ease-out;
+    animation: vt-slide-out-left 200ms ease-out;
   }
 
   ::view-transition-new(root) {
-    animation: slide-in-right 250ms ease-out;
+    animation: vt-slide-in-right 200ms ease-out;
   }
 
   /* Back navigation - slide from left */
   :root[data-nav-direction="back"]::view-transition-old(root) {
-    animation: slide-out-right 250ms ease-out;
+    animation: vt-slide-out-right 200ms ease-out;
   }
 
   :root[data-nav-direction="back"]::view-transition-new(root) {
-    animation: slide-in-left 250ms ease-out;
+    animation: vt-slide-in-left 200ms ease-out;
   }
 }
 
-@keyframes slide-in-right {
+/* Reduced motion - simple crossfade */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 150ms;
+  }
+}
+
+@keyframes vt-slide-in-right {
   from {
-    transform: translateX(30%);
+    transform: translateX(25%);
     opacity: 0;
   }
   to {
@@ -152,20 +148,20 @@ img {
   }
 }
 
-@keyframes slide-out-left {
+@keyframes vt-slide-out-left {
   from {
     transform: translateX(0);
     opacity: 1;
   }
   to {
-    transform: translateX(-10%);
+    transform: translateX(-15%);
     opacity: 0;
   }
 }
 
-@keyframes slide-in-left {
+@keyframes vt-slide-in-left {
   from {
-    transform: translateX(-30%);
+    transform: translateX(-25%);
     opacity: 0;
   }
   to {
@@ -174,13 +170,13 @@ img {
   }
 }
 
-@keyframes slide-out-right {
+@keyframes vt-slide-out-right {
   from {
     transform: translateX(0);
     opacity: 1;
   }
   to {
-    transform: translateX(10%);
+    transform: translateX(15%);
     opacity: 0;
   }
 }
