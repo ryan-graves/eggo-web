@@ -153,10 +153,11 @@
   /* Heading font */
   --font-heading: var(--font-instrument-serif), Georgia, serif;
 
-  /* Monochrome interactive colors - dark mode */
+  /* Monochrome interactive colors - dark mode default */
   --interactive-primary: var(--color-gray-100);
   --interactive-primary-hover: #ffffff;
   --interactive-primary-bg: rgba(255, 255, 255, 0.1);
+  --text-inverse: var(--color-gray-900); /* Dark text for light buttons */
   --text-link: var(--color-gray-300);
   --text-link-hover: var(--color-gray-100);
   --border-focus: var(--color-gray-400);
@@ -168,6 +169,7 @@
   --interactive-primary: var(--color-gray-900);
   --interactive-primary-hover: #000000;
   --interactive-primary-bg: rgba(0, 0, 0, 0.05);
+  --text-inverse: #ffffff; /* Light text for dark buttons */
   --text-link: var(--color-gray-700);
   --text-link-hover: var(--color-gray-900);
   --border-focus: var(--color-gray-600);
@@ -178,6 +180,7 @@
     --interactive-primary: var(--color-gray-900);
     --interactive-primary-hover: #000000;
     --interactive-primary-bg: rgba(0, 0, 0, 0.05);
+    --text-inverse: #ffffff; /* Light text for dark buttons */
     --text-link: var(--color-gray-700);
     --text-link-hover: var(--color-gray-900);
     --border-focus: var(--color-gray-600);

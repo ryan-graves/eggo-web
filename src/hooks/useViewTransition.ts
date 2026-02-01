@@ -15,8 +15,8 @@ export function useViewTransition() {
    */
   const navigateTo = useCallback(
     (href: string) => {
-      // Remove any lingering back direction
-      document.documentElement.removeAttribute('data-nav-direction');
+      // Ensure forward direction (remove back class)
+      document.documentElement.classList.remove('nav-back');
       router.push(href);
     },
     [router]
@@ -28,7 +28,7 @@ export function useViewTransition() {
   const navigateBack = useCallback(
     (fallbackHref?: string) => {
       // Set direction for CSS animation
-      document.documentElement.setAttribute('data-nav-direction', 'back');
+      document.documentElement.classList.add('nav-back');
 
       if (fallbackHref) {
         router.push(fallbackHref);
@@ -36,9 +36,9 @@ export function useViewTransition() {
         router.back();
       }
 
-      // Clean up after a delay (transition should be done)
+      // Clean up after transition completes
       setTimeout(() => {
-        document.documentElement.removeAttribute('data-nav-direction');
+        document.documentElement.classList.remove('nav-back');
       }, 300);
     },
     [router]
