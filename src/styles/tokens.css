@@ -101,4 +101,36 @@
   /* Easing */
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ==========================================================================
+   * Layout Tokens
+   * Semantic layout values for consistent spacing across the app.
+   * ========================================================================== */
+
+  /* Page Layout */
+  --layout-page-padding: var(--space-3);
+  --layout-page-padding-mobile: var(--space-2);
+  --layout-page-gap: var(--space-3);
+  --layout-page-gap-mobile: var(--space-2);
+  --layout-max-width: 1400px;
+
+  /* Content Areas */
+  --layout-content-padding: var(--space-4);
+  --layout-content-padding-mobile: var(--space-4);
+
+  /* Card Grids */
+  --layout-card-gap: var(--space-3);
+  --layout-card-min-width: 180px;
+  --layout-card-min-width-mobile: 140px;
+  --layout-carousel-card-width: 160px;
+
+  /* Header */
+  --layout-header-padding: var(--space-3) var(--space-4);
+  --layout-header-padding-mobile: var(--space-2) var(--space-3);
+  --layout-header-button-size: 40px;
+  --layout-header-radius: var(--radius-2xl);
+
+  /* Toolbar */
+  --layout-toolbar-gap: var(--space-4);
+  --layout-toolbar-gap-mobile: var(--space-2);
 }
