@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { collection, getDocs, updateDoc, doc, deleteField, Timestamp } from 'firebase/firestore';
 import { getFirebaseDb } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme, useUITheme } from '@/hooks/useTheme';
+import { useBackNavigation } from '@/hooks/useBackNavigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import type { ThemePreference } from '@/types';
+import type { ThemePreference, UITheme } from '@/types';
 import styles from './page.module.css';
 
 const THEME_OPTIONS: { value: ThemePreference; label: string; description: string }[] = [
@@ -16,9 +16,16 @@ const THEME_OPTIONS: { value: ThemePreference; label: string; description: strin
   { value: 'dark', label: 'Dark', description: 'Always use dark mode' },
 ];
 
+const UI_THEME_OPTIONS: { value: UITheme; label: string; description: string }[] = [
+  { value: 'mono', label: 'Mono', description: 'Minimal monochrome with serif headings' },
+  { value: 'baseplate', label: 'Baseplate', description: 'Classic style with accent colors' },
+];
+
 function SettingsContent(): React.JSX.Element {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { uiTheme, setUITheme } = useUITheme();
+  const { goBack } = useBackNavigation();
   const [cleanupStatus, setCleanupStatus] = useState<string | null>(null);
   const [isCleaningUp, setIsCleaningUp] = useState(false);
   const [imageStatus, setImageStatus] = useState<string | null>(null);
@@ -239,7 +246,12 @@ function SettingsContent(): React.JSX.Element {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link href="/collection" className={styles.backButton} aria-label="Back to collection">
+        <button
+          type="button"
+          onClick={() => goBack('/collection')}
+          className={styles.backButton}
+          aria-label="Back to collection"
+        >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path
               d="M12.5 15L7.5 10L12.5 5"
@@ -249,7 +261,7 @@ function SettingsContent(): React.JSX.Element {
               strokeLinejoin="round"
             />
           </svg>
-        </Link>
+        </button>
         <h1 className={styles.title}>Settings</h1>
         <div className={styles.headerSpacer} aria-hidden="true" />
       </header>
@@ -277,26 +289,48 @@ function SettingsContent(): React.JSX.Element {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Appearance</h2>
           <div className={styles.card}>
-            <p className={styles.settingDescription}>
-              Choose how Eggo looks to you. Select a theme or let your device decide.
-            </p>
-            <div className={styles.themeOptions}>
-              {THEME_OPTIONS.map((option) => (
-                <label key={option.value} className={styles.themeOption}>
-                  <input
-                    type="radio"
-                    name="theme"
-                    value={option.value}
-                    checked={theme === option.value}
-                    onChange={() => setTheme(option.value)}
-                    className={styles.themeRadio}
-                  />
-                  <span className={styles.themeContent}>
-                    <span className={styles.themeLabel}>{option.label}</span>
-                    <span className={styles.themeDescription}>{option.description}</span>
-                  </span>
-                </label>
-              ))}
+            <div className={styles.settingGroup}>
+              <h3 className={styles.settingGroupTitle}>Color Mode</h3>
+              <div className={styles.themeOptions}>
+                {THEME_OPTIONS.map((option) => (
+                  <label key={option.value} className={styles.themeOption}>
+                    <input
+                      type="radio"
+                      name="theme"
+                      value={option.value}
+                      checked={theme === option.value}
+                      onChange={() => setTheme(option.value)}
+                      className={styles.themeRadio}
+                    />
+                    <span className={styles.themeContent}>
+                      <span className={styles.themeLabel}>{option.label}</span>
+                      <span className={styles.themeDescription}>{option.description}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.settingGroup}>
+              <h3 className={styles.settingGroupTitle}>UI Style</h3>
+              <div className={styles.themeOptions}>
+                {UI_THEME_OPTIONS.map((option) => (
+                  <label key={option.value} className={styles.themeOption}>
+                    <input
+                      type="radio"
+                      name="uiTheme"
+                      value={option.value}
+                      checked={uiTheme === option.value}
+                      onChange={() => setUITheme(option.value)}
+                      className={styles.themeRadio}
+                    />
+                    <span className={styles.themeContent}>
+                      <span className={styles.themeLabel}>{option.label}</span>
+                      <span className={styles.themeDescription}>{option.description}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
         </section>

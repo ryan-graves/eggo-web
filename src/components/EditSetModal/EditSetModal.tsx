@@ -49,6 +49,7 @@ export function EditSetModal({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [currentSet, setCurrentSet] = useState(set);
+  const [isClosing, setIsClosing] = useState(false);
   const imageUrl = currentSet.customImageUrl || currentSet.imageUrl;
 
   // Lock body scroll when modal is open
@@ -60,6 +61,14 @@ export function EditSetModal({
       document.body.style.overflow = originalOverflow;
     };
   }, []);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onCancel();
+    }, 200);
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -134,13 +143,19 @@ export function EditSetModal({
   const isBusy = isSubmitting || isDeleting || isRefreshing;
 
   return (
-    <div className={styles.overlay} onClick={onCancel}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      onClick={handleClose}
+    >
+      <div
+        className={`${styles.modal} ${isClosing ? styles.modalClosing : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.header}>
           <h2 className={styles.title}>Edit Set</h2>
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleClose}
             className={styles.closeButton}
             disabled={isBusy}
             aria-label="Close"
@@ -350,7 +365,7 @@ export function EditSetModal({
                   </svg>
                 </button>
                 <div className={styles.rightActions}>
-                  <button type="button" onClick={onCancel} className={styles.cancelButton}>
+                  <button type="button" onClick={handleClose} className={styles.cancelButton}>
                     Cancel
                   </button>
                   <button type="submit" className={styles.submitButton} disabled={isSubmitting}>

@@ -24,96 +24,77 @@
   flex-direction: column;
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
   width: 100%;
+  height: 100%;
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
-  padding: var(--space-4);
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
 }
 
 .imageSkeleton {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: var(--space-3);
   border-radius: var(--radius-md);
 }
 
 .content {
-  padding: var(--space-4);
+  padding: var(--space-2) var(--space-3) var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
+  flex: 1;
 }
 
 .nameSkeleton {
-  height: 1.25rem;
-  width: 80%;
+  height: 0.875rem;
+  width: 85%;
 }
 
 .setNumberSkeleton {
-  height: 0.875rem;
+  height: 0.75rem;
   width: 30%;
 }
 
 .meta {
   display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-1);
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-2);
 }
 
 .statusSkeleton {
-  height: 1.25rem;
-  width: 4.5rem;
+  height: 1rem;
+  width: 4rem;
   border-radius: var(--radius-sm);
 }
 
 .ownerSkeleton {
-  height: 1.25rem;
-  width: 3rem;
-  border-radius: var(--radius-full);
+  height: 1rem;
+  width: 2.5rem;
+  border-radius: var(--radius-sm);
 }
 
 .details {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin-top: var(--space-1);
 }
 
 .detailSkeleton {
   height: 0.75rem;
-  width: 3.5rem;
+  width: 3rem;
 }
 
-/* Compact mode for carousels */
+/* Compact mode for carousels - same base layout, just different content */
 .compact {
-  border-radius: var(--radius-md);
-  height: 100%;
-}
-
-.compact .imageContainer {
-  aspect-ratio: 1 / 1;
-  padding: var(--space-3);
-  flex-shrink: 0;
-}
-
-.compact .content {
-  padding: var(--space-2) var(--space-3) var(--space-3);
-  gap: var(--space-1);
-  flex: 1;
-}
-
-.compact .nameSkeleton {
-  height: 1rem;
-  width: 70%;
-}
-
-.compact .setNumberSkeleton {
-  height: 0.75rem;
-  width: 25%;
+  /* Inherits from base card - same dimensions */
 }
 
 .statusCompactSkeleton {

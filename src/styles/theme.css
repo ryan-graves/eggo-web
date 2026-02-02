@@ -142,3 +142,91 @@
     --shadow-dropdown: var(--shadow-lg);
   }
 }
+
+/*
+ * Mono UI Theme (default)
+ *
+ * A minimal monochrome theme with serif headings.
+ * Works with both light and dark color modes.
+ * Uses higher specificity selectors to ensure proper override.
+ */
+
+/* Mono theme base - applies to all mono theme instances */
+[data-ui-theme='mono'] {
+  /* Heading font */
+  --font-heading: var(--font-instrument-serif), Georgia, serif;
+}
+
+/* Mono theme in DARK mode - explicit selectors for all dark mode cases */
+[data-theme='dark'][data-ui-theme='mono'],
+:root[data-ui-theme='mono']:not([data-theme='light']) {
+  /* Light buttons with dark text for dark backgrounds */
+  --interactive-primary: var(--color-gray-100);
+  --interactive-primary-hover: #ffffff;
+  --interactive-primary-bg: rgba(255, 255, 255, 0.1);
+  --text-inverse: var(--color-gray-900);
+  --text-link: var(--color-gray-300);
+  --text-link-hover: var(--color-gray-100);
+  --border-focus: var(--color-gray-400);
+}
+
+/* Mono theme in LIGHT mode - explicit selectors for all light mode cases */
+[data-theme='light'][data-ui-theme='mono'] {
+  /* Dark buttons with light text for light backgrounds */
+  --interactive-primary: var(--color-gray-900);
+  --interactive-primary-hover: #000000;
+  --interactive-primary-bg: rgba(0, 0, 0, 0.05);
+  --text-inverse: #ffffff;
+  --text-link: var(--color-gray-700);
+  --text-link-hover: var(--color-gray-900);
+  --border-focus: var(--color-gray-600);
+}
+
+/* Mono theme with system preference light mode (when data-theme not explicitly set) */
+@media (prefers-color-scheme: light) {
+  :root[data-ui-theme='mono']:not([data-theme='dark']):not([data-theme='light']) {
+    --interactive-primary: var(--color-gray-900);
+    --interactive-primary-hover: #000000;
+    --interactive-primary-bg: rgba(0, 0, 0, 0.05);
+    --text-inverse: #ffffff;
+    --text-link: var(--color-gray-700);
+    --text-link-hover: var(--color-gray-900);
+    --border-focus: var(--color-gray-600);
+  }
+}
+
+/* Apply heading font to headings in mono theme */
+[data-ui-theme='mono'] h1,
+[data-ui-theme='mono'] h2,
+[data-ui-theme='mono'] h3,
+[data-ui-theme='mono'] h4,
+[data-ui-theme='mono'] h5,
+[data-ui-theme='mono'] h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Slightly larger heading sizes with preserved line heights */
+[data-ui-theme='mono'] h1 {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+[data-ui-theme='mono'] h2 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+[data-ui-theme='mono'] h3 {
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+/* Capsule-shaped buttons in mono theme */
+[data-ui-theme='mono'] button,
+[data-ui-theme='mono'] [role='button'],
+[data-ui-theme='mono'] a[class*='button' i],
+[data-ui-theme='mono'] a[class*='Button' i] {
+  border-radius: 9999px !important;
+}

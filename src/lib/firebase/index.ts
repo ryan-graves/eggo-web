@@ -24,3 +24,10 @@ export {
   refreshSetMetadata,
   type RefreshSetResult,
 } from './sets';
+export {
+  getUserPreferences,
+  setUserPreferences,
+  updateThemePreference,
+  updateUIThemePreference,
+  subscribeToUserPreferences,
+} from './userPreferences';

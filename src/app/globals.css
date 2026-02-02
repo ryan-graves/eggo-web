@@ -9,11 +9,6 @@
   padding: 0;
 }
 
-html,
-body {
-  overflow-x: hidden;
-}
-
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
@@ -21,6 +16,7 @@ html {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--text-primary);
   background-color: var(--surface-background);
   font-family:
@@ -105,5 +101,21 @@ img {
   textarea,
   select {
     font-size: 16px !important;
+  }
+}
+
+/* View Transitions - simple crossfade */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 150ms;
+    animation-timing-function: ease-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0ms;
   }
 }

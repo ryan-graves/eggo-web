@@ -1,8 +1,12 @@
 .page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: var(--space-3);
+  padding: calc(var(--space-3) + env(safe-area-inset-top))
+    calc(var(--space-3) + env(safe-area-inset-right))
+    calc(var(--space-3) + env(safe-area-inset-bottom))
+    calc(var(--space-3) + env(safe-area-inset-left));
   gap: var(--space-3);
   background-color: var(--surface-background);
   animation: slideIn var(--transition-normal) ease-out;
@@ -21,7 +25,7 @@
 
 .header {
   position: sticky;
-  top: var(--space-3);
+  top: calc(var(--space-3) + env(safe-area-inset-top));
   z-index: 100;
   display: flex;
   align-items: center;
@@ -37,8 +41,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   background-color: var(--surface-secondary);
   border: none;
@@ -79,8 +83,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   background-color: var(--interactive-primary);
   border: none;
@@ -306,8 +310,17 @@
 }
 
 @media (max-width: 768px) {
+  .page {
+    padding: calc(var(--space-2) + env(safe-area-inset-top))
+      calc(var(--space-2) + env(safe-area-inset-right))
+      calc(var(--space-2) + env(safe-area-inset-bottom))
+      calc(var(--space-2) + env(safe-area-inset-left));
+    gap: var(--space-2);
+  }
+
   .header {
-    padding: var(--space-3) var(--space-4);
+    top: calc(var(--space-2) + env(safe-area-inset-top));
+    padding: var(--space-2) var(--space-3);
   }
 
   .main {

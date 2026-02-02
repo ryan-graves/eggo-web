@@ -3,30 +3,72 @@
   inset: 0;
   background-color: rgb(0 0 0 / 0.5);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: var(--space-4);
   z-index: 100;
+  animation: fadeIn var(--transition-fast) ease-out;
+}
+
+.overlayClosing {
+  animation: fadeOut var(--transition-fast) ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 .modal {
   background-color: var(--surface-primary);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   width: 100%;
-  max-width: 440px;
-  max-height: min(90vh, 680px);
+  max-width: 500px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
   overflow: hidden;
+  animation: slideUp var(--transition-normal) ease-out;
+}
+
+.modalClosing {
+  animation: slideDown var(--transition-normal) ease-in forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
 }
 
 .header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4);
+  padding: var(--space-6) var(--space-4) var(--space-4);
   border-bottom: 1px solid var(--border-primary);
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: var(--space-2);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 4px;
+  background-color: var(--border-secondary);
+  border-radius: var(--radius-full);
 }
 
 .title {
@@ -153,12 +195,21 @@
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  /* Prevent tap highlight causing visual issues */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .refreshButton:hover:not(:disabled) {
   background-color: var(--surface-tertiary);
   color: var(--interactive-primary);
   border-color: var(--interactive-primary);
+}
+
+.refreshButton:active:not(:disabled) {
+  background-color: var(--surface-tertiary);
+  color: var(--interactive-primary);
+  border-color: var(--interactive-primary);
+  transform: scale(0.95);
 }
 
 .refreshButton:disabled {
@@ -445,32 +496,8 @@
 
 /* Mobile */
 @media (max-width: 640px) {
-  .overlay {
-    align-items: flex-end;
-    padding: 0;
-  }
-
   .modal {
     max-width: 100%;
-    max-height: 90vh;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  }
-
-  .header {
-    position: relative;
-    padding-top: var(--space-6);
-  }
-
-  .header::before {
-    content: '';
-    position: absolute;
-    top: var(--space-2);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 36px;
-    height: 4px;
-    background-color: var(--border-secondary);
-    border-radius: var(--radius-full);
   }
 
   .apiCard {

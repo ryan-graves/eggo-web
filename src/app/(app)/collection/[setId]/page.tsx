@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection } from '@/hooks/useCollection';
+import { useBackNavigation } from '@/hooks/useBackNavigation';
 import { EditSetModal } from '@/components/EditSetModal';
 import { formatDateForDisplay } from '@/lib/date';
 import type { LegoSet } from '@/types';
@@ -20,7 +21,7 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 
 export default function SetDetailPage(): React.JSX.Element {
   const params = useParams();
-  const router = useRouter();
+  const { goBack } = useBackNavigation();
   const { sets, activeCollection, isInitializing } = useCollection();
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -60,7 +61,7 @@ export default function SetDetailPage(): React.JSX.Element {
       <header className={styles.header}>
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => goBack('/collection')}
           className={styles.backButton}
           aria-label="Back to collection"
         >
