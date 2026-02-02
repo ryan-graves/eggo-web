@@ -182,7 +182,7 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
         <button
           type="button"
           onClick={() => setIsFilterSheetOpen(true)}
-          className={styles.filterButton}
+          className={`btn-default btn-secondary ${styles.filterButton}`}
         >
           <svg
             width="18"

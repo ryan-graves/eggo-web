@@ -54,26 +54,6 @@
   padding: var(--space-1) var(--space-3);
 }
 
-/* Sign Up button - sized to match header buttons/avatar */
-.signUpButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: var(--layout-header-button-size);
-  padding: 0 var(--space-4);
-  background-color: var(--interactive-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-inverse);
-  text-decoration: none;
-  transition: background-color var(--transition-fast);
-}
-
-.signUpButton:hover {
-  background-color: var(--interactive-primary-hover);
-}
-
 .main {
   flex: 1;
 }
@@ -109,23 +89,6 @@
   margin: 0;
 }
 
-.ctaLink {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-3) var(--space-5);
-  background-color: var(--interactive-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-inverse);
-  text-decoration: none;
-  transition: background-color var(--transition-fast);
-}
-
-.ctaLink:hover {
-  background-color: var(--interactive-primary-hover);
-}
-
 @media (max-width: 768px) {
   .page {
     padding: calc(var(--space-2) + env(safe-area-inset-top))
@@ -145,11 +108,6 @@
   }
 
   .collectionName {
-    font-size: var(--font-size-xs);
-  }
-
-  .signUpButton {
-    padding: 0 var(--space-3);
     font-size: var(--font-size-xs);
   }
 }

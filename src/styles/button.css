@@ -1,0 +1,140 @@
+/*
+ * Button Utilities
+ *
+ * Standardized button styles for consistent UI across the app.
+ * Use these classes alongside CSS modules for component-specific overrides.
+ *
+ * Sizes: .btn-default, .btn-small
+ * Variants: .btn-primary, .btn-secondary, .btn-ghost, .btn-danger
+ * Modifiers: .btn-icon (square, for icon-only buttons)
+ *
+ * Example usage:
+ *   <button class="btn-default btn-primary">Submit</button>
+ *   <button class="btn-small btn-secondary">Cancel</button>
+ *   <button class="btn-default btn-ghost btn-icon"><Icon /></button>
+ */
+
+/* ==========================================================================
+ * Base Button Styles
+ * Applied to all buttons, provides reset and common properties
+ * ========================================================================== */
+
+.btn-default,
+.btn-small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--button-gap);
+  border: none;
+  border-radius: var(--button-radius);
+  font-family: inherit;
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  flex-shrink: 0;
+}
+
+.btn-default:disabled,
+.btn-small:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-default:active:not(:disabled),
+.btn-small:active:not(:disabled) {
+  opacity: 0.8;
+}
+
+/* ==========================================================================
+ * Size: Default
+ * Text buttons: padding-based for natural proportions
+ * Icon-only: 40px square
+ * ========================================================================== */
+
+.btn-default {
+  padding: var(--space-2) var(--button-padding-default);
+  font-size: var(--button-font-size-default);
+}
+
+/* Icon-only: fixed square dimensions */
+.btn-default.btn-icon {
+  width: var(--button-height-default);
+  height: var(--button-height-default);
+  padding: 0;
+}
+
+/* ==========================================================================
+ * Size: Small
+ * Text buttons: padding-based for natural proportions
+ * Icon-only: 32px square
+ * ========================================================================== */
+
+.btn-small {
+  padding: var(--space-2) var(--button-padding-small);
+  font-size: var(--button-font-size-small);
+}
+
+/* Icon-only: fixed square dimensions */
+.btn-small.btn-icon {
+  width: var(--button-height-small);
+  height: var(--button-height-small);
+  padding: 0;
+}
+
+/* ==========================================================================
+ * Variant: Primary (orange, call-to-action)
+ * ========================================================================== */
+
+.btn-primary {
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--interactive-primary-hover);
+}
+
+/* ==========================================================================
+ * Variant: Secondary (bordered, alternative action)
+ * ========================================================================== */
+
+.btn-secondary {
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-secondary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--surface-secondary);
+}
+
+/* ==========================================================================
+ * Variant: Ghost (transparent, subtle action)
+ * ========================================================================== */
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--surface-secondary);
+}
+
+/* ==========================================================================
+ * Variant: Danger (destructive action)
+ * ========================================================================== */
+
+.btn-danger {
+  background-color: var(--status-error-bg);
+  color: var(--status-error);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--status-error);
+  color: var(--text-inverse);
+}

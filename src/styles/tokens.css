@@ -133,6 +133,29 @@
   /* Toolbar */
   --layout-toolbar-gap: var(--space-4);
   --layout-toolbar-gap-mobile: var(--space-2);
+
+  /* ==========================================================================
+   * Button Tokens
+   * Standardized button sizing for consistent UI across the app.
+   * ========================================================================== */
+
+  /* Button Heights */
+  --button-height-default: 40px;
+  --button-height-small: 32px;
+
+  /* Button Padding (horizontal, for text buttons) */
+  --button-padding-default: var(--space-4);
+  --button-padding-small: var(--space-3);
+
+  /* Button Font Sizes */
+  --button-font-size-default: var(--font-size-sm);
+  --button-font-size-small: var(--font-size-xs);
+
+  /* Button Icon Gap (space between icon and text) */
+  --button-gap: var(--space-2);
+
+  /* Button Border Radius (overridden by mono theme to pill shape) */
+  --button-radius: var(--radius-md);
 }
 
 /* Mobile overrides - match toolbar padding for consistent alignment */
