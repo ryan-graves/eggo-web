@@ -1,16 +1,19 @@
 .page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: var(--space-3);
+  padding: calc(var(--space-3) + env(safe-area-inset-top))
+    calc(var(--space-3) + env(safe-area-inset-right))
+    calc(56px + env(safe-area-inset-bottom))
+    calc(var(--space-3) + env(safe-area-inset-left));
   gap: var(--space-3);
   background-color: var(--surface-background);
-  padding-bottom: 56px; /* Space for the banner */
 }
 
 .header {
   position: sticky;
-  top: var(--space-3);
+  top: calc(var(--space-3) + env(safe-area-inset-top));
   z-index: 100;
   padding: var(--space-3) var(--space-4);
   background-color: var(--surface-primary);
@@ -97,12 +100,15 @@
 
 @media (max-width: 768px) {
   .page {
-    padding: var(--space-2);
+    padding: calc(var(--space-2) + env(safe-area-inset-top))
+      calc(var(--space-2) + env(safe-area-inset-right))
+      calc(56px + env(safe-area-inset-bottom))
+      calc(var(--space-2) + env(safe-area-inset-left));
     gap: var(--space-2);
   }
 
   .header {
-    top: var(--space-2);
+    top: calc(var(--space-2) + env(safe-area-inset-top));
     padding: var(--space-2) var(--space-3);
   }
 
