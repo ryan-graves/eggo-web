@@ -36,9 +36,10 @@ function PublicCollectionContent(): React.JSX.Element {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={`${styles.logo} eggo-logo`}>Eggo</span>
-          <span className={styles.separator}>|</span>
-          <h1 className={styles.title}>{collection.name}</h1>
+          <h1 className={`${styles.title} eggo-logo`}>Eggo</h1>
+          <div className={styles.collectionPill}>
+            <span className={styles.collectionName}>{collection.name}</span>
+          </div>
         </div>
         <Link href="/login" className={styles.signUpButton}>
           Sign Up

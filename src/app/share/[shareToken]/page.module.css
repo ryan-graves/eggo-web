@@ -11,6 +11,7 @@
   background-color: var(--surface-background);
 }
 
+/* Header - matches logged-in collection page header exactly */
 .header {
   position: sticky;
   top: calc(var(--space-3) + env(safe-area-inset-top));
@@ -18,43 +19,46 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--layout-header-padding);
+  padding: var(--space-3) var(--space-4);
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
-  border-radius: var(--layout-header-radius);
+  border-radius: var(--radius-2xl);
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
+  gap: var(--space-3);
 }
 
-.logo {
-  font-size: var(--font-size-xl);
-  color: var(--text-primary);
-  flex-shrink: 0;
-}
-
-.separator {
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-}
-
+/* Title - matches logged-in .title exactly */
 .title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-secondary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
+/* Collection pill - matches CollectionSelector .singleContainer/.singleCollection */
+.collectionPill {
+  display: flex;
+  align-items: center;
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-md);
+}
+
+.collectionName {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  padding: var(--space-1) var(--space-3);
+}
+
+/* Sign Up button - positioned like avatar, styled as primary button */
 .signUpButton {
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: var(--space-2) var(--space-3);
   background-color: var(--interactive-primary);
   border-radius: var(--radius-md);
@@ -132,15 +136,15 @@
 
   .header {
     top: calc(var(--space-2) + env(safe-area-inset-top));
-    padding: var(--layout-header-padding-mobile);
-  }
-
-  .logo {
-    font-size: var(--font-size-lg);
+    padding: var(--space-2) var(--space-3);
   }
 
   .title {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-lg);
+  }
+
+  .collectionName {
+    font-size: var(--font-size-xs);
   }
 
   .signUpButton {
