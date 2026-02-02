@@ -42,8 +42,6 @@ function SettingsContent(): React.JSX.Element {
   const { activeCollection } = useCollection();
   const [cleanupStatus, setCleanupStatus] = useState<string | null>(null);
   const [isCleaningUp, setIsCleaningUp] = useState(false);
-  const [imageStatus, setImageStatus] = useState<string | null>(null);
-  const [isUpgradingImages, setIsUpgradingImages] = useState(false);
   const [customImageStatus, setCustomImageStatus] = useState<string | null>(null);
   const [isClearingCustomImages, setIsClearingCustomImages] = useState(false);
   const [refreshStatus, setRefreshStatus] = useState<string | null>(null);
@@ -161,42 +159,6 @@ function SettingsContent(): React.JSX.Element {
     }
   };
 
-  const handleUpgradeImages = async () => {
-    setIsUpgradingImages(true);
-    setImageStatus('Scanning sets...');
-
-    try {
-      const db = getFirebaseDb();
-      const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
-
-      let upgraded = 0;
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        const imageUrl = data.imageUrl as string | null;
-
-        // Check if it's a Brickset image that's not already using /large/
-        if (imageUrl && imageUrl.includes('images.brickset.com/sets/')) {
-          if (imageUrl.includes('/small/') || (imageUrl.includes('/images/') && !imageUrl.includes('/large/'))) {
-            const upgradedUrl = imageUrl
-              .replace('/sets/small/', '/sets/large/')
-              .replace('/sets/images/', '/sets/large/');
-
-            await updateDoc(doc(db, 'sets', docSnap.id), { imageUrl: upgradedUrl });
-            upgraded++;
-            setImageStatus(`Upgrading... (${upgraded} so far)`);
-          }
-        }
-      }
-
-      setImageStatus(`Done! Upgraded ${upgraded} image${upgraded !== 1 ? 's' : ''} to high resolution.`);
-    } catch (err) {
-      setImageStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsUpgradingImages(false);
-    }
-  };
-
   const handleClearCustomImages = async () => {
     setIsClearingCustomImages(true);
     setCustomImageStatus('Scanning sets...');
@@ -253,7 +215,7 @@ function SettingsContent(): React.JSX.Element {
           const response = await fetch('/api/remove-background', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl: data.imageUrl }),
+            body: JSON.stringify({ imageUrl: data.imageUrl, setId: docSnap.id }),
           });
 
           if (response.ok) {
@@ -267,14 +229,17 @@ function SettingsContent(): React.JSX.Element {
               failed++;
             }
           } else {
+            const errorResult = await response.json().catch(() => ({}));
+            console.error(`Failed to process ${data.name}:`, errorResult.error || response.status);
             failed++;
           }
-        } catch {
+        } catch (err) {
+          console.error(`Exception processing ${data.name}:`, err);
           failed++;
         }
 
         // Small delay to avoid overwhelming the API
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       setRefreshStatus(
@@ -548,7 +513,8 @@ function SettingsContent(): React.JSX.Element {
 
             <div className={styles.maintenanceItem}>
               <p className={styles.settingDescription}>
-                Remove backgrounds from set images (for dark mode compatibility).
+                Process all images: fetch high-resolution versions and remove backgrounds for dark
+                mode compatibility. Only processes sets without existing processed images.
               </p>
               <button
                 type="button"
@@ -556,29 +522,14 @@ function SettingsContent(): React.JSX.Element {
                 disabled={isRefreshingAll}
                 className={styles.cleanupButton}
               >
-                {isRefreshingAll ? 'Processing...' : 'Remove backgrounds from all images'}
+                {isRefreshingAll ? 'Processing...' : 'Process all images'}
               </button>
               {refreshStatus && <p className={styles.cleanupStatus}>{refreshStatus}</p>}
             </div>
 
             <div className={styles.maintenanceItem}>
               <p className={styles.settingDescription}>
-                Upgrade set images to high resolution (Brickset large format).
-              </p>
-              <button
-                type="button"
-                onClick={handleUpgradeImages}
-                disabled={isUpgradingImages}
-                className={styles.cleanupButton}
-              >
-                {isUpgradingImages ? 'Upgrading...' : 'Upgrade images to high-res'}
-              </button>
-              {imageStatus && <p className={styles.cleanupStatus}>{imageStatus}</p>}
-            </div>
-
-            <div className={styles.maintenanceItem}>
-              <p className={styles.settingDescription}>
-                Clear processed images to show high-res originals instead.
+                Clear processed images to revert to original Brickset images.
               </p>
               <button
                 type="button"
