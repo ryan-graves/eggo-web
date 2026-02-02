@@ -11,7 +11,8 @@
 
 html,
 body {
-  overflow-x: hidden;
+  height: 100%;
+  overflow: hidden;
 }
 
 html {
@@ -20,7 +21,6 @@ html {
 }
 
 body {
-  min-height: 100vh;
   color: var(--text-primary);
   background-color: var(--surface-background);
   font-family:
