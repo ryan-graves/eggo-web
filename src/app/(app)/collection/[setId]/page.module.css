@@ -25,7 +25,7 @@
 
 .header {
   position: sticky;
-  top: 0;
+  top: calc(var(--space-3) + env(safe-area-inset-top));
   z-index: 100;
   display: flex;
   align-items: center;
@@ -311,11 +311,15 @@
 
 @media (max-width: 768px) {
   .page {
-    padding: var(--space-2);
+    padding: calc(var(--space-2) + env(safe-area-inset-top))
+      calc(var(--space-2) + env(safe-area-inset-right))
+      calc(var(--space-2) + env(safe-area-inset-bottom))
+      calc(var(--space-2) + env(safe-area-inset-left));
     gap: var(--space-2);
   }
 
   .header {
+    top: calc(var(--space-2) + env(safe-area-inset-top));
     padding: var(--space-2) var(--space-3);
   }
 
