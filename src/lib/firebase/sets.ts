@@ -112,20 +112,30 @@ export async function getSetsForCollection(collectionId: string): Promise<LegoSe
  */
 export function subscribeToSetsForCollection(
   collectionId: string,
-  callback: (sets: LegoSet[]) => void
+  callback: (sets: LegoSet[]) => void,
+  onError?: (error: Error) => void
 ): Unsubscribe {
   const q = query(
     getSetsRef(),
     where('collectionId', '==', collectionId),
     orderBy('createdAt', 'desc')
   );
-  return onSnapshot(q, (snapshot) => {
-    const sets = snapshot.docs.map((doc) => {
-      const data = normalizeSetData(doc.data());
-      return { id: doc.id, ...data } as LegoSet;
-    });
-    callback(sets);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const sets = snapshot.docs.map((doc) => {
+        const data = normalizeSetData(doc.data());
+        return { id: doc.id, ...data } as LegoSet;
+      });
+      callback(sets);
+    },
+    (error) => {
+      console.error('[subscribeToSetsForCollection] Permission error:', error.message);
+      if (onError) {
+        onError(error);
+      }
+    }
+  );
 }
 
 /**
