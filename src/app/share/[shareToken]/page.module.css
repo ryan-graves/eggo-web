@@ -54,12 +54,13 @@
   padding: var(--space-1) var(--space-3);
 }
 
-/* Sign Up button - positioned like avatar, styled as primary button */
+/* Sign Up button - sized to match header buttons/avatar */
 .signUpButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-2) var(--space-3);
+  height: var(--layout-header-button-size);
+  padding: 0 var(--space-4);
   background-color: var(--interactive-primary);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
@@ -148,7 +149,8 @@
   }
 
   .signUpButton {
-    padding: var(--space-1) var(--space-2);
+    height: 32px;
+    padding: 0 var(--space-3);
     font-size: var(--font-size-xs);
   }
 }
