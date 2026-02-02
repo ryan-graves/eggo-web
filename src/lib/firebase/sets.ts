@@ -248,7 +248,7 @@ export async function refreshSetMetadata(setId: string): Promise<RefreshSetResul
 
   if (lookupResult.imageUrl) {
     console.log('[refreshSetMetadata] Attempting background removal for:', lookupResult.imageUrl);
-    const bgResult = await removeImageBackground(lookupResult.imageUrl);
+    const bgResult = await removeImageBackground(lookupResult.imageUrl, setId);
     processedImageUrl = bgResult.processedImageUrl;
     backgroundRemovalError = bgResult.error;
     console.log(
