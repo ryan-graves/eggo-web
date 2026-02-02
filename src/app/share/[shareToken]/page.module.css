@@ -17,6 +17,8 @@
   z-index: 100;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
   padding: var(--layout-header-padding);
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
@@ -26,23 +28,47 @@
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  min-width: 0;
 }
 
-.title {
+.logo {
+  font-family: var(--font-family-serif);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
-  margin: 0;
+  flex-shrink: 0;
 }
 
-.publicBadge {
-  font-size: var(--font-size-xs);
+.separator {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.signUpButton {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--interactive-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  padding: var(--space-1) var(--space-2);
-  background-color: var(--status-info-bg);
-  color: var(--status-info);
-  border-radius: var(--radius-full);
+  color: var(--text-inverse);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+.signUpButton:hover {
+  background-color: var(--interactive-primary-hover);
 }
 
 .main {
@@ -111,7 +137,16 @@
     padding: var(--layout-header-padding-mobile);
   }
 
-  .title {
+  .logo {
     font-size: var(--font-size-lg);
+  }
+
+  .title {
+    font-size: var(--font-size-base);
+  }
+
+  .signUpButton {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--font-size-xs);
   }
 }

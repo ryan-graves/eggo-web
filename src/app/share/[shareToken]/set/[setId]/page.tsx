@@ -118,7 +118,6 @@ function PublicSetDetailContent(): React.JSX.Element {
           </svg>
         </button>
         <h1 className={styles.title}>{set.name}</h1>
-        <div className={styles.headerSpacer} aria-hidden="true" />
       </header>
 
       <main className={styles.main}>
