@@ -213,21 +213,30 @@ function SettingsContent(): React.JSX.Element {
       const q = query(setsRef, where('collectionId', '==', activeCollection.id));
       const snapshot = await getDocs(q);
 
-      const setsWithImages = snapshot.docs.filter((docSnap) => {
+      const setsToProcess = snapshot.docs.filter((docSnap) => {
         const data = docSnap.data();
-        return data.imageUrl && !data.customImageUrl;
+        // Process if: has source image AND (no custom image OR custom image is old base64 format)
+        if (!data.imageUrl) return false;
+        if (!data.customImageUrl) return true;
+        // Old base64 images start with "data:image/", new Firebase Storage URLs start with "https://"
+        return data.customImageUrl.startsWith('data:image/');
       });
 
-      setRefreshStatus(`Found ${setsWithImages.length} set${setsWithImages.length !== 1 ? 's' : ''} without processed images...`);
+      const needsUpgrade = setsToProcess.filter((d) => d.data().customImageUrl?.startsWith('data:image/')).length;
+      setRefreshStatus(
+        `Found ${setsToProcess.length} set${setsToProcess.length !== 1 ? 's' : ''} to process` +
+          (needsUpgrade > 0 ? ` (${needsUpgrade} to upgrade to high-res)` : '') +
+          '...'
+      );
 
       let processed = 0;
       let succeeded = 0;
       let failed = 0;
 
-      for (const docSnap of setsWithImages) {
+      for (const docSnap of setsToProcess) {
         const data = docSnap.data();
         processed++;
-        setRefreshStatus(`Processing ${processed}/${setsWithImages.length}: ${data.name || data.setNumber}...`);
+        setRefreshStatus(`Processing ${processed}/${setsToProcess.length}: ${data.name || data.setNumber}...`);
 
         try {
           const response = await fetch('/api/remove-background', {
@@ -538,7 +547,7 @@ function SettingsContent(): React.JSX.Element {
             <div className={styles.maintenanceItem}>
               <p className={styles.settingDescription}>
                 Process all images: fetch high-resolution versions and remove backgrounds for dark
-                mode compatibility. Only processes sets without existing processed images.
+                mode compatibility. Also upgrades older low-res images to the new high-res format.
               </p>
               <button
                 type="button"
