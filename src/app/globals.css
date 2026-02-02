@@ -11,7 +11,9 @@
 
 html,
 body {
-  height: 100%;
+  /* Use dvh for dynamic viewport on iOS Safari, with vh fallback */
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -21,6 +23,12 @@ html {
 }
 
 body {
+  /* Safe area padding for notch and home indicator */
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
   color: var(--text-primary);
   background-color: var(--surface-background);
   font-family:
