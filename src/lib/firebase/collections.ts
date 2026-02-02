@@ -130,12 +130,15 @@ export async function removeMemberFromCollection(
 
 /**
  * Generate a unique share token for public sharing
+ * Uses crypto.getRandomValues() for secure random generation
  */
 function generateShareToken(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const randomValues = new Uint8Array(12);
+  crypto.getRandomValues(randomValues);
   let token = '';
   for (let i = 0; i < 12; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
+    token += chars.charAt(randomValues[i] % chars.length);
   }
   return token;
 }

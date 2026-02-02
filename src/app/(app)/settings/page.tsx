@@ -446,6 +446,7 @@ function SettingsContent(): React.JSX.Element {
                     type="button"
                     role="switch"
                     aria-checked={isPublicEnabled}
+                    aria-label="Enable public sharing"
                     onClick={handleTogglePublicSharing}
                     disabled={isSharingLoading}
                     className={`${styles.toggle} ${isPublicEnabled ? styles.toggleOn : ''}`}
