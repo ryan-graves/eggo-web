@@ -135,9 +135,9 @@
   --layout-toolbar-gap-mobile: var(--space-2);
 }
 
-/* Mobile overrides - content padding not needed since page has padding */
+/* Mobile overrides - match toolbar padding for consistent alignment */
 @media (max-width: 768px) {
   :root {
-    --layout-content-padding: 0;
+    --layout-content-padding: var(--space-2);
   }
 }
