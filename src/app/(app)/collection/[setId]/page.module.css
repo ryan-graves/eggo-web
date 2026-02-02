@@ -1,5 +1,6 @@
 .page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   padding: var(--space-3);
@@ -21,7 +22,7 @@
 
 .header {
   position: sticky;
-  top: var(--space-3);
+  top: 0;
   z-index: 100;
   display: flex;
   align-items: center;
