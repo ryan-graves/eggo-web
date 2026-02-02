@@ -103,11 +103,18 @@ export async function POST(request: NextRequest) {
 
     // If Firebase Admin is configured and setId provided, upload to Storage
     if (isAdminConfigured() && setId) {
-      console.log('[remove-background API] Uploading to Firebase Storage...');
-      const storagePath = `processed-images/${setId}.png`;
-      const publicUrl = await uploadToStorage(buffer, storagePath, 'image/png');
-      console.log('[remove-background API] Uploaded to Storage:', publicUrl);
-      return NextResponse.json({ processedImageUrl: publicUrl });
+      try {
+        console.log('[remove-background API] Uploading to Firebase Storage...');
+        const storagePath = `processed-images/${setId}.png`;
+        const publicUrl = await uploadToStorage(buffer, storagePath, 'image/png');
+        console.log('[remove-background API] Uploaded to Storage:', publicUrl);
+        return NextResponse.json({ processedImageUrl: publicUrl });
+      } catch (storageError) {
+        console.error('[remove-background API] Storage upload failed:', storageError);
+        const message =
+          storageError instanceof Error ? storageError.message : 'Unknown storage error';
+        return NextResponse.json({ error: `Storage upload failed: ${message}` }, { status: 500 });
+      }
     }
 
     // Fallback to base64 data URL if Storage not configured
@@ -117,6 +124,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ processedImageUrl: dataUrl });
   } catch (error) {
     console.error('[remove-background API] Exception:', error);
-    return NextResponse.json({ error: 'Background removal failed' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: `Background removal failed: ${message}` }, { status: 500 });
   }
 }
