@@ -115,39 +115,6 @@
   color: var(--text-primary);
 }
 
-.toolbarActions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.refreshButton {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background-color: transparent;
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.refreshButton:hover {
-  background-color: var(--surface-secondary);
-  border-color: var(--border-primary);
-  color: var(--text-primary);
-}
-
-.buttonLabel {
-  display: inline;
-}
-
 .addButton {
   padding: var(--space-2) var(--space-4);
   background-color: var(--interactive-primary);
@@ -201,12 +168,6 @@
 
 .skeletonToggle {
   width: 175px;
-  height: 36px;
-  border-radius: var(--radius-md);
-}
-
-.skeletonRefreshButton {
-  width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
 }
@@ -278,25 +239,7 @@
   }
 
   .toolbar {
-    flex-wrap: wrap;
     padding: 0 var(--space-2);
-  }
-
-  .viewToggle {
-    order: 1;
-  }
-
-  .toolbarActions {
-    order: 2;
-    gap: var(--space-2);
-  }
-
-  .buttonLabel {
-    display: none;
-  }
-
-  .refreshButton {
-    padding: var(--space-2);
   }
 
   .addButton {

@@ -11,7 +11,6 @@ import { CollectionSettingsModal } from '@/components/CollectionSettingsModal';
 import { CollectionHome } from '@/components/CollectionHome';
 import { SetList } from '@/components/SetList';
 import { AddSetForm } from '@/components/AddSetForm';
-import { BulkRefreshModal } from '@/components/BulkRefreshModal';
 import { SetCardSkeleton } from '@/components/SetCardSkeleton';
 import styles from './page.module.css';
 
@@ -32,10 +31,7 @@ function CollectionSkeleton(): React.JSX.Element {
       <main className={styles.main}>
         <div className={styles.toolbar}>
           <div className={`${styles.skeleton} ${styles.skeletonToggle}`} />
-          <div className={styles.toolbarActions}>
-            <div className={`${styles.skeleton} ${styles.skeletonRefreshButton}`} />
-            <div className={`${styles.skeleton} ${styles.skeletonAddButton}`} />
-          </div>
+          <div className={`${styles.skeleton} ${styles.skeletonAddButton}`} />
         </div>
 
         {/* Skeleton section title */}
@@ -66,7 +62,6 @@ export default function CollectionPage(): React.JSX.Element {
   const { collections, activeCollection, sets, isInitializing, setActiveCollection } = useCollection();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
-  const [showBulkRefresh, setShowBulkRefresh] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('home');
 
   const handleAddSuccess = () => {
@@ -158,27 +153,13 @@ export default function CollectionPage(): React.JSX.Element {
               All Sets
             </button>
           </div>
-          <div className={styles.toolbarActions}>
-            <button
-              type="button"
-              onClick={() => setShowBulkRefresh(true)}
-              className={styles.refreshButton}
-              title="Refresh set data from Brickset"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-                <path d="M21 3v5h-5" />
-              </svg>
-              <span className={styles.buttonLabel}>Refresh</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowAddForm(true)}
-              className={styles.addButton}
-            >
-              + Add Set
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowAddForm(true)}
+            className={styles.addButton}
+          >
+            + Add Set
+          </button>
         </div>
 
         {activeCollection && (
@@ -205,10 +186,6 @@ export default function CollectionPage(): React.JSX.Element {
           onSuccess={() => setShowCollectionSettings(false)}
           onCancel={() => setShowCollectionSettings(false)}
         />
-      )}
-
-      {showBulkRefresh && (
-        <BulkRefreshModal sets={sets} onClose={() => setShowBulkRefresh(false)} />
       )}
     </div>
   );

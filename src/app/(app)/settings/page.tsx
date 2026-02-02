@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, updateDoc, doc, deleteField, Timestamp, query, where } from 'firebase/firestore';
 import {
-  getFirebaseDb,
   enablePublicSharing,
   disablePublicSharing,
   updatePublicViewSettings,
@@ -40,14 +38,6 @@ function SettingsContent(): React.JSX.Element {
   const { uiTheme, setUITheme } = useUITheme();
   const { goBack } = useBackNavigation();
   const { activeCollection } = useCollection();
-  const [cleanupStatus, setCleanupStatus] = useState<string | null>(null);
-  const [isCleaningUp, setIsCleaningUp] = useState(false);
-  const [customImageStatus, setCustomImageStatus] = useState<string | null>(null);
-  const [isClearingCustomImages, setIsClearingCustomImages] = useState(false);
-  const [refreshStatus, setRefreshStatus] = useState<string | null>(null);
-  const [isRefreshingAll, setIsRefreshingAll] = useState(false);
-  const [migrateDateStatus, setMigrateDateStatus] = useState<string | null>(null);
-  const [isMigratingDates, setIsMigratingDates] = useState(false);
 
   // Sharing state
   const [isPublicEnabled, setIsPublicEnabled] = useState(false);
@@ -130,204 +120,6 @@ function SettingsContent(): React.JSX.Element {
       await signOut();
     } catch {
       // Error is handled in auth context
-    }
-  };
-
-  const handleCleanupOccasions = async () => {
-    if (!activeCollection) {
-      setCleanupStatus('Error: No collection selected');
-      return;
-    }
-
-    setIsCleaningUp(true);
-    setCleanupStatus('Starting cleanup...');
-
-    try {
-      const db = getFirebaseDb();
-      const setsRef = collection(db, 'sets');
-      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
-      const snapshot = await getDocs(q);
-
-      let updated = 0;
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        if (data.occasion?.toLowerCase().trim() === 'just because') {
-          await updateDoc(doc(db, 'sets', docSnap.id), { occasion: '' });
-          updated++;
-        }
-      }
-
-      setCleanupStatus(`Done! Cleared "just because" from ${updated} set${updated !== 1 ? 's' : ''}.`);
-    } catch (err) {
-      setCleanupStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsCleaningUp(false);
-    }
-  };
-
-  const handleClearCustomImages = async () => {
-    if (!activeCollection) {
-      setCustomImageStatus('Error: No collection selected');
-      return;
-    }
-
-    setIsClearingCustomImages(true);
-    setCustomImageStatus('Scanning sets...');
-
-    try {
-      const db = getFirebaseDb();
-      const setsRef = collection(db, 'sets');
-      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
-      const snapshot = await getDocs(q);
-
-      let cleared = 0;
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        if (data.customImageUrl) {
-          await updateDoc(doc(db, 'sets', docSnap.id), { customImageUrl: deleteField() });
-          cleared++;
-          setCustomImageStatus(`Clearing... (${cleared} so far)`);
-        }
-      }
-
-      setCustomImageStatus(`Done! Cleared ${cleared} custom image${cleared !== 1 ? 's' : ''}. High-res originals will now show.`);
-    } catch (err) {
-      setCustomImageStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsClearingCustomImages(false);
-    }
-  };
-
-  const handleRefreshAllImages = async () => {
-    if (!activeCollection) {
-      setRefreshStatus('Error: No collection selected');
-      return;
-    }
-
-    setIsRefreshingAll(true);
-    setRefreshStatus('Scanning sets...');
-
-    try {
-      const db = getFirebaseDb();
-      const setsRef = collection(db, 'sets');
-      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
-      const snapshot = await getDocs(q);
-
-      const setsToProcess = snapshot.docs.filter((docSnap) => {
-        const data = docSnap.data();
-        // Process if: has source image AND (no custom image OR custom image is old base64 format)
-        if (!data.imageUrl) return false;
-        if (!data.customImageUrl) return true;
-        // Old base64 images start with "data:image/", new Firebase Storage URLs start with "https://"
-        return data.customImageUrl.startsWith('data:image/');
-      });
-
-      const needsUpgrade = setsToProcess.filter((d) => d.data().customImageUrl?.startsWith('data:image/')).length;
-      setRefreshStatus(
-        `Found ${setsToProcess.length} set${setsToProcess.length !== 1 ? 's' : ''} to process` +
-          (needsUpgrade > 0 ? ` (${needsUpgrade} to upgrade to high-res)` : '') +
-          '...'
-      );
-
-      let processed = 0;
-      let succeeded = 0;
-      let failed = 0;
-
-      for (const docSnap of setsToProcess) {
-        const data = docSnap.data();
-        processed++;
-        setRefreshStatus(`Processing ${processed}/${setsToProcess.length}: ${data.name || data.setNumber}...`);
-
-        try {
-          const response = await fetch('/api/remove-background', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl: data.imageUrl, setId: docSnap.id }),
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            if (result.processedImageUrl) {
-              await updateDoc(doc(db, 'sets', docSnap.id), {
-                customImageUrl: result.processedImageUrl,
-              });
-              succeeded++;
-            } else {
-              failed++;
-            }
-          } else {
-            const errorResult = await response.json().catch(() => ({}));
-            console.error(`Failed to process ${data.name}:`, errorResult.error || response.status);
-            failed++;
-          }
-        } catch (err) {
-          console.error(`Exception processing ${data.name}:`, err);
-          failed++;
-        }
-
-        // Rate limit: 1 second between requests to avoid overwhelming rembg.com API
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-
-      setRefreshStatus(
-        `Done! Processed ${succeeded} image${succeeded !== 1 ? 's' : ''}` +
-          (failed > 0 ? `, ${failed} failed` : '') +
-          '.'
-      );
-    } catch (err) {
-      setRefreshStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsRefreshingAll(false);
-    }
-  };
-
-  const handleMigrateDates = async () => {
-    if (!activeCollection) {
-      setMigrateDateStatus('Error: No collection selected');
-      return;
-    }
-
-    setIsMigratingDates(true);
-    setMigrateDateStatus('Scanning sets...');
-
-    try {
-      const db = getFirebaseDb();
-      const setsRef = collection(db, 'sets');
-      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
-      const snapshot = await getDocs(q);
-
-      let migrated = 0;
-      let skipped = 0;
-
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        const dateReceived = data.dateReceived;
-
-        // Check if it's a Firestore Timestamp (has toDate method)
-        if (dateReceived && dateReceived instanceof Timestamp) {
-          const date = dateReceived.toDate();
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          const dateString = `${year}-${month}-${day}`;
-
-          await updateDoc(doc(db, 'sets', docSnap.id), { dateReceived: dateString });
-          migrated++;
-          setMigrateDateStatus(`Migrating... (${migrated} converted)`);
-        } else if (dateReceived && typeof dateReceived === 'string') {
-          skipped++;
-        }
-      }
-
-      setMigrateDateStatus(
-        `Done! Converted ${migrated} date${migrated !== 1 ? 's' : ''} to string format` +
-          (skipped > 0 ? ` (${skipped} already migrated)` : '') +
-          '.'
-      );
-    } catch (err) {
-      setMigrateDateStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsMigratingDates(false);
     }
   };
 
@@ -521,76 +313,10 @@ function SettingsContent(): React.JSX.Element {
                 </>
               )}
 
-              {sharingStatus && <p className={styles.cleanupStatus}>{sharingStatus}</p>}
+              {sharingStatus && <p className={styles.sharingStatus}>{sharingStatus}</p>}
             </div>
           </section>
         )}
-
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Data Maintenance</h2>
-          <div className={styles.card}>
-            <div className={styles.maintenanceItem}>
-              <p className={styles.settingDescription}>
-                Migrate dates from Timestamp to string format (one-time migration).
-              </p>
-              <button
-                type="button"
-                onClick={handleMigrateDates}
-                disabled={isMigratingDates}
-                className={styles.cleanupButton}
-              >
-                {isMigratingDates ? 'Migrating...' : 'Migrate date formats'}
-              </button>
-              {migrateDateStatus && <p className={styles.cleanupStatus}>{migrateDateStatus}</p>}
-            </div>
-
-            <div className={styles.maintenanceItem}>
-              <p className={styles.settingDescription}>
-                Process all images: fetch high-resolution versions and remove backgrounds for dark
-                mode compatibility. Also upgrades older low-res images to the new high-res format.
-              </p>
-              <button
-                type="button"
-                onClick={handleRefreshAllImages}
-                disabled={isRefreshingAll}
-                className={styles.cleanupButton}
-              >
-                {isRefreshingAll ? 'Processing...' : 'Process all images'}
-              </button>
-              {refreshStatus && <p className={styles.cleanupStatus}>{refreshStatus}</p>}
-            </div>
-
-            <div className={styles.maintenanceItem}>
-              <p className={styles.settingDescription}>
-                Clear processed images to revert to original Brickset images.
-              </p>
-              <button
-                type="button"
-                onClick={handleClearCustomImages}
-                disabled={isClearingCustomImages}
-                className={styles.cleanupButton}
-              >
-                {isClearingCustomImages ? 'Clearing...' : 'Clear processed images'}
-              </button>
-              {customImageStatus && <p className={styles.cleanupStatus}>{customImageStatus}</p>}
-            </div>
-
-            <div className={styles.maintenanceItem}>
-              <p className={styles.settingDescription}>
-                Clean up &quot;just because&quot; occasion entries.
-              </p>
-              <button
-                type="button"
-                onClick={handleCleanupOccasions}
-                disabled={isCleaningUp}
-                className={styles.cleanupButton}
-              >
-                {isCleaningUp ? 'Cleaning...' : 'Clear "just because" occasions'}
-              </button>
-              {cleanupStatus && <p className={styles.cleanupStatus}>{cleanupStatus}</p>}
-            </div>
-          </div>
-        </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>About</h2>
