@@ -98,8 +98,9 @@ export async function uploadToStorage(
     },
   });
 
-  // Make the file publicly readable
-  await file.makePublic();
+  // Note: We rely on bucket-level permissions for public access.
+  // The bucket should have "allUsers" granted "Storage Object Viewer" role.
+  // This is required because uniform bucket-level access doesn't allow per-object ACLs.
 
   // Return the public URL
   return `https://storage.googleapis.com/${bucket.name}/${path}`;
