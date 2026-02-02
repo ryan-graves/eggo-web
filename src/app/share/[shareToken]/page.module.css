@@ -15,18 +15,18 @@
   position: sticky;
   top: calc(var(--space-3) + env(safe-area-inset-top));
   z-index: 100;
-  padding: var(--space-3) var(--space-4);
-  background-color: var(--surface-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-2xl);
-}
-
-.headerContent {
   display: flex;
   align-items: center;
-  justify-content: center;
+  padding: var(--layout-header-padding);
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--layout-header-radius);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
   gap: var(--space-3);
-  flex-wrap: wrap;
 }
 
 .title {
@@ -34,7 +34,6 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   margin: 0;
-  text-align: center;
 }
 
 .publicBadge {
@@ -109,7 +108,7 @@
 
   .header {
     top: calc(var(--space-2) + env(safe-area-inset-top));
-    padding: var(--space-2) var(--space-3);
+    padding: var(--layout-header-padding-mobile);
   }
 
   .title {

@@ -35,7 +35,7 @@ function PublicCollectionContent(): React.JSX.Element {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.headerContent}>
+        <div className={styles.headerLeft}>
           <h1 className={styles.title}>{collection.name}</h1>
           <span className={styles.publicBadge}>Public Collection</span>
         </div>
