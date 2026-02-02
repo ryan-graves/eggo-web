@@ -4,21 +4,29 @@ A web application for managing your Lego set collection. Track what you own, whe
 
 ## Features
 
-- Track Lego sets with set number, name, piece count, and more
-- Auto-populate set data from Rebrickable API
+- Track Lego sets with set number, name, piece count, themes, and more
+- Auto-populate set data from Brickset (primary) or Rebrickable (fallback)
 - Organize by owner, status, and theme
 - Real-time sync across devices
-- Light/dark theme support
+- Public collection sharing with customizable visibility settings
+- Light/dark color modes with system preference support
+- UI themes: Mono (minimal serif) and Baseplate (classic accent colors)
+- Optional background removal for set images (via rembg.com)
+- Smooth view transitions between pages
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
+- **Language**: TypeScript (strict mode)
+- **UI Library**: React 19
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Auth (Google Sign-In)
-- **Styling**: CSS Modules + CSS Custom Properties
-- **Testing**: Jest (unit), Playwright (E2E)
-- **Components**: Storybook
+- **Styling**: CSS Modules + CSS Custom Properties (design tokens)
+- **Animations**: View Transitions API (via next-view-transitions)
+- **Notifications**: Sonner (toast notifications)
+- **Testing**: Jest 30 (unit), Playwright (E2E)
+- **Components**: Storybook 10
+- **Deployment**: Netlify
 
 ## Getting Started
 
@@ -26,7 +34,7 @@ A web application for managing your Lego set collection. Track what you own, whe
 
 - Node.js 18+
 - A Firebase project
-- Rebrickable API key (free at https://rebrickable.com/api/)
+- Brickset API key (recommended) or Rebrickable API key (fallback)
 
 ### Setup
 
@@ -44,7 +52,7 @@ A web application for managing your Lego set collection. Track what you own, whe
    cp .env.local.example .env.local
    ```
 
-4. Fill in your Firebase and Rebrickable credentials in `.env.local`
+4. Fill in your Firebase and Brickset/Rebrickable credentials in `.env.local`
 
 5. Start the development server:
 

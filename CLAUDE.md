@@ -8,7 +8,10 @@ Eggo is a web application for tracking Lego set collections. Built with Next.js 
 
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript (strict mode)
+- **UI Library**: React 19
 - **Styling**: CSS Modules + CSS Custom Properties (no Tailwind)
+- **Animations**: View Transitions API (via next-view-transitions)
+- **Notifications**: Sonner (toast notifications)
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Auth (Google Sign-In)
 - **Testing**: Jest (unit), Playwright (E2E)
@@ -22,6 +25,8 @@ src/
 ├── app/                    # Next.js App Router pages
 │   ├── (auth)/            # Auth routes (login)
 │   ├── (app)/             # Protected app routes
+│   ├── api/               # API routes (Brickset proxy, background removal)
+│   ├── share/             # Public collection sharing routes
 │   ├── layout.tsx
 │   └── globals.css
 ├── components/            # React components
@@ -33,7 +38,8 @@ src/
 ├── hooks/                 # Custom React hooks
 ├── lib/
 │   ├── firebase/          # Firebase configuration
-│   └── providers/         # External data providers (Rebrickable)
+│   ├── image/             # Image processing (background removal)
+│   └── providers/         # External data providers (Brickset/Rebrickable)
 ├── styles/
 │   ├── tokens.css         # Design tokens (colors, spacing, etc.)
 │   └── theme.css          # Semantic theme variables
@@ -141,7 +147,8 @@ Individual Lego sets with:
 
 Application users with:
 
-- Theme preference: `system`, `light`, `dark`
+- Color mode preference: `system`, `light`, `dark`
+- UI theme preference: `mono` (minimal serif), `baseplate` (classic accent colors)
 - Collection memberships
 
 ## External APIs
