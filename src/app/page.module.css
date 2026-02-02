@@ -1,7 +1,10 @@
 .page {
+  position: fixed;
+  top: env(safe-area-inset-top);
+  right: env(safe-area-inset-right);
+  bottom: env(safe-area-inset-bottom);
+  left: env(safe-area-inset-left);
   display: flex;
-  flex: 1;
-  min-height: 0;
   overflow-y: auto;
   align-items: center;
   justify-content: center;
