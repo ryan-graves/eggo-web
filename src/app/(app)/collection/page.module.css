@@ -231,8 +231,9 @@
 
 .skeletonCarousel {
   display: flex;
-  gap: var(--space-4);
+  gap: var(--space-3);
   overflow: hidden;
+  padding: 0 var(--space-4);
 }
 
 .skeletonCarousel > * {
@@ -266,8 +267,8 @@
   }
 
   .skeletonCarousel > * {
-    flex: 0 0 150px;
-    height: 220px;
+    flex: 0 0 160px;
+    height: 230px;
   }
 
   .main {

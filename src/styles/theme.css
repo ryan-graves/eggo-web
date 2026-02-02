@@ -144,22 +144,22 @@
 }
 
 /*
- * Glass UI Theme
+ * Mono UI Theme (default)
  *
  * A minimal monochrome theme with serif headings.
  * Works with both light and dark color modes.
  * Uses higher specificity selectors to ensure proper override.
  */
 
-/* Glass theme base - applies to all glass theme instances */
-[data-ui-theme='glass'] {
+/* Mono theme base - applies to all mono theme instances */
+[data-ui-theme='mono'] {
   /* Heading font */
   --font-heading: var(--font-instrument-serif), Georgia, serif;
 }
 
-/* Glass theme in DARK mode - explicit selectors for all dark mode cases */
-[data-theme='dark'][data-ui-theme='glass'],
-:root[data-ui-theme='glass']:not([data-theme='light']) {
+/* Mono theme in DARK mode - explicit selectors for all dark mode cases */
+[data-theme='dark'][data-ui-theme='mono'],
+:root[data-ui-theme='mono']:not([data-theme='light']) {
   /* Light buttons with dark text for dark backgrounds */
   --interactive-primary: var(--color-gray-100);
   --interactive-primary-hover: #ffffff;
@@ -170,8 +170,8 @@
   --border-focus: var(--color-gray-400);
 }
 
-/* Glass theme in LIGHT mode - explicit selectors for all light mode cases */
-[data-theme='light'][data-ui-theme='glass'] {
+/* Mono theme in LIGHT mode - explicit selectors for all light mode cases */
+[data-theme='light'][data-ui-theme='mono'] {
   /* Dark buttons with light text for light backgrounds */
   --interactive-primary: var(--color-gray-900);
   --interactive-primary-hover: #000000;
@@ -182,9 +182,9 @@
   --border-focus: var(--color-gray-600);
 }
 
-/* Glass theme with system preference light mode (when data-theme not explicitly set) */
+/* Mono theme with system preference light mode (when data-theme not explicitly set) */
 @media (prefers-color-scheme: light) {
-  :root[data-ui-theme='glass']:not([data-theme='dark']):not([data-theme='light']) {
+  :root[data-ui-theme='mono']:not([data-theme='dark']):not([data-theme='light']) {
     --interactive-primary: var(--color-gray-900);
     --interactive-primary-hover: #000000;
     --interactive-primary-bg: rgba(0, 0, 0, 0.05);
@@ -195,38 +195,38 @@
   }
 }
 
-/* Apply heading font to headings in glass theme */
-[data-ui-theme='glass'] h1,
-[data-ui-theme='glass'] h2,
-[data-ui-theme='glass'] h3,
-[data-ui-theme='glass'] h4,
-[data-ui-theme='glass'] h5,
-[data-ui-theme='glass'] h6 {
+/* Apply heading font to headings in mono theme */
+[data-ui-theme='mono'] h1,
+[data-ui-theme='mono'] h2,
+[data-ui-theme='mono'] h3,
+[data-ui-theme='mono'] h4,
+[data-ui-theme='mono'] h5,
+[data-ui-theme='mono'] h6 {
   font-family: var(--font-heading);
   font-weight: 400;
   letter-spacing: -0.01em;
 }
 
 /* Slightly larger heading sizes with preserved line heights */
-[data-ui-theme='glass'] h1 {
+[data-ui-theme='mono'] h1 {
   font-size: 1.75rem;
   line-height: 1.2;
 }
 
-[data-ui-theme='glass'] h2 {
+[data-ui-theme='mono'] h2 {
   font-size: 1.25rem;
   line-height: 1.3;
 }
 
-[data-ui-theme='glass'] h3 {
+[data-ui-theme='mono'] h3 {
   font-size: 1.125rem;
   line-height: 1.4;
 }
 
-/* Capsule-shaped buttons in glass theme */
-[data-ui-theme='glass'] button,
-[data-ui-theme='glass'] [role='button'],
-[data-ui-theme='glass'] a[class*='button' i],
-[data-ui-theme='glass'] a[class*='Button' i] {
+/* Capsule-shaped buttons in mono theme */
+[data-ui-theme='mono'] button,
+[data-ui-theme='mono'] [role='button'],
+[data-ui-theme='mono'] a[class*='button' i],
+[data-ui-theme='mono'] a[class*='Button' i] {
   border-radius: 9999px !important;
 }

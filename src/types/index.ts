@@ -18,7 +18,7 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 /**
  * UI theme/style preference
  */
-export type UITheme = 'clean' | 'glass';
+export type UITheme = 'baseplate' | 'mono';
 
 /**
  * User preferences stored in Firestore

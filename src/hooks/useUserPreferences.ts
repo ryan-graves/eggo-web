@@ -18,12 +18,12 @@ function getStoredTheme(): ThemePreference {
 }
 
 function getStoredUITheme(): UITheme {
-  if (typeof window === 'undefined') return 'clean';
+  if (typeof window === 'undefined') return 'mono';
   const stored = localStorage.getItem(UI_THEME_STORAGE_KEY);
-  if (stored === 'clean' || stored === 'glass') {
+  if (stored === 'baseplate' || stored === 'mono') {
     return stored;
   }
-  return 'clean';
+  return 'mono';
 }
 
 function applyTheme(theme: ThemePreference): void {
@@ -54,7 +54,7 @@ export const UserPreferencesContext = createContext<UserPreferencesContextValue 
 export function useUserPreferencesProvider(): UserPreferencesContextValue {
   const { user } = useAuth();
   const [theme, setThemeState] = useState<ThemePreference>('system');
-  const [uiTheme, setUIThemeState] = useState<UITheme>('clean');
+  const [uiTheme, setUIThemeState] = useState<UITheme>('mono');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
   // Initialize from localStorage on mount (hydration pattern for SSR)

@@ -17,8 +17,8 @@ const THEME_OPTIONS: { value: ThemePreference; label: string; description: strin
 ];
 
 const UI_THEME_OPTIONS: { value: UITheme; label: string; description: string }[] = [
-  { value: 'clean', label: 'Clean', description: 'Default style with accent colors' },
-  { value: 'glass', label: 'Glass', description: 'Minimal monochrome with serif headings' },
+  { value: 'mono', label: 'Mono', description: 'Minimal monochrome with serif headings' },
+  { value: 'baseplate', label: 'Baseplate', description: 'Classic style with accent colors' },
 ];
 
 function SettingsContent(): React.JSX.Element {
