@@ -33,12 +33,9 @@
 }
 
 .logo {
-  font-family: var(--font-heading, var(--font-instrument-serif, Georgia, serif));
   font-size: var(--font-size-xl);
-  font-weight: 400;
   color: var(--text-primary);
   flex-shrink: 0;
-  letter-spacing: -0.01em;
 }
 
 .separator {

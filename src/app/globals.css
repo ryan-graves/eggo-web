@@ -95,6 +95,13 @@ img {
   color: var(--text-inverse);
 }
 
+/* Eggo Logo - consistent branding across all pages */
+.eggo-logo {
+  font-family: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
 /* Prevent iOS zoom on input focus - inputs must be 16px minimum */
 @media screen and (max-width: 640px) {
   input,

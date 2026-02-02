@@ -36,7 +36,7 @@ function PublicCollectionContent(): React.JSX.Element {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.logo}>Eggo</span>
+          <span className={`${styles.logo} eggo-logo`}>Eggo</span>
           <span className={styles.separator}>|</span>
           <h1 className={styles.title}>{collection.name}</h1>
         </div>
