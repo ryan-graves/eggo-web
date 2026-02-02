@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, updateDoc, doc, deleteField, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, deleteField, Timestamp, query, where } from 'firebase/firestore';
 import {
   getFirebaseDb,
   enablePublicSharing,
@@ -42,8 +42,6 @@ function SettingsContent(): React.JSX.Element {
   const { activeCollection } = useCollection();
   const [cleanupStatus, setCleanupStatus] = useState<string | null>(null);
   const [isCleaningUp, setIsCleaningUp] = useState(false);
-  const [imageStatus, setImageStatus] = useState<string | null>(null);
-  const [isUpgradingImages, setIsUpgradingImages] = useState(false);
   const [customImageStatus, setCustomImageStatus] = useState<string | null>(null);
   const [isClearingCustomImages, setIsClearingCustomImages] = useState(false);
   const [refreshStatus, setRefreshStatus] = useState<string | null>(null);
@@ -136,13 +134,19 @@ function SettingsContent(): React.JSX.Element {
   };
 
   const handleCleanupOccasions = async () => {
+    if (!activeCollection) {
+      setCleanupStatus('Error: No collection selected');
+      return;
+    }
+
     setIsCleaningUp(true);
     setCleanupStatus('Starting cleanup...');
 
     try {
       const db = getFirebaseDb();
       const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
+      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
+      const snapshot = await getDocs(q);
 
       let updated = 0;
       for (const docSnap of snapshot.docs) {
@@ -161,50 +165,20 @@ function SettingsContent(): React.JSX.Element {
     }
   };
 
-  const handleUpgradeImages = async () => {
-    setIsUpgradingImages(true);
-    setImageStatus('Scanning sets...');
-
-    try {
-      const db = getFirebaseDb();
-      const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
-
-      let upgraded = 0;
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        const imageUrl = data.imageUrl as string | null;
-
-        // Check if it's a Brickset image that's not already using /large/
-        if (imageUrl && imageUrl.includes('images.brickset.com/sets/')) {
-          if (imageUrl.includes('/small/') || (imageUrl.includes('/images/') && !imageUrl.includes('/large/'))) {
-            const upgradedUrl = imageUrl
-              .replace('/sets/small/', '/sets/large/')
-              .replace('/sets/images/', '/sets/large/');
-
-            await updateDoc(doc(db, 'sets', docSnap.id), { imageUrl: upgradedUrl });
-            upgraded++;
-            setImageStatus(`Upgrading... (${upgraded} so far)`);
-          }
-        }
-      }
-
-      setImageStatus(`Done! Upgraded ${upgraded} image${upgraded !== 1 ? 's' : ''} to high resolution.`);
-    } catch (err) {
-      setImageStatus(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setIsUpgradingImages(false);
-    }
-  };
-
   const handleClearCustomImages = async () => {
+    if (!activeCollection) {
+      setCustomImageStatus('Error: No collection selected');
+      return;
+    }
+
     setIsClearingCustomImages(true);
     setCustomImageStatus('Scanning sets...');
 
     try {
       const db = getFirebaseDb();
       const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
+      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
+      const snapshot = await getDocs(q);
 
       let cleared = 0;
       for (const docSnap of snapshot.docs) {
@@ -225,35 +199,50 @@ function SettingsContent(): React.JSX.Element {
   };
 
   const handleRefreshAllImages = async () => {
+    if (!activeCollection) {
+      setRefreshStatus('Error: No collection selected');
+      return;
+    }
+
     setIsRefreshingAll(true);
     setRefreshStatus('Scanning sets...');
 
     try {
       const db = getFirebaseDb();
       const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
+      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
+      const snapshot = await getDocs(q);
 
-      const setsWithImages = snapshot.docs.filter((docSnap) => {
+      const setsToProcess = snapshot.docs.filter((docSnap) => {
         const data = docSnap.data();
-        return data.imageUrl && !data.customImageUrl;
+        // Process if: has source image AND (no custom image OR custom image is old base64 format)
+        if (!data.imageUrl) return false;
+        if (!data.customImageUrl) return true;
+        // Old base64 images start with "data:image/", new Firebase Storage URLs start with "https://"
+        return data.customImageUrl.startsWith('data:image/');
       });
 
-      setRefreshStatus(`Found ${setsWithImages.length} set${setsWithImages.length !== 1 ? 's' : ''} without processed images...`);
+      const needsUpgrade = setsToProcess.filter((d) => d.data().customImageUrl?.startsWith('data:image/')).length;
+      setRefreshStatus(
+        `Found ${setsToProcess.length} set${setsToProcess.length !== 1 ? 's' : ''} to process` +
+          (needsUpgrade > 0 ? ` (${needsUpgrade} to upgrade to high-res)` : '') +
+          '...'
+      );
 
       let processed = 0;
       let succeeded = 0;
       let failed = 0;
 
-      for (const docSnap of setsWithImages) {
+      for (const docSnap of setsToProcess) {
         const data = docSnap.data();
         processed++;
-        setRefreshStatus(`Processing ${processed}/${setsWithImages.length}: ${data.name || data.setNumber}...`);
+        setRefreshStatus(`Processing ${processed}/${setsToProcess.length}: ${data.name || data.setNumber}...`);
 
         try {
           const response = await fetch('/api/remove-background', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl: data.imageUrl }),
+            body: JSON.stringify({ imageUrl: data.imageUrl, setId: docSnap.id }),
           });
 
           if (response.ok) {
@@ -267,14 +256,17 @@ function SettingsContent(): React.JSX.Element {
               failed++;
             }
           } else {
+            const errorResult = await response.json().catch(() => ({}));
+            console.error(`Failed to process ${data.name}:`, errorResult.error || response.status);
             failed++;
           }
-        } catch {
+        } catch (err) {
+          console.error(`Exception processing ${data.name}:`, err);
           failed++;
         }
 
-        // Small delay to avoid overwhelming the API
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Rate limit: 1 second between requests to avoid overwhelming rembg.com API
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       setRefreshStatus(
@@ -290,13 +282,19 @@ function SettingsContent(): React.JSX.Element {
   };
 
   const handleMigrateDates = async () => {
+    if (!activeCollection) {
+      setMigrateDateStatus('Error: No collection selected');
+      return;
+    }
+
     setIsMigratingDates(true);
     setMigrateDateStatus('Scanning sets...');
 
     try {
       const db = getFirebaseDb();
       const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
+      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
+      const snapshot = await getDocs(q);
 
       let migrated = 0;
       let skipped = 0;
@@ -548,7 +546,8 @@ function SettingsContent(): React.JSX.Element {
 
             <div className={styles.maintenanceItem}>
               <p className={styles.settingDescription}>
-                Remove backgrounds from set images (for dark mode compatibility).
+                Process all images: fetch high-resolution versions and remove backgrounds for dark
+                mode compatibility. Also upgrades older low-res images to the new high-res format.
               </p>
               <button
                 type="button"
@@ -556,29 +555,14 @@ function SettingsContent(): React.JSX.Element {
                 disabled={isRefreshingAll}
                 className={styles.cleanupButton}
               >
-                {isRefreshingAll ? 'Processing...' : 'Remove backgrounds from all images'}
+                {isRefreshingAll ? 'Processing...' : 'Process all images'}
               </button>
               {refreshStatus && <p className={styles.cleanupStatus}>{refreshStatus}</p>}
             </div>
 
             <div className={styles.maintenanceItem}>
               <p className={styles.settingDescription}>
-                Upgrade set images to high resolution (Brickset large format).
-              </p>
-              <button
-                type="button"
-                onClick={handleUpgradeImages}
-                disabled={isUpgradingImages}
-                className={styles.cleanupButton}
-              >
-                {isUpgradingImages ? 'Upgrading...' : 'Upgrade images to high-res'}
-              </button>
-              {imageStatus && <p className={styles.cleanupStatus}>{imageStatus}</p>}
-            </div>
-
-            <div className={styles.maintenanceItem}>
-              <p className={styles.settingDescription}>
-                Clear processed images to show high-res originals instead.
+                Clear processed images to revert to original Brickset images.
               </p>
               <button
                 type="button"

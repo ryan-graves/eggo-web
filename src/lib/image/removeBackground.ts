@@ -24,13 +24,17 @@ export interface RemoveBackgroundResult {
 }
 
 /**
- * Remove the background from an image URL using remove.bg API.
+ * Remove the background from an image URL using the background removal API.
  *
  * @param imageUrl - The URL of the image to process
+ * @param setId - Optional set ID for uploading to Firebase Storage with a stable path
  * @returns A result object containing the processed image URL, any error message, and whether it was skipped
  */
-export async function removeImageBackground(imageUrl: string): Promise<RemoveBackgroundResult> {
-  console.log('[removeBackground] Starting background removal for:', imageUrl);
+export async function removeImageBackground(
+  imageUrl: string,
+  setId?: string
+): Promise<RemoveBackgroundResult> {
+  console.log('[removeBackground] Starting background removal for:', imageUrl, 'setId:', setId);
 
   try {
     const response = await fetch('/api/remove-background', {
@@ -38,7 +42,7 @@ export async function removeImageBackground(imageUrl: string): Promise<RemoveBac
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ imageUrl }),
+      body: JSON.stringify({ imageUrl, setId }),
     });
 
     console.log('[removeBackground] API response status:', response.status);

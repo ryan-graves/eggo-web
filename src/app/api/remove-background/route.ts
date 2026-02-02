@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdminConfigured, uploadToStorage } from '@/lib/firebase/admin';
 
 /**
  * Background Removal API Route
  *
- * This route proxies background removal requests to a third-party service.
+ * This route proxies background removal requests to a third-party service,
+ * then uploads the processed image to Firebase Storage.
  *
  * ## Provider: rembg.com (Current)
- * Free cloud API built on the open-source rembg library. No credit limits.
+ * Cloud API built on the open-source rembg library.
  * Requires REMBG_API_KEY environment variable.
  * API docs: https://www.rembg.com/en/api-usage
  *
@@ -41,13 +43,22 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { imageUrl } = body;
+    const { imageUrl, setId } = body;
 
-    console.log('[remove-background API] Processing image:', imageUrl);
+    console.log('[remove-background API] Processing image:', imageUrl, 'for set:', setId);
 
     if (!imageUrl || typeof imageUrl !== 'string') {
       console.log('[remove-background API] Missing or invalid imageUrl');
       return NextResponse.json({ error: 'imageUrl is required' }, { status: 400 });
+    }
+
+    // Validate setId contains only safe characters for storage paths
+    if (setId && typeof setId === 'string') {
+      const safeIdPattern = /^[a-zA-Z0-9_-]+$/;
+      if (!safeIdPattern.test(setId)) {
+        console.log('[remove-background API] Invalid setId format:', setId);
+        return NextResponse.json({ error: 'Invalid setId format' }, { status: 400 });
+      }
     }
 
     // Fetch the image first (rembg.com requires file upload, not URL)
@@ -97,13 +108,32 @@ export async function POST(request: NextRequest) {
     }
 
     const imageBuffer = await response.arrayBuffer();
-    const base64 = Buffer.from(imageBuffer).toString('base64');
-    const dataUrl = `data:image/png;base64,${base64}`;
+    const buffer = Buffer.from(imageBuffer);
 
-    console.log('[remove-background API] Success, returning processed image');
+    // If Firebase Admin is configured and setId provided, upload to Storage
+    if (isAdminConfigured() && setId) {
+      try {
+        console.log('[remove-background API] Uploading to Firebase Storage...');
+        const storagePath = `processed-images/${setId}.png`;
+        const publicUrl = await uploadToStorage(buffer, storagePath, 'image/png');
+        console.log('[remove-background API] Uploaded to Storage:', publicUrl);
+        return NextResponse.json({ processedImageUrl: publicUrl });
+      } catch (storageError) {
+        console.error('[remove-background API] Storage upload failed:', storageError);
+        const message =
+          storageError instanceof Error ? storageError.message : 'Unknown storage error';
+        return NextResponse.json({ error: `Storage upload failed: ${message}` }, { status: 500 });
+      }
+    }
+
+    // Fallback to base64 data URL if Storage not configured
+    console.log('[remove-background API] Storage not configured, returning base64');
+    const base64 = buffer.toString('base64');
+    const dataUrl = `data:image/png;base64,${base64}`;
     return NextResponse.json({ processedImageUrl: dataUrl });
   } catch (error) {
     console.error('[remove-background API] Exception:', error);
-    return NextResponse.json({ error: 'Background removal failed' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: `Background removal failed: ${message}` }, { status: 500 });
   }
 }

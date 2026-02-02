@@ -67,13 +67,23 @@ export async function getCollectionsForUser(userId: string): Promise<Collection[
  */
 export function subscribeToCollectionsForUser(
   userId: string,
-  callback: (collections: Collection[]) => void
+  callback: (collections: Collection[]) => void,
+  onError?: (error: Error) => void
 ): Unsubscribe {
   const q = query(getCollectionsRef(), where('memberUserIds', 'array-contains', userId));
-  return onSnapshot(q, (snapshot) => {
-    const collections = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Collection);
-    callback(collections);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const collections = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Collection);
+      callback(collections);
+    },
+    (error) => {
+      console.error('[subscribeToCollectionsForUser] Permission error:', error.message);
+      if (onError) {
+        onError(error);
+      }
+    }
+  );
 }
 
 /**

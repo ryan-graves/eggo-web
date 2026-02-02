@@ -64,16 +64,26 @@ export async function updateUIThemePreference(
  */
 export function subscribeToUserPreferences(
   userId: string,
-  callback: (preferences: UserPreferences | null) => void
+  callback: (preferences: UserPreferences | null) => void,
+  onError?: (error: Error) => void
 ): () => void {
   const db = getFirebaseDb();
   const docRef = doc(db, COLLECTION, userId);
 
-  return onSnapshot(docRef, (docSnap) => {
-    if (!docSnap.exists()) {
-      callback(null);
-      return;
+  return onSnapshot(
+    docRef,
+    (docSnap) => {
+      if (!docSnap.exists()) {
+        callback(null);
+        return;
+      }
+      callback(docSnap.data() as UserPreferences);
+    },
+    (error) => {
+      console.error('[subscribeToUserPreferences] Permission error:', error.message);
+      if (onError) {
+        onError(error);
+      }
     }
-    callback(docSnap.data() as UserPreferences);
-  });
+  );
 }
