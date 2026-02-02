@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, updateDoc, doc, deleteField, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, deleteField, Timestamp, query, where } from 'firebase/firestore';
 import {
   getFirebaseDb,
   enablePublicSharing,
@@ -134,13 +134,19 @@ function SettingsContent(): React.JSX.Element {
   };
 
   const handleCleanupOccasions = async () => {
+    if (!activeCollection) {
+      setCleanupStatus('Error: No collection selected');
+      return;
+    }
+
     setIsCleaningUp(true);
     setCleanupStatus('Starting cleanup...');
 
     try {
       const db = getFirebaseDb();
       const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
+      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
+      const snapshot = await getDocs(q);
 
       let updated = 0;
       for (const docSnap of snapshot.docs) {
@@ -160,13 +166,19 @@ function SettingsContent(): React.JSX.Element {
   };
 
   const handleClearCustomImages = async () => {
+    if (!activeCollection) {
+      setCustomImageStatus('Error: No collection selected');
+      return;
+    }
+
     setIsClearingCustomImages(true);
     setCustomImageStatus('Scanning sets...');
 
     try {
       const db = getFirebaseDb();
       const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
+      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
+      const snapshot = await getDocs(q);
 
       let cleared = 0;
       for (const docSnap of snapshot.docs) {
@@ -187,13 +199,19 @@ function SettingsContent(): React.JSX.Element {
   };
 
   const handleRefreshAllImages = async () => {
+    if (!activeCollection) {
+      setRefreshStatus('Error: No collection selected');
+      return;
+    }
+
     setIsRefreshingAll(true);
     setRefreshStatus('Scanning sets...');
 
     try {
       const db = getFirebaseDb();
       const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
+      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
+      const snapshot = await getDocs(q);
 
       const setsWithImages = snapshot.docs.filter((docSnap) => {
         const data = docSnap.data();
@@ -255,13 +273,19 @@ function SettingsContent(): React.JSX.Element {
   };
 
   const handleMigrateDates = async () => {
+    if (!activeCollection) {
+      setMigrateDateStatus('Error: No collection selected');
+      return;
+    }
+
     setIsMigratingDates(true);
     setMigrateDateStatus('Scanning sets...');
 
     try {
       const db = getFirebaseDb();
       const setsRef = collection(db, 'sets');
-      const snapshot = await getDocs(setsRef);
+      const q = query(setsRef, where('collectionId', '==', activeCollection.id));
+      const snapshot = await getDocs(q);
 
       let migrated = 0;
       let skipped = 0;
