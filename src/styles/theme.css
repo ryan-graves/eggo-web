@@ -227,6 +227,8 @@
 [data-ui-theme='mono'] button,
 [data-ui-theme='mono'] [role='button'],
 [data-ui-theme='mono'] a[class*='button' i],
-[data-ui-theme='mono'] a[class*='Button' i] {
+[data-ui-theme='mono'] a[class*='Button' i],
+[data-ui-theme='mono'] .btn-default,
+[data-ui-theme='mono'] .btn-small {
   border-radius: 9999px !important;
 }
