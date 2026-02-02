@@ -94,7 +94,7 @@ export async function uploadToStorage(
   await file.save(buffer, {
     metadata: {
       contentType,
-      cacheControl: 'public, max-age=31536000', // Cache for 1 year
+      cacheControl: 'public, max-age=2592000', // Cache for 30 days (allows re-processing with improved algorithms)
     },
   });
 

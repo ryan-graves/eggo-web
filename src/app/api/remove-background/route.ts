@@ -52,6 +52,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'imageUrl is required' }, { status: 400 });
     }
 
+    // Validate setId contains only safe characters for storage paths
+    if (setId && typeof setId === 'string') {
+      const safeIdPattern = /^[a-zA-Z0-9_-]+$/;
+      if (!safeIdPattern.test(setId)) {
+        console.log('[remove-background API] Invalid setId format:', setId);
+        return NextResponse.json({ error: 'Invalid setId format' }, { status: 400 });
+      }
+    }
+
     // Fetch the image first (rembg.com requires file upload, not URL)
     console.log('[remove-background API] Fetching source image...');
     const imageResponse = await fetch(imageUrl);

@@ -265,7 +265,7 @@ function SettingsContent(): React.JSX.Element {
           failed++;
         }
 
-        // Small delay to avoid overwhelming the API
+        // Rate limit: 1 second between requests to avoid overwhelming rembg.com API
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
