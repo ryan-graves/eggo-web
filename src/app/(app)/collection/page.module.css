@@ -225,13 +225,14 @@
   width: 140px;
   height: 20px;
   margin-bottom: var(--space-4);
+  margin-left: var(--layout-content-padding);
 }
 
 .skeletonCarousel {
   display: flex;
   gap: var(--space-3);
   overflow: hidden;
-  padding: 0 var(--space-4);
+  padding: 0 var(--layout-content-padding);
 }
 
 .skeletonCarousel > * {
