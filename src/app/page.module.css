@@ -1,13 +1,11 @@
 .page {
-  position: fixed;
-  top: env(safe-area-inset-top);
-  right: env(safe-area-inset-right);
-  bottom: env(safe-area-inset-bottom);
-  left: env(safe-area-inset-left);
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
-  overflow-y: auto;
   align-items: center;
   justify-content: center;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 .main {
