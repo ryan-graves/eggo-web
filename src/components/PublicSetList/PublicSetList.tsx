@@ -5,8 +5,8 @@ import type { Timestamp } from 'firebase/firestore';
 import { SetCard } from '@/components/SetCard';
 import { FilterSheet } from '@/components/FilterSheet';
 import { FilterTags } from '@/components/FilterTags';
-import type { LegoSet, SetStatus } from '@/types';
-import styles from './SetList.module.css';
+import type { LegoSet, SetStatus, PublicViewSettings } from '@/types';
+import styles from './PublicSetList.module.css';
 
 /**
  * Safely convert a dateReceived value to a sortable string.
@@ -15,17 +15,18 @@ import styles from './SetList.module.css';
 function getDateString(dateReceived: string | Timestamp | null | undefined): string {
   if (!dateReceived) return '';
   if (typeof dateReceived === 'string') return dateReceived;
-  // Handle Firestore Timestamp objects
   if (typeof dateReceived === 'object' && 'toDate' in dateReceived) {
     const date = dateReceived.toDate();
-    return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+    return date.toISOString().split('T')[0];
   }
   return '';
 }
 
-interface SetListProps {
+interface PublicSetListProps {
   sets: LegoSet[];
   availableOwners: string[];
+  shareToken: string;
+  viewSettings?: PublicViewSettings;
 }
 
 type SortField = 'name' | 'dateReceived' | 'pieceCount' | 'setNumber';
@@ -47,7 +48,12 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'pieceCount', label: 'Piece Count' },
 ];
 
-export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Element {
+export function PublicSetList({
+  sets,
+  availableOwners,
+  shareToken,
+  viewSettings,
+}: PublicSetListProps): React.JSX.Element {
   const [statusFilter, setStatusFilter] = useState<SetStatus | 'all'>('all');
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
   const [themeFilter, setThemeFilter] = useState<string>('all');
@@ -55,6 +61,8 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
   const [sortField, setSortField] = useState<SortField>('dateReceived');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
+  const hideOwner = !viewSettings?.showOwner;
 
   // Get unique themes from sets
   const themes = useMemo(() => {
@@ -85,8 +93,8 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
       result = result.filter((set) => set.status === statusFilter);
     }
 
-    // Apply owner filter
-    if (ownerFilter !== 'all') {
+    // Apply owner filter (only if owner is visible)
+    if (!hideOwner && ownerFilter !== 'all') {
       result = result.filter((set) => set.owners.includes(ownerFilter));
     }
 
@@ -110,8 +118,6 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
           comparison = (a.pieceCount || 0) - (b.pieceCount || 0);
           break;
         case 'dateReceived':
-          // YYYY-MM-DD strings sort correctly with localeCompare
-          // Use helper to handle both string and legacy Timestamp formats
           comparison = getDateString(a.dateReceived).localeCompare(getDateString(b.dateReceived));
           break;
       }
@@ -120,7 +126,7 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
     });
 
     return result;
-  }, [sets, searchQuery, statusFilter, ownerFilter, themeFilter, sortField, sortDirection]);
+  }, [sets, searchQuery, statusFilter, ownerFilter, themeFilter, sortField, sortDirection, hideOwner]);
 
   const handleSortChange = (field: SortField) => {
     if (field === sortField) {
@@ -145,7 +151,7 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
       });
     }
 
-    if (ownerFilter !== 'all') {
+    if (!hideOwner && ownerFilter !== 'all') {
       tags.push({
         key: 'owner',
         label: 'Owner',
@@ -164,9 +170,10 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
     }
 
     return tags;
-  }, [statusFilter, ownerFilter, themeFilter]);
+  }, [statusFilter, ownerFilter, themeFilter, hideOwner]);
 
   const activeFilterCount = filterTags.length;
+  const linkPrefix = `/share/${shareToken}/set`;
 
   return (
     <div className={styles.container}>
@@ -182,7 +189,7 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
         <button
           type="button"
           onClick={() => setIsFilterSheetOpen(true)}
-          className={`btn-default btn-secondary ${styles.filterButton}`}
+          className={styles.filterButton}
         >
           <svg
             width="18"
@@ -230,18 +237,20 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
           ))}
         </select>
 
-        <select
-          value={ownerFilter}
-          onChange={(e) => setOwnerFilter(e.target.value)}
-          className={styles.select}
-        >
-          <option value="all">All Owners</option>
-          {availableOwners.map((owner) => (
-            <option key={owner} value={owner}>
-              {owner}
-            </option>
-          ))}
-        </select>
+        {!hideOwner && (
+          <select
+            value={ownerFilter}
+            onChange={(e) => setOwnerFilter(e.target.value)}
+            className={styles.select}
+          >
+            <option value="all">All Owners</option>
+            {availableOwners.map((owner) => (
+              <option key={owner} value={owner}>
+                {owner}
+              </option>
+            ))}
+          </select>
+        )}
 
         <select
           value={themeFilter}
@@ -294,7 +303,7 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
       {filteredSets.length === 0 ? (
         <div className={styles.empty}>
           {sets.length === 0 ? (
-            <p>No sets in your collection yet. Add your first set!</p>
+            <p>This collection is empty.</p>
           ) : (
             <p>No sets match your filters.</p>
           )}
@@ -302,7 +311,7 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
       ) : (
         <div className={styles.grid}>
           {filteredSets.map((set) => (
-            <SetCard key={set.id} set={set} />
+            <SetCard key={set.id} set={set} linkPrefix={linkPrefix} hideOwner={hideOwner} />
           ))}
         </div>
       )}
@@ -321,7 +330,7 @@ export function SetList({ sets, availableOwners }: SetListProps): React.JSX.Elem
         onSortFieldChange={(field) => setSortField(field as SortField)}
         sortDirection={sortDirection}
         onSortDirectionChange={setSortDirection}
-        availableOwners={availableOwners}
+        availableOwners={hideOwner ? [] : availableOwners}
         availableThemes={themes}
         statusOptions={STATUS_OPTIONS}
         sortOptions={SORT_OPTIONS}

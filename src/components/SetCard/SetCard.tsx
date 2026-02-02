@@ -8,6 +8,8 @@ import styles from './SetCard.module.css';
 interface SetCardProps {
   set: LegoSet;
   compact?: boolean;
+  linkPrefix?: string; // e.g., '/share/abc123/set' for public links
+  hideOwner?: boolean; // Hide owner in public view
 }
 
 const STATUS_LABELS: Record<LegoSet['status'], string> = {
@@ -18,12 +20,13 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
   disassembled: 'Disassembled',
 };
 
-export function SetCard({ set, compact = false }: SetCardProps): React.JSX.Element {
+export function SetCard({ set, compact = false, linkPrefix, hideOwner = false }: SetCardProps): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
   const cardClassName = compact ? `${styles.card} ${styles.compact}` : styles.card;
+  const href = linkPrefix ? `${linkPrefix}/${set.id}` : `/collection/${set.id}`;
 
   return (
-    <Link href={`/collection/${set.id}`} className={cardClassName}>
+    <Link href={href} className={cardClassName}>
       <div className={styles.imageContainer}>
         <div className={styles.imageInner}>
           {imageUrl ? (
@@ -50,7 +53,7 @@ export function SetCard({ set, compact = false }: SetCardProps): React.JSX.Eleme
               <span className={`${styles.status} ${styles[set.status]}`}>
                 {STATUS_LABELS[set.status]}
               </span>
-              {set.owners.length > 0 && (
+              {!hideOwner && set.owners.length > 0 && (
                 <span className={styles.owner}>{set.owners.join(', ')}</span>
               )}
             </div>

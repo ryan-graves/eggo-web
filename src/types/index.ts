@@ -74,6 +74,16 @@ export interface LegoSet {
 }
 
 /**
+ * Settings for what fields are visible on the public share link
+ */
+export interface PublicViewSettings {
+  showOwner: boolean;
+  showDateReceived: boolean;
+  showOccasion: boolean;
+  showNotes: boolean;
+}
+
+/**
  * A collection of Lego sets (e.g., "The Graves Collection")
  */
 export interface Collection {
@@ -81,6 +91,9 @@ export interface Collection {
   name: string;
   owners: string[]; // ["Ryan", "Alyssa"] - simple tags, not user references
   memberUserIds: string[]; // Users who can access this collection
+  isPublic?: boolean; // Whether collection is publicly viewable
+  publicShareToken?: string; // Unique token for public share URL
+  publicViewSettings?: PublicViewSettings; // Controls which fields are visible publicly
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

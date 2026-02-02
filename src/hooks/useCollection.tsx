@@ -69,13 +69,19 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
     const unsubscribe = subscribeToCollectionsForUser(user.uid, (userCollections) => {
       setCollections(userCollections);
 
-      // Auto-select first collection if none selected
+      // Auto-select first collection if none selected, or update active collection with fresh data
       setActiveCollectionState((current) => {
         if (!current && userCollections.length > 0) {
           return userCollections[0];
         }
-        // Clear active collection if it was deleted
-        if (current && !userCollections.find((c) => c.id === current.id)) {
+        if (current) {
+          // Find the updated version of the current collection
+          const updatedCollection = userCollections.find((c) => c.id === current.id);
+          if (updatedCollection) {
+            // Return the fresh data from Firestore
+            return updatedCollection;
+          }
+          // Collection was deleted, select first available or null
           return userCollections[0] || null;
         }
         return current;

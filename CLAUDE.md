@@ -120,6 +120,13 @@ Groups of Lego sets (e.g., "The Graves Collection")
 
 - `owners`: Simple string tags like "Ryan", "Alyssa"
 - `memberUserIds`: Firebase user IDs who can access
+- `isPublic`: (optional) Whether collection is publicly viewable via share link
+- `publicShareToken`: (optional) Unique 12-character token for public share URL
+- `publicViewSettings`: (optional) Object controlling which fields are visible publicly:
+  - `showOwner`: Show owner names
+  - `showDateReceived`: Show date received
+  - `showOccasion`: Show occasion
+  - `showNotes`: Show notes
 
 ### Sets
 
@@ -186,7 +193,52 @@ Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js supp
 1. In Firebase Console, add your Netlify domain to authorized domains:
    - Authentication > Settings > Authorized domains
    - Add: `your-site.netlify.app` and custom domain if applicable
-2. Update Firestore security rules for production use
+2. Update Firestore security rules for production use (see below)
+3. Create required Firestore indexes (see below)
+
+### Firestore Composite Index (Required for Public Sharing)
+
+The public collection sharing feature requires a composite index. Create it in Firebase Console:
+
+1. Go to Firestore Database > Indexes > Composite
+2. Create an index on the `collections` collection:
+   - Field 1: `publicShareToken` (Ascending)
+   - Field 2: `isPublic` (Ascending)
+   - Query scope: Collection
+
+Alternatively, Firestore will provide a link to auto-create the index when the query first fails.
+
+### Firestore Security Rules (Required for Public Sharing)
+
+Update your Firestore security rules to allow public access to shared collections:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Collections - members can read/write, public can read if isPublic
+    match /collections/{collectionId} {
+      allow read: if request.auth != null && request.auth.uid in resource.data.memberUserIds;
+      allow read: if resource.data.isPublic == true;
+      allow write: if request.auth != null && request.auth.uid in resource.data.memberUserIds;
+    }
+
+    // Sets - members can read/write, public can read if parent collection is public
+    match /sets/{setId} {
+      allow read, write: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/collections/$(resource.data.collectionId)).data.memberUserIds;
+      allow read: if get(/databases/$(database)/documents/collections/$(resource.data.collectionId)).data.isPublic == true;
+    }
+
+    // Users - only the user themselves can read/write
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+**Important**: Test these rules in the Firebase Console Rules Playground before deploying to production.
 
 ## Getting Started
 
