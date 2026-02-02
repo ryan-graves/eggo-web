@@ -28,6 +28,11 @@ const nextConfig: NextConfig = {
         hostname: 'images.brickset.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        pathname: '/**',
+      },
     ],
   },
 };
