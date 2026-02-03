@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from 'next-view-transitions';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
+import { useScrollPersistence } from '@/hooks/useScrollPersistence';
+import { useNavigationDirection } from '@/contexts';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
 import { CollectionSettingsModal } from '@/components/CollectionSettingsModal';
@@ -64,8 +66,17 @@ export default function CollectionPage(): React.JSX.Element {
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('home');
 
+  const { setDirection } = useNavigationDirection();
+
+  // Restore scroll position when returning to this page
+  useScrollPersistence();
+
   const handleAddSuccess = () => {
     setShowAddForm(false);
+  };
+
+  const handleSettingsClick = () => {
+    setDirection('forward');
   };
 
   // Show skeleton UI during initial app load
@@ -81,7 +92,7 @@ export default function CollectionPage(): React.JSX.Element {
           <div className={styles.headerLeft}>
             <h1 className={styles.title}>Eggo</h1>
           </div>
-          <Link href="/settings" className={styles.avatarLink}>
+          <Link href="/settings" className={styles.avatarLink} onClick={handleSettingsClick}>
             {user?.photoURL && (
               <Image
                 src={user.photoURL}
@@ -111,7 +122,7 @@ export default function CollectionPage(): React.JSX.Element {
             onSettingsClick={activeCollection ? () => setShowCollectionSettings(true) : undefined}
           />
         </div>
-        <Link href="/settings" className={styles.avatarLink}>
+        <Link href="/settings" className={styles.avatarLink} onClick={handleSettingsClick}>
           {user?.photoURL && (
             <Image
               src={user.photoURL}

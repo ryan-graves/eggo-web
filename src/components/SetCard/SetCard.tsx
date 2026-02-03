@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { Link } from 'next-view-transitions';
+import { useNavigationDirection } from '@/contexts';
 import type { LegoSet } from '@/types';
 import styles from './SetCard.module.css';
 
@@ -21,12 +22,17 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 };
 
 export function SetCard({ set, compact = false, linkPrefix, hideOwner = false }: SetCardProps): React.JSX.Element {
+  const { setDirection } = useNavigationDirection();
   const imageUrl = set.customImageUrl || set.imageUrl;
   const cardClassName = compact ? `${styles.card} ${styles.compact}` : styles.card;
   const href = linkPrefix ? `${linkPrefix}/${set.id}` : `/collection/${set.id}`;
 
+  const handleClick = () => {
+    setDirection('forward');
+  };
+
   return (
-    <Link href={href} className={cardClassName}>
+    <Link href={href} className={cardClassName} onClick={handleClick}>
       <div className={styles.imageContainer}>
         <div className={styles.imageInner}>
           {imageUrl ? (
