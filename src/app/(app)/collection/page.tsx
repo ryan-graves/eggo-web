@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Link } from 'next-view-transitions';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +17,22 @@ import { SetCardSkeleton } from '@/components/SetCardSkeleton';
 import styles from './page.module.css';
 
 type ViewMode = 'home' | 'all';
+
+const VIEW_MODE_STORAGE_KEY = 'eggo_state_/collection_viewMode';
+
+function getInitialViewMode(): ViewMode {
+  if (typeof window === 'undefined') return 'home';
+  const saved = sessionStorage.getItem(VIEW_MODE_STORAGE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed === 'home' || parsed === 'all') return parsed;
+    } catch {
+      // Ignore parse errors
+    }
+  }
+  return 'home';
+}
 
 function CollectionSkeleton(): React.JSX.Element {
   return (
@@ -64,12 +80,18 @@ export default function CollectionPage(): React.JSX.Element {
   const { collections, activeCollection, sets, isInitializing, setActiveCollection } = useCollection();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('home');
+  const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
 
   const { setDirection } = useNavigationDirection();
 
   // Restore scroll position when returning to this page
   useScrollPersistence();
+
+  // Persist viewMode to sessionStorage whenever it changes
+  // This ensures the tab state is preserved when navigating to a set detail and back
+  useEffect(() => {
+    sessionStorage.setItem(VIEW_MODE_STORAGE_KEY, JSON.stringify(viewMode));
+  }, [viewMode]);
 
   const handleAddSuccess = () => {
     setShowAddForm(false);
