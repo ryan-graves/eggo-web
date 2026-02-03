@@ -90,6 +90,7 @@
   font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
   cursor: pointer;
+  text-decoration: none;
   transition:
     background-color var(--transition-fast),
     color var(--transition-fast);
