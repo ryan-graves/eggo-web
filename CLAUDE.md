@@ -231,8 +231,11 @@ service cloud.firestore {
     }
 
     // Sets - members can read/write, public can read if parent collection is public
+    // Note: create uses request.resource.data (incoming), update/delete use resource.data (existing)
     match /sets/{setId} {
-      allow read, write: if request.auth != null &&
+      allow create: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/collections/$(request.resource.data.collectionId)).data.memberUserIds;
+      allow read, update, delete: if request.auth != null &&
         request.auth.uid in get(/databases/$(database)/documents/collections/$(resource.data.collectionId)).data.memberUserIds;
       allow read: if get(/databases/$(database)/documents/collections/$(resource.data.collectionId)).data.isPublic == true;
     }
