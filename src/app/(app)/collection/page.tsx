@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { Link } from 'next-view-transitions';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
-import { useScrollPersistence } from '@/hooks/useScrollPersistence';
 import { useNavigationDirection } from '@/contexts';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
@@ -84,11 +83,7 @@ export default function CollectionPage(): React.JSX.Element {
 
   const { setDirection } = useNavigationDirection();
 
-  // Restore scroll position when returning to this page
-  useScrollPersistence();
-
-  // Persist viewMode to sessionStorage whenever it changes
-  // This ensures the tab state is preserved when navigating to a set detail and back
+  // Persist viewMode to sessionStorage for restoration after page refresh
   useEffect(() => {
     sessionStorage.setItem(VIEW_MODE_STORAGE_KEY, JSON.stringify(viewMode));
   }, [viewMode]);

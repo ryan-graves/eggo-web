@@ -1,0 +1,1 @@
+export { SetDetailModal } from './SetDetailModal';
