@@ -2,7 +2,7 @@ import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/fires
 import { getFirebaseDb } from './config';
 import type { UserPreferences, ThemePreference, UITheme } from '@/types';
 
-const COLLECTION = 'userPreferences';
+const COLLECTION = 'users';
 
 /**
  * Get user preferences from Firestore

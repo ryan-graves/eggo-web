@@ -107,6 +107,7 @@ export interface User {
   displayName: string;
   photoUrl?: string;
   theme: ThemePreference;
+  uiTheme: UITheme;
   collectionIds: string[];
   createdAt: Timestamp;
   updatedAt: Timestamp;
