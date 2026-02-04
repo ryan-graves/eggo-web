@@ -145,17 +145,24 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     router.prefetch('/settings');
   }, [router]);
 
-  // Prefetch all set detail routes so tapping into a set feels instant
+  // Prefetch all set detail routes and preload images for instant navigation
   useEffect(() => {
     if (sets.length === 0) return;
 
-    // Use requestIdleCallback to avoid blocking the main thread
     const prefetchSets = () => {
       for (const set of sets) {
         router.prefetch(`/set/${set.id}`);
+
+        // Preload the set image into the browser cache
+        const imageUrl = set.customImageUrl || set.imageUrl;
+        if (imageUrl) {
+          const img = new window.Image();
+          img.src = imageUrl;
+        }
       }
     };
 
+    // Use requestIdleCallback to avoid blocking the main thread
     if (typeof window.requestIdleCallback === 'function') {
       const id = window.requestIdleCallback(prefetchSets);
       return () => window.cancelIdleCallback(id);
