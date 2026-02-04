@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -32,6 +32,7 @@ function SetDetailContent(): React.JSX.Element {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { sets, activeCollection, isInitializing } = useCollection();
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const setId = params.id as string;
   const set = sets.find((s) => s.id === setId);
@@ -98,14 +99,18 @@ function SetDetailContent(): React.JSX.Element {
           <div className={styles.imageSection}>
             <div className={styles.imageContainer}>
               {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt={set.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className={styles.image}
-                  priority
-                />
+                <>
+                  {!imageLoaded && <div className={styles.imageSkeleton} />}
+                  <Image
+                    src={imageUrl}
+                    alt={set.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className={`${styles.image} ${imageLoaded ? styles.imageLoaded : ''}`}
+                    priority
+                    onLoad={() => setImageLoaded(true)}
+                  />
+                </>
               ) : (
                 <div className={styles.placeholder}>No Image</div>
               )}

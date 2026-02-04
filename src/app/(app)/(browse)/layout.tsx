@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useTransition } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { Link, useTransitionRouter } from 'next-view-transitions';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
@@ -120,12 +120,16 @@ function SuspenseFallback(): React.JSX.Element {
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router = useTransitionRouter();
   const { user } = useAuth();
   const { collections, activeCollection, setActiveCollection, isInitializing } = useCollection();
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [pendingView, setPendingView] = useState<'home' | 'all' | null>(null);
 
-  const isAllSetsView = pathname === '/all';
+  const actualIsAllSets = pathname === '/all';
+  // Use pending view during transition, fall back to actual path
+  const isAllSetsView = isPending && pendingView !== null ? pendingView === 'all' : actualIsAllSets;
   const action = searchParams.get('action');
   const showAddForm = action === 'add-set';
 
@@ -133,6 +137,19 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
   useEffect(() => {
     sessionStorage.setItem(LAST_BROWSE_PATH_KEY, pathname);
   }, [pathname]);
+
+  const handleViewChange = (view: 'home' | 'all') => {
+    const targetPath = view === 'all' ? '/all' : '/home';
+    if (pathname === targetPath) return;
+
+    // Track pending view for immediate visual feedback
+    setPendingView(view);
+
+    // Navigate in a transition so it doesn't block the UI
+    startTransition(() => {
+      router.push(targetPath);
+    });
+  };
 
   const openAddForm = () => {
     router.push(`${pathname}?action=add-set`);
@@ -190,8 +207,9 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
       <main className={styles.main}>
         <div className={styles.toolbar}>
           <div className={styles.viewToggle}>
-            <Link
-              href="/home"
+            <button
+              type="button"
+              onClick={() => handleViewChange('home')}
               className={`${styles.viewToggleButton} ${!isAllSetsView ? styles.active : ''}`}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -199,9 +217,10 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
                 <polyline points="9 22 9 12 15 12 15 22" />
               </svg>
               Home
-            </Link>
-            <Link
-              href="/all"
+            </button>
+            <button
+              type="button"
+              onClick={() => handleViewChange('all')}
               className={`${styles.viewToggleButton} ${isAllSetsView ? styles.active : ''}`}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -211,7 +230,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
                 <rect x="3" y="14" width="7" height="7" />
               </svg>
               All Sets
-            </Link>
+            </button>
           </div>
           <button
             type="button"
@@ -222,7 +241,11 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
           </button>
         </div>
 
-        {children}
+        {isPending ? (
+          isAllSetsView ? <AllSetsSkeleton /> : <HomeSkeleton />
+        ) : (
+          children
+        )}
       </main>
 
       {showAddForm && activeCollection && (

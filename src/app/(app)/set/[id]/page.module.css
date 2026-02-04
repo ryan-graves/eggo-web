@@ -65,10 +65,40 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.imageSkeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--surface-secondary) 25%,
+    var(--surface-tertiary) 50%,
+    var(--surface-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .image {
   object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.imageLoaded {
+  opacity: 1;
 }
 
 .placeholder {
