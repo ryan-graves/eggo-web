@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useTransitionRouter } from 'next-view-transitions';
 import { useAuth } from '@/hooks/useAuth';
 import styles from './page.module.css';
 
 export default function LoginPage(): React.JSX.Element {
   const { user, loading, error, signInWithGoogle } = useAuth();
-  const router = useRouter();
+  const router = useTransitionRouter();
 
   useEffect(() => {
     if (user && !loading) {
