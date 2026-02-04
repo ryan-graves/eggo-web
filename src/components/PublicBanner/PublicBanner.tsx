@@ -38,7 +38,7 @@ export function PublicBanner(): React.JSX.Element | null {
       <div className={styles.banner}>
         <div className={styles.content}>
           <span className={styles.text}>Viewing a shared collection</span>
-          <Link href="/collection" className={styles.link}>
+          <Link href="/home" className={styles.link}>
             <svg
               width="16"
               height="16"
@@ -63,7 +63,7 @@ export function PublicBanner(): React.JSX.Element | null {
     <div className={styles.banner}>
       <div className={styles.content}>
         <span className={styles.text}>Start tracking your own Lego collection</span>
-        <Link href="/login" className={styles.button}>
+        <Link href="/sign-in" className={styles.button}>
           Sign up free
         </Link>
         <button

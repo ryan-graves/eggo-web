@@ -11,8 +11,12 @@ export default function Home(): React.JSX.Element {
   const router = useRouter();
 
   useEffect(() => {
-    if (user && !loading) {
-      router.push('/collection');
+    if (!loading) {
+      if (user) {
+        router.push('/home');
+      } else {
+        router.push('/sign-in');
+      }
     }
   }, [user, loading, router]);
 
@@ -32,7 +36,7 @@ export default function Home(): React.JSX.Element {
         <h1 className={styles.title}>Eggo</h1>
         <p className={styles.subtitle}>Lego Collection Manager</p>
         <p className={styles.description}>Track and manage your Lego set collection</p>
-        <Link href="/login" className={styles.loginLink}>
+        <Link href="/sign-in" className={styles.loginLink}>
           Sign in to get started
         </Link>
       </main>

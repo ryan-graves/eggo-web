@@ -14,7 +14,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps): React.JSX.Ele
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.push('/sign-in');
     }
   }, [user, loading, router]);
 

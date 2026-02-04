@@ -11,7 +11,7 @@ export default function LoginPage(): React.JSX.Element {
 
   useEffect(() => {
     if (user && !loading) {
-      router.push('/collection');
+      router.push('/home');
     }
   }, [user, loading, router]);
 

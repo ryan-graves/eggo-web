@@ -23,7 +23,7 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 export function SetCard({ set, compact = false, linkPrefix, hideOwner = false }: SetCardProps): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
   const cardClassName = compact ? `${styles.card} ${styles.compact}` : styles.card;
-  const href = linkPrefix ? `${linkPrefix}/${set.id}` : `/collection/${set.id}`;
+  const href = linkPrefix ? `${linkPrefix}/${set.id}` : `/set/${set.id}`;
 
   return (
     <Link href={href} className={cardClassName}>

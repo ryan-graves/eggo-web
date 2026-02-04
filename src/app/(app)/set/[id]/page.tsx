@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection } from '@/hooks/useCollection';
@@ -21,14 +20,26 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 
 export default function SetDetailPage(): React.JSX.Element {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { sets, activeCollection, isInitializing } = useCollection();
-  const [showEditModal, setShowEditModal] = useState(false);
 
-  const setId = params.setId as string;
+  const setId = params.id as string;
   const set = sets.find((s) => s.id === setId);
 
+  const action = searchParams.get('action');
+  const showEditModal = action === 'edit';
+
+  const openEditModal = () => {
+    router.push(`/set/${setId}?action=edit`);
+  };
+
+  const closeEditModal = () => {
+    router.push(`/set/${setId}`);
+  };
+
   const handleEditSuccess = () => {
-    setShowEditModal(false);
+    closeEditModal();
   };
 
   if (isInitializing) {
@@ -45,7 +56,7 @@ export default function SetDetailPage(): React.JSX.Element {
         <div className={styles.notFound}>
           <h1>Set Not Found</h1>
           <p>The set you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-          <Link href="/collection" className={styles.backLink}>
+          <Link href="/home" className={styles.backLink}>
             Back to Collection
           </Link>
         </div>
@@ -56,7 +67,7 @@ export default function SetDetailPage(): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
 
   const editButton = (
-    <button type="button" onClick={() => setShowEditModal(true)} className={styles.editButton} aria-label="Edit set">
+    <button type="button" onClick={openEditModal} className={styles.editButton} aria-label="Edit set">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path
           d="M11.5 2.5L13.5 4.5M10 14H14M2 10L10.5 1.5C11.3284 0.671573 12.6716 0.671573 13.5 1.5C14.3284 2.32843 14.3284 3.67157 13.5 4.5L5 13L1 14L2 10Z"
@@ -163,7 +174,7 @@ export default function SetDetailPage(): React.JSX.Element {
           set={set}
           availableOwners={activeCollection.owners}
           onSuccess={handleEditSuccess}
-          onCancel={() => setShowEditModal(false)}
+          onCancel={closeEditModal}
         />
       )}
     </div>

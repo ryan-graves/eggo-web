@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
@@ -60,20 +60,31 @@ function CollectionSkeleton(): React.JSX.Element {
 
 export default function CollectionLayout({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { user } = useAuth();
   const { collections, activeCollection, setActiveCollection, isInitializing } = useCollection();
-  const [showAddForm, setShowAddForm] = useState(false);
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
 
-  const isAllSetsView = pathname === '/collection/sets';
+  const isAllSetsView = pathname === '/all';
+  const action = searchParams.get('action');
+  const showAddForm = action === 'add-set';
 
   // Store the current browse path so set detail pages know where to return to
   useEffect(() => {
     sessionStorage.setItem(LAST_BROWSE_PATH_KEY, pathname);
   }, [pathname]);
 
+  const openAddForm = () => {
+    router.push(`${pathname}?action=add-set`);
+  };
+
+  const closeAddForm = () => {
+    router.push(pathname);
+  };
+
   const handleAddSuccess = () => {
-    setShowAddForm(false);
+    closeAddForm();
   };
 
   const avatarLink = user?.photoURL ? (
@@ -121,7 +132,7 @@ export default function CollectionLayout({ children }: CollectionLayoutProps): R
         <div className={styles.toolbar}>
           <div className={styles.viewToggle}>
             <Link
-              href="/collection"
+              href="/home"
               className={`${styles.viewToggleButton} ${!isAllSetsView ? styles.active : ''}`}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -131,7 +142,7 @@ export default function CollectionLayout({ children }: CollectionLayoutProps): R
               Home
             </Link>
             <Link
-              href="/collection/sets"
+              href="/all"
               className={`${styles.viewToggleButton} ${isAllSetsView ? styles.active : ''}`}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -145,7 +156,7 @@ export default function CollectionLayout({ children }: CollectionLayoutProps): R
           </div>
           <button
             type="button"
-            onClick={() => setShowAddForm(true)}
+            onClick={openAddForm}
             className={styles.addButton}
           >
             + Add Set
@@ -160,7 +171,7 @@ export default function CollectionLayout({ children }: CollectionLayoutProps): R
           collectionId={activeCollection.id}
           availableOwners={activeCollection.owners}
           onSuccess={handleAddSuccess}
-          onCancel={() => setShowAddForm(false)}
+          onCancel={closeAddForm}
         />
       )}
 

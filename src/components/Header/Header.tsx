@@ -19,7 +19,7 @@ interface HeaderProps {
 export function Header({
   variant = 'main',
   title,
-  backHref = '/collection',
+  backHref = '/home',
   leftContent,
   rightContent,
 }: HeaderProps): React.JSX.Element {
