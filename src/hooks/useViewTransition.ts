@@ -3,6 +3,9 @@
 import { useTransitionRouter } from 'next-view-transitions';
 import { useCallback } from 'react';
 
+/** SessionStorage key for tracking the last browse path */
+export const LAST_BROWSE_PATH_KEY = 'eggo_last_browse_path';
+
 /**
  * Hook for navigating with view transitions
  * Uses next-view-transitions for proper async handling with Next.js
@@ -23,28 +26,21 @@ export function useViewTransition() {
   /**
    * Navigate back with view transition
    * Always creates a new history entry (forward navigation) to preserve
-   * the user's exploration trail. Determines destination from referrer
-   * when possible, otherwise uses the fallback href.
+   * the user's exploration trail. Checks sessionStorage for the last browse
+   * path, otherwise uses the fallback href.
    */
   const navigateBack = useCallback(
     (fallbackHref?: string) => {
-      // Try to determine where the user came from
-      const referrer = typeof document !== 'undefined' ? document.referrer : '';
+      // Check sessionStorage for the last browse path (set by collection browse layout)
+      const lastBrowsePath =
+        typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(LAST_BROWSE_PATH_KEY) : null;
 
-      if (referrer && referrer.includes(window.location.origin)) {
-        // Extract the path from the referrer URL
-        try {
-          const referrerUrl = new URL(referrer);
-          const referrerPath = referrerUrl.pathname;
-          // Navigate to where they came from (as a new history entry)
-          router.push(referrerPath);
-          return;
-        } catch {
-          // Invalid URL, fall through to fallback
-        }
+      if (lastBrowsePath) {
+        router.push(lastBrowsePath);
+        return;
       }
 
-      // No valid referrer, use fallback
+      // No stored path, use fallback
       if (fallbackHref) {
         router.push(fallbackHref);
       } else {

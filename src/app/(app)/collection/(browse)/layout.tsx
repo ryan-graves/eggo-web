@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -12,6 +12,7 @@ import { CollectionSelector } from '@/components/CollectionSelector';
 import { CollectionSettingsModal } from '@/components/CollectionSettingsModal';
 import { AddSetForm } from '@/components/AddSetForm';
 import { SetCardSkeleton } from '@/components/SetCardSkeleton';
+import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
 import styles from './page.module.css';
 
 interface CollectionLayoutProps {
@@ -65,6 +66,11 @@ export default function CollectionLayout({ children }: CollectionLayoutProps): R
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
 
   const isAllSetsView = pathname === '/collection/sets';
+
+  // Store the current browse path so set detail pages know where to return to
+  useEffect(() => {
+    sessionStorage.setItem(LAST_BROWSE_PATH_KEY, pathname);
+  }, [pathname]);
 
   const handleAddSuccess = () => {
     setShowAddForm(false);
