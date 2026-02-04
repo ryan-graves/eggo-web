@@ -67,6 +67,7 @@ function HomeSkeleton(): React.JSX.Element {
 function AllSetsSkeleton(): React.JSX.Element {
   return (
     <>
+      {/* Desktop filters */}
       <div className={styles.skeletonFilters}>
         <div className={`${styles.skeleton} ${styles.skeletonSearchInput}`} />
         <div className={`${styles.skeleton} ${styles.skeletonSelect}`} />
@@ -76,6 +77,12 @@ function AllSetsSkeleton(): React.JSX.Element {
           <div className={`${styles.skeleton} ${styles.skeletonSelect}`} />
           <div className={`${styles.skeleton} ${styles.skeletonSortButton}`} />
         </div>
+      </div>
+
+      {/* Mobile filters */}
+      <div className={styles.skeletonMobileFilters}>
+        <div className={`${styles.skeleton} ${styles.skeletonSearchInput}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonFilterButton}`} />
       </div>
 
       <div className={styles.skeletonStats}>

@@ -213,9 +213,24 @@
   border-radius: var(--radius-lg);
 }
 
+.skeletonMobileFilters {
+  display: none;
+  gap: var(--space-3);
+  padding: var(--layout-content-padding);
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  margin: 0 var(--layout-content-padding);
+}
+
 .skeletonSearchInput {
   flex: 1;
   min-width: 200px;
+  height: 38px;
+}
+
+.skeletonFilterButton {
+  width: 100px;
   height: 38px;
 }
 
@@ -312,7 +327,15 @@
   }
 
   .skeletonFilters {
-    margin: 0 var(--layout-content-padding);
+    display: none;
+  }
+
+  .skeletonMobileFilters {
+    display: flex;
+  }
+
+  .skeletonSearchInput {
+    min-width: 0;
   }
 }
 
