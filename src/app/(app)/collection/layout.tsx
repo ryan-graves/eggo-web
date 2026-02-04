@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
+import { Header } from '@/components/Header';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
 import { CollectionSettingsModal } from '@/components/CollectionSettingsModal';
@@ -20,13 +21,13 @@ interface CollectionLayoutProps {
 function CollectionSkeleton(): React.JSX.Element {
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.title}>Eggo</h1>
+      <div className={styles.skeletonHeader}>
+        <div className={styles.skeletonHeaderLeft}>
+          <div className={`${styles.skeleton} ${styles.skeletonLogo}`} />
           <div className={`${styles.skeleton} ${styles.skeletonSelector}`} />
         </div>
         <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
-      </header>
+      </div>
 
       <main className={styles.main}>
         <div className={styles.toolbar}>
@@ -69,6 +70,19 @@ export default function CollectionLayout({ children }: CollectionLayoutProps): R
     setShowAddForm(false);
   };
 
+  const avatarLink = user?.photoURL ? (
+    <Link href="/settings" className={styles.avatarLink}>
+      <Image
+        src={user.photoURL}
+        alt=""
+        width={32}
+        height={32}
+        className={styles.avatar}
+        referrerPolicy="no-referrer"
+      />
+    </Link>
+  ) : null;
+
   if (isInitializing) {
     return <CollectionSkeleton />;
   }
@@ -76,23 +90,7 @@ export default function CollectionLayout({ children }: CollectionLayoutProps): R
   if (collections.length === 0) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <div className={styles.headerLeft}>
-            <h1 className={styles.title}>Eggo</h1>
-          </div>
-          <Link href="/settings" className={styles.avatarLink}>
-            {user?.photoURL && (
-              <Image
-                src={user.photoURL}
-                alt=""
-                width={32}
-                height={32}
-                className={styles.avatar}
-                referrerPolicy="no-referrer"
-              />
-            )}
-          </Link>
-        </header>
+        <Header variant="main" rightContent={avatarLink} />
         <CreateCollection />
       </div>
     );
@@ -100,29 +98,18 @@ export default function CollectionLayout({ children }: CollectionLayoutProps): R
 
   return (
     <div className={`${styles.page} ${styles.content}`}>
-      <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.title}>Eggo</h1>
+      <Header
+        variant="main"
+        leftContent={
           <CollectionSelector
             collections={collections}
             activeCollection={activeCollection}
             onSelect={setActiveCollection}
             onSettingsClick={activeCollection ? () => setShowCollectionSettings(true) : undefined}
           />
-        </div>
-        <Link href="/settings" className={styles.avatarLink}>
-          {user?.photoURL && (
-            <Image
-              src={user.photoURL}
-              alt=""
-              width={32}
-              height={32}
-              className={styles.avatar}
-              referrerPolicy="no-referrer"
-            />
-          )}
-        </Link>
-      </header>
+        }
+        rightContent={avatarLink}
+      />
 
       <main className={styles.main}>
         <div className={styles.toolbar}>

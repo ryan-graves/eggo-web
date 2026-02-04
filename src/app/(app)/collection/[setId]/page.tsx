@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCollection } from '@/hooks/useCollection';
-import { useBackNavigation } from '@/hooks/useBackNavigation';
+import { Header } from '@/components/Header';
 import { EditSetModal } from '@/components/EditSetModal';
 import { formatDateForDisplay } from '@/lib/date';
 import type { LegoSet } from '@/types';
@@ -21,7 +21,6 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 
 export default function SetDetailPage(): React.JSX.Element {
   const params = useParams();
-  const { goBack } = useBackNavigation();
   const { sets, activeCollection, isInitializing } = useCollection();
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -56,38 +55,23 @@ export default function SetDetailPage(): React.JSX.Element {
 
   const imageUrl = set.customImageUrl || set.imageUrl;
 
+  const editButton = (
+    <button type="button" onClick={() => setShowEditModal(true)} className={styles.editButton} aria-label="Edit set">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M11.5 2.5L13.5 4.5M10 14H14M2 10L10.5 1.5C11.3284 0.671573 12.6716 0.671573 13.5 1.5C14.3284 2.32843 14.3284 3.67157 13.5 4.5L5 13L1 14L2 10Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  );
+
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button
-          type="button"
-          onClick={() => goBack('/collection')}
-          className={styles.backButton}
-          aria-label="Back to collection"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path
-              d="M12.5 15L7.5 10L12.5 5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <h1 className={styles.title}>{set.name}</h1>
-        <button type="button" onClick={() => setShowEditModal(true)} className={styles.editButton} aria-label="Edit set">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path
-              d="M11.5 2.5L13.5 4.5M10 14H14M2 10L10.5 1.5C11.3284 0.671573 12.6716 0.671573 13.5 1.5C14.3284 2.32843 14.3284 3.67157 13.5 4.5L5 13L1 14L2 10Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      </header>
+      <Header variant="detail" title={set.name} rightContent={editButton} />
 
       <main className={styles.main}>
         <div className={styles.content}>
