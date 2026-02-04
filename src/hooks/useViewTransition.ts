@@ -22,12 +22,23 @@ export function useViewTransition() {
 
   /**
    * Navigate back with view transition
+   * Uses browser history if the user navigated from within the app,
+   * otherwise falls back to the provided href
    */
   const navigateBack = useCallback(
     (fallbackHref?: string) => {
-      if (fallbackHref) {
+      // Check if user came from within our app by examining the referrer
+      const referrer = typeof document !== 'undefined' ? document.referrer : '';
+      const isInternalNavigation = referrer && referrer.includes(window.location.origin);
+
+      if (isInternalNavigation) {
+        // User navigated here from within the app, use browser back
+        router.back();
+      } else if (fallbackHref) {
+        // User landed directly on this page, use fallback
         router.push(fallbackHref);
       } else {
+        // No fallback provided, try back anyway
         router.back();
       }
     },
