@@ -11,7 +11,7 @@ export default function LoginPage(): React.JSX.Element {
 
   useEffect(() => {
     if (user && !loading) {
-      router.push('/home');
+      router.replace('/home');
     }
   }, [user, loading, router]);
 
@@ -23,7 +23,8 @@ export default function LoginPage(): React.JSX.Element {
     }
   };
 
-  if (loading) {
+  // Show loading while checking auth or redirecting logged-in users
+  if (loading || user) {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>Loading...</div>

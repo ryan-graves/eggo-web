@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import styles from './page.module.css';
 
@@ -13,32 +12,19 @@ export default function Home(): React.JSX.Element {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        router.push('/home');
+        router.replace('/home');
       } else {
-        router.push('/sign-in');
+        router.replace('/sign-in');
       }
     }
   }, [user, loading, router]);
 
-  if (loading) {
-    return (
-      <div className={styles.page}>
-        <main className={styles.main}>
-          <p className={styles.description}>Loading...</p>
-        </main>
-      </div>
-    );
-  }
-
+  // Always show loading - we redirect either way once auth resolves
   return (
     <div className={styles.page}>
       <main className={styles.main}>
         <h1 className={styles.title}>Eggo</h1>
         <p className={styles.subtitle}>Lego Collection Manager</p>
-        <p className={styles.description}>Track and manage your Lego set collection</p>
-        <Link href="/sign-in" className={styles.loginLink}>
-          Sign in to get started
-        </Link>
       </main>
     </div>
   );
