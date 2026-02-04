@@ -66,7 +66,7 @@ function HomeSkeleton(): React.JSX.Element {
 
 function AllSetsSkeleton(): React.JSX.Element {
   return (
-    <>
+    <div className={styles.skeletonAllSetsContainer}>
       {/* Desktop filters */}
       <div className={styles.skeletonFilters}>
         <div className={`${styles.skeleton} ${styles.skeletonSearchInput}`} />
@@ -95,7 +95,7 @@ function AllSetsSkeleton(): React.JSX.Element {
           <SetCardSkeleton key={i} />
         ))}
       </div>
-    </>
+    </div>
   );
 }
 

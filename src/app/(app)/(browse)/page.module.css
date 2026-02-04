@@ -203,6 +203,12 @@
 }
 
 /* All Sets skeleton styles */
+.skeletonAllSetsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .skeletonFilters {
   display: flex;
   flex-wrap: wrap;
@@ -220,7 +226,6 @@
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
-  margin: 0 var(--layout-content-padding);
 }
 
 .skeletonSearchInput {
@@ -319,13 +324,19 @@
 
   .skeletonGrid {
     grid-template-columns: repeat(auto-fill, minmax(var(--layout-card-min-width-mobile), 1fr));
+  }
+
+  .skeletonAllSetsContainer {
     padding: 0 var(--layout-content-padding);
   }
 
   .skeletonStats {
-    padding: 0 var(--layout-content-padding);
+    padding: 0;
   }
+}
 
+/* Match SetList mobile breakpoint */
+@media (max-width: 640px) {
   .skeletonFilters {
     display: none;
   }
