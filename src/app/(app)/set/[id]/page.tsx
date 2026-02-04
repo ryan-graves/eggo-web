@@ -1,13 +1,14 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link, useTransitionRouter } from 'next-view-transitions';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { EditSetModal } from '@/components/EditSetModal';
 import { formatDateForDisplay } from '@/lib/date';
+import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';
 
@@ -30,7 +31,7 @@ function SetDetailLoading(): React.JSX.Element {
 function SetDetailContent(): React.JSX.Element {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router = useTransitionRouter();
   const { sets, activeCollection, isInitializing } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -39,6 +40,13 @@ function SetDetailContent(): React.JSX.Element {
 
   const action = searchParams.get('action');
   const showEditModal = action === 'edit';
+
+  // Prefetch the back navigation target for instant return
+  useEffect(() => {
+    const lastBrowsePath =
+      typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(LAST_BROWSE_PATH_KEY) : null;
+    router.prefetch(lastBrowsePath || '/home');
+  }, [router]);
 
   const openEditModal = () => {
     router.push(`/set/${setId}?action=edit`);

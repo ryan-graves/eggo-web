@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from 'next-view-transitions';
 import { PublicCollectionProvider, usePublicCollection } from '@/hooks/usePublicCollection';
 import { PublicSetList } from '@/components/PublicSetList';
 import { PublicBanner } from '@/components/PublicBanner';

@@ -138,6 +138,13 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     sessionStorage.setItem(LAST_BROWSE_PATH_KEY, pathname);
   }, [pathname]);
 
+  // Prefetch sibling routes for instant navigation
+  useEffect(() => {
+    router.prefetch('/home');
+    router.prefetch('/all');
+    router.prefetch('/settings');
+  }, [router]);
+
   const handleViewChange = (view: 'home' | 'all') => {
     const targetPath = view === 'all' ? '/all' : '/home';
     if (pathname === targetPath) return;
