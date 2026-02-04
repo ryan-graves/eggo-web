@@ -122,7 +122,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
   const searchParams = useSearchParams();
   const router = useTransitionRouter();
   const { user } = useAuth();
-  const { collections, activeCollection, setActiveCollection, isInitializing } = useCollection();
+  const { collections, activeCollection, setActiveCollection, sets, isInitializing } = useCollection();
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [pendingView, setPendingView] = useState<'home' | 'all' | null>(null);
@@ -144,6 +144,25 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     router.prefetch('/all');
     router.prefetch('/settings');
   }, [router]);
+
+  // Prefetch all set detail routes so tapping into a set feels instant
+  useEffect(() => {
+    if (sets.length === 0) return;
+
+    // Use requestIdleCallback to avoid blocking the main thread
+    const prefetchSets = () => {
+      for (const set of sets) {
+        router.prefetch(`/set/${set.id}`);
+      }
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(prefetchSets);
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(prefetchSets, 200);
+    return () => clearTimeout(id);
+  }, [sets, router]);
 
   const handleViewChange = (view: 'home' | 'all') => {
     const targetPath = view === 'all' ? '/all' : '/home';
