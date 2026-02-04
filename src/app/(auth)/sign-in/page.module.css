@@ -22,6 +22,7 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  view-transition-name: auth-title;
 }
 
 .subtitle {
@@ -40,6 +41,7 @@
   align-items: center;
   gap: var(--space-6);
   min-width: 320px;
+  view-transition-name: auth-box;
 }
 
 .description {

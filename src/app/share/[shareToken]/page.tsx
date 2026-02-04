@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from 'next-view-transitions';
 import { PublicCollectionProvider, usePublicCollection } from '@/hooks/usePublicCollection';
 import { PublicSetList } from '@/components/PublicSetList';
 import { PublicBanner } from '@/components/PublicBanner';
@@ -24,7 +24,7 @@ function PublicCollectionContent(): React.JSX.Element {
         <div className={styles.error}>
           <h1>Collection Not Found</h1>
           <p>{error || 'This collection is not available or is no longer public.'}</p>
-          <Link href="/login" className="btn-default btn-primary">
+          <Link href="/sign-in" className="btn-default btn-primary">
             Start Your Own Collection
           </Link>
         </div>
@@ -41,7 +41,7 @@ function PublicCollectionContent(): React.JSX.Element {
             <span className={styles.collectionName}>{collection.name}</span>
           </div>
         </div>
-        <Link href="/login" className="btn-default btn-primary">
+        <Link href="/sign-in" className="btn-default btn-primary">
           Sign Up
         </Link>
       </header>

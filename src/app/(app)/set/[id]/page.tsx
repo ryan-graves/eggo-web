@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link, useTransitionRouter } from 'next-view-transitions';
 import { useCollection } from '@/hooks/useCollection';
-import { useBackNavigation } from '@/hooks/useBackNavigation';
+import { Header } from '@/components/Header';
 import { EditSetModal } from '@/components/EditSetModal';
 import { formatDateForDisplay } from '@/lib/date';
+import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';
 
@@ -19,17 +20,44 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
   disassembled: 'Disassembled',
 };
 
-export default function SetDetailPage(): React.JSX.Element {
-  const params = useParams();
-  const { goBack } = useBackNavigation();
-  const { sets, activeCollection, isInitializing } = useCollection();
-  const [showEditModal, setShowEditModal] = useState(false);
+function SetDetailLoading(): React.JSX.Element {
+  return (
+    <div className={styles.page}>
+      <div className={styles.loading}>Loading...</div>
+    </div>
+  );
+}
 
-  const setId = params.setId as string;
+function SetDetailContent(): React.JSX.Element {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useTransitionRouter();
+  const { sets, activeCollection, isInitializing } = useCollection();
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  const setId = params.id as string;
   const set = sets.find((s) => s.id === setId);
 
+  const action = searchParams.get('action');
+  const showEditModal = action === 'edit';
+
+  // Prefetch the back navigation target for instant return
+  useEffect(() => {
+    const lastBrowsePath =
+      typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(LAST_BROWSE_PATH_KEY) : null;
+    router.prefetch(lastBrowsePath || '/home');
+  }, [router]);
+
+  const openEditModal = () => {
+    router.push(`/set/${setId}?action=edit`);
+  };
+
+  const closeEditModal = () => {
+    router.push(`/set/${setId}`);
+  };
+
   const handleEditSuccess = () => {
-    setShowEditModal(false);
+    closeEditModal();
   };
 
   if (isInitializing) {
@@ -46,7 +74,7 @@ export default function SetDetailPage(): React.JSX.Element {
         <div className={styles.notFound}>
           <h1>Set Not Found</h1>
           <p>The set you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-          <Link href="/collection" className={styles.backLink}>
+          <Link href="/home" className={styles.backLink}>
             Back to Collection
           </Link>
         </div>
@@ -56,52 +84,41 @@ export default function SetDetailPage(): React.JSX.Element {
 
   const imageUrl = set.customImageUrl || set.imageUrl;
 
+  const editButton = (
+    <button type="button" onClick={openEditModal} className={styles.editButton} aria-label="Edit set">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M11.5 2.5L13.5 4.5M10 14H14M2 10L10.5 1.5C11.3284 0.671573 12.6716 0.671573 13.5 1.5C14.3284 2.32843 14.3284 3.67157 13.5 4.5L5 13L1 14L2 10Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  );
+
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button
-          type="button"
-          onClick={() => goBack('/collection')}
-          className={styles.backButton}
-          aria-label="Back to collection"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path
-              d="M12.5 15L7.5 10L12.5 5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <h1 className={styles.title}>{set.name}</h1>
-        <button type="button" onClick={() => setShowEditModal(true)} className={styles.editButton} aria-label="Edit set">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path
-              d="M11.5 2.5L13.5 4.5M10 14H14M2 10L10.5 1.5C11.3284 0.671573 12.6716 0.671573 13.5 1.5C14.3284 2.32843 14.3284 3.67157 13.5 4.5L5 13L1 14L2 10Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      </header>
+      <Header variant="detail" title={set.name} rightContent={editButton} />
 
       <main className={styles.main}>
         <div className={styles.content}>
           <div className={styles.imageSection}>
             <div className={styles.imageContainer}>
               {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt={set.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className={styles.image}
-                  priority
-                />
+                <>
+                  {!imageLoaded && <div className={styles.imageSkeleton} />}
+                  <Image
+                    src={imageUrl}
+                    alt={set.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className={`${styles.image} ${imageLoaded ? styles.imageLoaded : ''}`}
+                    priority
+                    onLoad={() => setImageLoaded(true)}
+                  />
+                </>
               ) : (
                 <div className={styles.placeholder}>No Image</div>
               )}
@@ -179,9 +196,17 @@ export default function SetDetailPage(): React.JSX.Element {
           set={set}
           availableOwners={activeCollection.owners}
           onSuccess={handleEditSuccess}
-          onCancel={() => setShowEditModal(false)}
+          onCancel={closeEditModal}
         />
       )}
     </div>
+  );
+}
+
+export default function SetDetailPage(): React.JSX.Element {
+  return (
+    <Suspense fallback={<SetDetailLoading />}>
+      <SetDetailContent />
+    </Suspense>
   );
 }

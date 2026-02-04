@@ -1,17 +1,17 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useTransitionRouter } from 'next-view-transitions';
 import { useAuth } from '@/hooks/useAuth';
 import styles from './page.module.css';
 
 export default function LoginPage(): React.JSX.Element {
   const { user, loading, error, signInWithGoogle } = useAuth();
-  const router = useRouter();
+  const router = useTransitionRouter();
 
   useEffect(() => {
     if (user && !loading) {
-      router.push('/collection');
+      router.replace('/home');
     }
   }, [user, loading, router]);
 
@@ -23,7 +23,8 @@ export default function LoginPage(): React.JSX.Element {
     }
   };
 
-  if (loading) {
+  // Show loading while checking auth or redirecting logged-in users
+  if (loading || user) {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>Loading...</div>

@@ -1,40 +1,34 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useTransitionRouter } from 'next-view-transitions';
 import { useAuth } from '@/hooks/useAuth';
-import styles from './page.module.css';
+import styles from './(auth)/sign-in/page.module.css';
 
 export default function Home(): React.JSX.Element {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const router = useTransitionRouter();
 
   useEffect(() => {
-    if (user && !loading) {
-      router.push('/collection');
+    if (!loading) {
+      if (user) {
+        router.replace('/home');
+      } else {
+        router.replace('/sign-in');
+      }
     }
   }, [user, loading, router]);
 
-  if (loading) {
-    return (
-      <div className={styles.page}>
-        <main className={styles.main}>
-          <p className={styles.description}>Loading...</p>
-        </main>
-      </div>
-    );
-  }
-
+  // Show same structure as sign-in page to prevent layout shift
   return (
     <div className={styles.page}>
       <main className={styles.main}>
         <h1 className={styles.title}>Eggo</h1>
         <p className={styles.subtitle}>Lego Collection Manager</p>
-        <p className={styles.description}>Track and manage your Lego set collection</p>
-        <Link href="/login" className={styles.loginLink}>
-          Sign in to get started
-        </Link>
+
+        <div className={styles.loginBox}>
+          <p className={styles.description}>Loading...</p>
+        </div>
       </main>
     </div>
   );

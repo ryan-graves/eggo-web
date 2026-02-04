@@ -8,8 +8,8 @@ import {
 } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme, useUITheme } from '@/hooks/useTheme';
-import { useBackNavigation } from '@/hooks/useBackNavigation';
 import { useCollection } from '@/hooks/useCollection';
+import { Header } from '@/components/Header';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import type { ThemePreference, UITheme, PublicViewSettings } from '@/types';
 import styles from './page.module.css';
@@ -36,7 +36,6 @@ function SettingsContent(): React.JSX.Element {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const { uiTheme, setUITheme } = useUITheme();
-  const { goBack } = useBackNavigation();
   const { activeCollection } = useCollection();
 
   // Sharing state
@@ -125,26 +124,7 @@ function SettingsContent(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button
-          type="button"
-          onClick={() => goBack('/collection')}
-          className={styles.backButton}
-          aria-label="Back to collection"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path
-              d="M12.5 15L7.5 10L12.5 5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <h1 className={styles.title}>Settings</h1>
-        <div className={styles.headerSpacer} aria-hidden="true" />
-      </header>
+      <Header variant="detail" title="Settings" />
 
       <main className={styles.main}>
         <section className={styles.section}>
