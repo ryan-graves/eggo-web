@@ -19,43 +19,95 @@ interface CollectionLayoutProps {
   children: React.ReactNode;
 }
 
-function CollectionSkeleton(): React.JSX.Element {
+function SkeletonHeader(): React.JSX.Element {
   return (
-    <div className={styles.page}>
-      <div className={styles.skeletonHeader}>
-        <div className={styles.skeletonHeaderLeft}>
-          <div className={`${styles.skeleton} ${styles.skeletonLogo}`} />
-          <div className={`${styles.skeleton} ${styles.skeletonSelector}`} />
+    <div className={styles.skeletonHeader}>
+      <div className={styles.skeletonHeaderLeft}>
+        <div className={`${styles.skeleton} ${styles.skeletonLogo}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonSelector}`} />
+      </div>
+      <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
+    </div>
+  );
+}
+
+function SkeletonToolbar(): React.JSX.Element {
+  return (
+    <div className={styles.toolbar}>
+      <div className={`${styles.skeleton} ${styles.skeletonToggle}`} />
+      <div className={`${styles.skeleton} ${styles.skeletonAddButton}`} />
+    </div>
+  );
+}
+
+function HomeSkeleton(): React.JSX.Element {
+  return (
+    <>
+      <div className={styles.skeletonSection}>
+        <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
+        <div className={styles.skeletonCarousel}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SetCardSkeleton key={i} compact />
+          ))}
         </div>
-        <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
       </div>
 
+      <div className={styles.skeletonSection}>
+        <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
+        <div className={styles.skeletonCarousel}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SetCardSkeleton key={i} compact />
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function AllSetsSkeleton(): React.JSX.Element {
+  return (
+    <>
+      <div className={styles.skeletonFilters}>
+        <div className={`${styles.skeleton} ${styles.skeletonSearchInput}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonSelect}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonSelect}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonSelect}`} />
+        <div className={styles.skeletonSortGroup}>
+          <div className={`${styles.skeleton} ${styles.skeletonSelect}`} />
+          <div className={`${styles.skeleton} ${styles.skeletonSortButton}`} />
+        </div>
+      </div>
+
+      <div className={styles.skeletonStats}>
+        <div className={`${styles.skeleton} ${styles.skeletonStatText}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonStatTextLong}`} />
+      </div>
+
+      <div className={styles.skeletonGrid}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SetCardSkeleton key={i} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function CollectionSkeleton({ isAllSets = false }: { isAllSets?: boolean }): React.JSX.Element {
+  return (
+    <div className={styles.page}>
+      <SkeletonHeader />
       <main className={styles.main}>
-        <div className={styles.toolbar}>
-          <div className={`${styles.skeleton} ${styles.skeletonToggle}`} />
-          <div className={`${styles.skeleton} ${styles.skeletonAddButton}`} />
-        </div>
-
-        <div className={styles.skeletonSection}>
-          <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
-          <div className={styles.skeletonCarousel}>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <SetCardSkeleton key={i} compact />
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.skeletonSection}>
-          <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
-          <div className={styles.skeletonCarousel}>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <SetCardSkeleton key={i} compact />
-            ))}
-          </div>
-        </div>
+        <SkeletonToolbar />
+        {isAllSets ? <AllSetsSkeleton /> : <HomeSkeleton />}
       </main>
     </div>
   );
+}
+
+function SuspenseFallback(): React.JSX.Element {
+  // Check path directly since we can't use hooks in fallback
+  const isAllSets = typeof window !== 'undefined' && window.location.pathname === '/all';
+  return <CollectionSkeleton isAllSets={isAllSets} />;
 }
 
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
@@ -101,7 +153,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
   ) : null;
 
   if (isInitializing) {
-    return <CollectionSkeleton />;
+    return <CollectionSkeleton isAllSets={pathname === '/all'} />;
   }
 
   if (collections.length === 0) {
@@ -188,7 +240,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
 export default function CollectionLayout({ children }: CollectionLayoutProps): React.JSX.Element {
   return (
-    <Suspense fallback={<CollectionSkeleton />}>
+    <Suspense fallback={<SuspenseFallback />}>
       <CollectionLayoutContent>{children}</CollectionLayoutContent>
     </Suspense>
   );

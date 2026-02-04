@@ -202,6 +202,60 @@
   height: 260px;
 }
 
+/* All Sets skeleton styles */
+.skeletonFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--layout-content-padding);
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+}
+
+.skeletonSearchInput {
+  flex: 1;
+  min-width: 200px;
+  height: 38px;
+}
+
+.skeletonSelect {
+  width: 140px;
+  height: 38px;
+}
+
+.skeletonSortGroup {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.skeletonSortButton {
+  width: 36px;
+  height: 38px;
+}
+
+.skeletonStats {
+  display: flex;
+  gap: var(--space-4);
+  padding: 0 var(--space-1);
+}
+
+.skeletonStatText {
+  width: 60px;
+  height: 16px;
+}
+
+.skeletonStatTextLong {
+  width: 120px;
+  height: 16px;
+}
+
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--layout-card-min-width), 1fr));
+  gap: var(--layout-card-gap);
+}
+
 /* Content transitions */
 .content {
   animation: fadeIn var(--transition-normal);
@@ -246,6 +300,19 @@
   .addButton {
     padding: var(--space-2) var(--space-3);
     font-size: var(--font-size-sm);
+  }
+
+  .skeletonGrid {
+    grid-template-columns: repeat(auto-fill, minmax(var(--layout-card-min-width-mobile), 1fr));
+    padding: 0 var(--layout-content-padding);
+  }
+
+  .skeletonStats {
+    padding: 0 var(--layout-content-padding);
+  }
+
+  .skeletonFilters {
+    margin: 0 var(--layout-content-padding);
   }
 }
 
