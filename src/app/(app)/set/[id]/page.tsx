@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,7 +19,15 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
   disassembled: 'Disassembled',
 };
 
-export default function SetDetailPage(): React.JSX.Element {
+function SetDetailLoading(): React.JSX.Element {
+  return (
+    <div className={styles.page}>
+      <div className={styles.loading}>Loading...</div>
+    </div>
+  );
+}
+
+function SetDetailContent(): React.JSX.Element {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -178,5 +187,13 @@ export default function SetDetailPage(): React.JSX.Element {
         />
       )}
     </div>
+  );
+}
+
+export default function SetDetailPage(): React.JSX.Element {
+  return (
+    <Suspense fallback={<SetDetailLoading />}>
+      <SetDetailContent />
+    </Suspense>
   );
 }

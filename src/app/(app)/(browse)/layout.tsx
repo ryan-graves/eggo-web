@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
@@ -58,7 +58,7 @@ function CollectionSkeleton(): React.JSX.Element {
   );
 }
 
-export default function CollectionLayout({ children }: CollectionLayoutProps): React.JSX.Element {
+function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -183,5 +183,13 @@ export default function CollectionLayout({ children }: CollectionLayoutProps): R
         />
       )}
     </div>
+  );
+}
+
+export default function CollectionLayout({ children }: CollectionLayoutProps): React.JSX.Element {
+  return (
+    <Suspense fallback={<CollectionSkeleton />}>
+      <CollectionLayoutContent>{children}</CollectionLayoutContent>
+    </Suspense>
   );
 }
