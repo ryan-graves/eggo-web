@@ -96,10 +96,14 @@ export function AddSetForm({
     }, 200);
   };
 
-  const transitionStep = (callback: () => void): void => {
+  const transitionStep = (callback: () => void, direction: 'forward' | 'back'): void => {
     if ('startViewTransition' in document && typeof document.startViewTransition === 'function') {
-      document.startViewTransition(() => {
+      document.documentElement.dataset.vtDirection = direction;
+      const vt = document.startViewTransition(() => {
         flushSync(callback);
+      });
+      (vt as { finished: Promise<void> }).finished.finally(() => {
+        delete document.documentElement.dataset.vtDirection;
       });
     } else {
       callback();
@@ -167,14 +171,14 @@ export function AddSetForm({
   }, []);
 
   const handleNext = () => {
-    transitionStep(() => setStep('details'));
+    transitionStep(() => setStep('details'), 'forward');
     if (lookupResult?.imageUrl) {
       startImageProcessing(lookupResult.imageUrl);
     }
   };
 
   const handleBack = () => {
-    transitionStep(() => setStep('lookup'));
+    transitionStep(() => setStep('lookup'), 'back');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
