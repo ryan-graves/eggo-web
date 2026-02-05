@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { createSet, updateSet } from '@/lib/firebase';
+import { createSet } from '@/lib/firebase';
 import { getSetDataProvider } from '@/lib/providers';
 import { removeImageBackground } from '@/lib/image';
 import type { SetStatus, SetLookupResult } from '@/types';
@@ -54,6 +54,8 @@ export function AddSetForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -82,6 +84,8 @@ export function AddSetForm({
     setIsLookingUp(true);
     setLookupError(null);
     setLookupResult(null);
+    setProcessedImageUrl(null);
+    setIsProcessingImage(false);
 
     try {
       const provider = getSetDataProvider();
@@ -90,6 +94,27 @@ export function AddSetForm({
       if (result) {
         setLookupResult(result);
         setName(result.name);
+
+        // Start background removal in parallel so the user sees the
+        // cleaned image by the time they finish filling out the form.
+        if (result.imageUrl) {
+          setIsProcessingImage(true);
+          removeImageBackground(result.imageUrl)
+            .then((bgResult) => {
+              if (bgResult.processedImageUrl) {
+                setProcessedImageUrl(bgResult.processedImageUrl);
+              }
+              if (bgResult.error) {
+                toast.error('Background removal failed', { description: bgResult.error });
+              }
+            })
+            .catch((err) => {
+              console.error('[AddSetForm] Background removal error:', err);
+            })
+            .finally(() => {
+              setIsProcessingImage(false);
+            });
+        }
       } else {
         setLookupError('Set not found. You can still enter the details manually.');
       }
@@ -121,8 +146,7 @@ export function AddSetForm({
     setSubmitError(null);
 
     try {
-      const imageUrl = lookupResult?.imageUrl || null;
-      const setId = await createSet({
+      await createSet({
         collectionId,
         setNumber: setNumber.trim(),
         name: name.trim(),
@@ -130,7 +154,8 @@ export function AddSetForm({
         year: lookupResult?.year || null,
         theme: lookupResult?.theme || null,
         subtheme: lookupResult?.subtheme || null,
-        imageUrl,
+        imageUrl: lookupResult?.imageUrl || null,
+        customImageUrl: processedImageUrl || undefined,
         status,
         hasBeenAssembled: status === 'assembled' || status === 'disassembled',
         owners: selectedOwners,
@@ -140,23 +165,6 @@ export function AddSetForm({
         dataSource: lookupResult?.dataSource ?? 'manual',
         dataSourceId: lookupResult?.sourceId,
       });
-
-      // Process background removal in the background after set creation.
-      // The real-time Firestore subscription will update the UI automatically.
-      if (imageUrl) {
-        removeImageBackground(imageUrl, setId)
-          .then(async (result) => {
-            if (result.processedImageUrl) {
-              await updateSet(setId, { customImageUrl: result.processedImageUrl });
-            }
-            if (result.error) {
-              toast.error('Background removal failed', { description: result.error });
-            }
-          })
-          .catch((err) => {
-            console.error('[AddSetForm] Background removal error:', err);
-          });
-      }
 
       onSuccess();
     } catch (err) {
@@ -208,9 +216,11 @@ export function AddSetForm({
           {lookupResult && (
             <div className={styles.preview}>
               {lookupResult.imageUrl && (
-                <div className={styles.previewImage}>
+                <div
+                  className={`${styles.previewImage} ${isProcessingImage ? styles.previewImageProcessing : ''}`}
+                >
                   <Image
-                    src={lookupResult.imageUrl}
+                    src={processedImageUrl || lookupResult.imageUrl}
                     alt={lookupResult.name}
                     width={120}
                     height={90}
