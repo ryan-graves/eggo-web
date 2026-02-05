@@ -31,8 +31,8 @@ const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
 
 const STAGE_LABELS: Record<ImageProcessingStage, string> = {
   idle: '',
-  fetching: 'Fetching high-resolution image…',
-  removing: 'Removing background…',
+  fetching: 'Fetching high-resolution image\u2026',
+  removing: 'Removing background\u2026',
   done: 'Image ready',
   error: 'Background removal failed',
 };
@@ -45,6 +45,9 @@ const STAGE_MIN_DURATION: Record<ImageProcessingStage, number> = {
   done: 0,
   error: 0,
 };
+
+// Modal max-width (keep in sync with .modal in CSS)
+const MODAL_MAX_WIDTH = 520;
 
 export function AddSetForm({
   collectionId,
@@ -357,7 +360,7 @@ export function AddSetForm({
                       src={lookupResult.imageUrl}
                       alt={lookupResult.name}
                       fill
-                      sizes="(max-width: 520px) 60vw, 240px"
+                      sizes={`(max-width: ${MODAL_MAX_WIDTH}px) 60vw, 240px`}
                       style={{ objectFit: 'contain' }}
                     />
                   </div>

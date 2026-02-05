@@ -32,8 +32,8 @@
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   width: 100%;
   max-width: 520px;
+  /* Fixed height prevents modal from resizing between steps */
   height: 85vh;
-  max-height: 90vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
