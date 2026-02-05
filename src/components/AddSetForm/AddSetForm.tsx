@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { createSet } from '@/lib/firebase';
+import { createSet, updateSet } from '@/lib/firebase';
 import { getSetDataProvider } from '@/lib/providers';
+import { removeImageBackground } from '@/lib/image';
 import type { SetStatus, SetLookupResult } from '@/types';
 import styles from './AddSetForm.module.css';
 
@@ -120,7 +121,8 @@ export function AddSetForm({
     setSubmitError(null);
 
     try {
-      await createSet({
+      const imageUrl = lookupResult?.imageUrl || null;
+      const setId = await createSet({
         collectionId,
         setNumber: setNumber.trim(),
         name: name.trim(),
@@ -128,7 +130,7 @@ export function AddSetForm({
         year: lookupResult?.year || null,
         theme: lookupResult?.theme || null,
         subtheme: lookupResult?.subtheme || null,
-        imageUrl: lookupResult?.imageUrl || null,
+        imageUrl,
         status,
         hasBeenAssembled: status === 'assembled' || status === 'disassembled',
         owners: selectedOwners,
@@ -138,6 +140,23 @@ export function AddSetForm({
         dataSource: lookupResult?.dataSource ?? 'manual',
         dataSourceId: lookupResult?.sourceId,
       });
+
+      // Process background removal in the background after set creation.
+      // The real-time Firestore subscription will update the UI automatically.
+      if (imageUrl) {
+        removeImageBackground(imageUrl, setId)
+          .then(async (result) => {
+            if (result.processedImageUrl) {
+              await updateSet(setId, { customImageUrl: result.processedImageUrl });
+            }
+            if (result.error) {
+              toast.error('Background removal failed', { description: result.error });
+            }
+          })
+          .catch((err) => {
+            console.error('[AddSetForm] Background removal error:', err);
+          });
+      }
 
       onSuccess();
     } catch (err) {
