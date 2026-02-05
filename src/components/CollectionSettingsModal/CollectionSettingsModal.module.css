@@ -83,19 +83,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: none;
+  width: 40px;
+  height: 40px;
+  background-color: var(--surface-secondary);
   border: none;
   border-radius: var(--radius-md);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .closeButton:hover {
-  background-color: var(--surface-secondary);
+  background-color: var(--surface-tertiary);
   color: var(--text-primary);
+}
+
+.closeButton:active {
+  opacity: 0.7;
 }
 
 .form {
