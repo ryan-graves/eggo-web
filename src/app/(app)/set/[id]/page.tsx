@@ -4,10 +4,13 @@ import { Suspense, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Link, useTransitionRouter } from 'next-view-transitions';
+import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { EditSetModal } from '@/components/EditSetModal';
 import { formatDateForDisplay } from '@/lib/date';
+import { removeImageBackground } from '@/lib/image';
+import { updateSet } from '@/lib/firebase';
 import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';
@@ -35,11 +38,33 @@ function SetDetailContent(): React.JSX.Element {
   const { sets, activeCollection, isInitializing } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  const [isRetryingImage, setIsRetryingImage] = useState(false);
+
   const setId = params.id as string;
   const set = sets.find((s) => s.id === setId);
 
   const action = searchParams.get('action');
   const showEditModal = action === 'edit';
+
+  const handleRetryBackgroundRemoval = async () => {
+    if (!set?.imageUrl) return;
+    setIsRetryingImage(true);
+    try {
+      const result = await removeImageBackground(set.imageUrl, set.id);
+      if (result.processedImageUrl) {
+        await updateSet(set.id, { customImageUrl: result.processedImageUrl });
+      } else if (result.error) {
+        toast.error('Background removal failed', { description: result.error });
+      } else if (result.skipped) {
+        toast.error('Background removal not configured');
+      }
+    } catch (err) {
+      console.error('[SetDetail] Retry background removal error:', err);
+      toast.error('Background removal failed');
+    } finally {
+      setIsRetryingImage(false);
+    }
+  };
 
   // Prefetch the back navigation target for instant return
   useEffect(() => {
@@ -126,6 +151,22 @@ function SetDetailContent(): React.JSX.Element {
           </div>
 
           <div className={styles.details}>
+            {set.imageUrl && !set.customImageUrl && (
+              <div className={styles.imageBanner}>
+                <span className={styles.imageBannerText}>
+                  Processed image unavailable
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRetryBackgroundRemoval}
+                  className={styles.imageBannerButton}
+                  disabled={isRetryingImage}
+                >
+                  {isRetryingImage ? 'Processing\u2026' : 'Retry'}
+                </button>
+              </div>
+            )}
+
             <div className={styles.titleSection}>
               <h1 className={styles.name}>{set.name}</h1>
               <span className={`${styles.status} ${styles[set.status]}`}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { createSet } from '@/lib/firebase';
@@ -16,13 +16,24 @@ interface AddSetFormProps {
   onCancel: () => void;
 }
 
+type Step = 'lookup' | 'preview' | 'details';
+
+type ImageProcessingStage = 'fetching' | 'removing' | 'done' | 'error';
+
 const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
   { value: 'unopened', label: 'Unopened' },
-  { value: 'in_progress', label: 'In Progress' },
+  { value: 'in_progress', label: 'Building' },
   { value: 'rebuild_in_progress', label: 'Rebuilding' },
   { value: 'assembled', label: 'Assembled' },
   { value: 'disassembled', label: 'Disassembled' },
 ];
+
+const STAGE_LABELS: Record<ImageProcessingStage, string> = {
+  fetching: 'Fetching high-resolution image\u2026',
+  removing: 'Removing background\u2026',
+  done: 'Image ready',
+  error: 'Background removal failed',
+};
 
 export function AddSetForm({
   collectionId,
@@ -30,42 +41,58 @@ export function AddSetForm({
   onSuccess,
   onCancel,
 }: AddSetFormProps): React.JSX.Element {
+  // Step state
+  const [step, setStep] = useState<Step>('lookup');
+
+  // Lookup state
   const [setNumber, setSetNumber] = useState('');
   const [lookupResult, setLookupResult] = useState<SetLookupResult | null>(null);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
-  const [isClosing, setIsClosing] = useState(false);
+
+  // Image processing state
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [imageProcessingStage, setImageProcessingStage] = useState<ImageProcessingStage | null>(null);
+  const imageProcessingPromise = useRef<Promise<void> | null>(null);
 
   // Form fields
-  const [name, setName] = useState('');
   const [status, setStatus] = useState<SetStatus>('unopened');
   const [selectedOwners, setSelectedOwners] = useState<string[]>(
     availableOwners.length > 0 ? [availableOwners[0]] : []
   );
   const [occasion, setOccasion] = useState('');
+  const [dateReceived, setDateReceived] = useState('');
+  const [notes, setNotes] = useState('');
+
+  // Submit state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Modal animation state
+  const [isClosing, setIsClosing] = useState(false);
 
   const toggleOwner = (ownerName: string) => {
     setSelectedOwners((prev) =>
       prev.includes(ownerName) ? prev.filter((o) => o !== ownerName) : [...prev, ownerName]
     );
   };
-  const [dateReceived, setDateReceived] = useState('');
-  const [notes, setNotes] = useState('');
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
-  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   // Lock body scroll when modal is open
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-
     return () => {
       document.body.style.overflow = originalOverflow;
     };
   }, []);
+
+  // Auto-advance from lookup to preview once we have a result
+  useEffect(() => {
+    if (lookupResult && step === 'lookup') {
+      setStep('preview');
+    }
+  }, [lookupResult, step]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -86,6 +113,7 @@ export function AddSetForm({
     setLookupResult(null);
     setProcessedImageUrl(null);
     setIsProcessingImage(false);
+    setImageProcessingStage(null);
 
     try {
       const provider = getSetDataProvider();
@@ -93,68 +121,93 @@ export function AddSetForm({
 
       if (result) {
         setLookupResult(result);
-        setName(result.name);
-
-        // Start background removal in parallel so the user sees the
-        // cleaned image by the time they finish filling out the form.
-        if (result.imageUrl) {
-          setIsProcessingImage(true);
-          removeImageBackground(result.imageUrl)
-            .then((bgResult) => {
-              if (bgResult.processedImageUrl) {
-                setProcessedImageUrl(bgResult.processedImageUrl);
-              }
-              if (bgResult.error) {
-                toast.error('Background removal failed', { description: bgResult.error });
-              }
-            })
-            .catch((err) => {
-              console.error('[AddSetForm] Background removal error:', err);
-            })
-            .finally(() => {
-              setIsProcessingImage(false);
-            });
-        }
       } else {
-        setLookupError('Set not found. You can still enter the details manually.');
+        setLookupError('Set not found. Please check the number and try again.');
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to lookup set';
-      setLookupError('Failed to lookup set. You can still enter the details manually.');
-      toast.error('Set lookup failed', {
-        description: message,
-      });
+      setLookupError('Failed to lookup set. Please try again.');
+      toast.error('Set lookup failed', { description: message });
     } finally {
       setIsLookingUp(false);
+    }
+  };
+
+  const startImageProcessing = useCallback((imageUrl: string) => {
+    setIsProcessingImage(true);
+    setImageProcessingStage('fetching');
+
+    const promise = (async () => {
+      // Brief pause to show the fetching stage visually
+      await new Promise((r) => setTimeout(r, 500));
+      setImageProcessingStage('removing');
+
+      try {
+        const bgResult = await removeImageBackground(imageUrl);
+        if (bgResult.processedImageUrl) {
+          setProcessedImageUrl(bgResult.processedImageUrl);
+          setImageProcessingStage('done');
+        } else if (bgResult.skipped) {
+          // Background removal not configured — treat as done with no processed image
+          setImageProcessingStage('done');
+        } else if (bgResult.error) {
+          setImageProcessingStage('error');
+        }
+      } catch (err) {
+        console.error('[AddSetForm] Background removal error:', err);
+        setImageProcessingStage('error');
+      } finally {
+        setIsProcessingImage(false);
+      }
+    })();
+
+    imageProcessingPromise.current = promise;
+  }, []);
+
+  const handleNext = () => {
+    setStep('details');
+
+    // Begin image processing when moving to details step
+    if (lookupResult?.imageUrl) {
+      startImageProcessing(lookupResult.imageUrl);
+    }
+  };
+
+  const handleBack = () => {
+    if (step === 'details') {
+      setStep('preview');
+    } else if (step === 'preview') {
+      setStep('lookup');
+      setLookupResult(null);
+      setProcessedImageUrl(null);
+      setIsProcessingImage(false);
+      setImageProcessingStage(null);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!setNumber.trim()) {
-      setSubmitError('Set number is required');
-      return;
-    }
-
-    if (!name.trim()) {
-      setSubmitError('Set name is required');
-      return;
-    }
+    if (!lookupResult) return;
 
     setIsSubmitting(true);
     setSubmitError(null);
+
+    // Wait for image processing to finish if still in progress
+    if (imageProcessingPromise.current) {
+      await imageProcessingPromise.current;
+    }
 
     try {
       await createSet({
         collectionId,
         setNumber: setNumber.trim(),
-        name: name.trim(),
-        pieceCount: lookupResult?.pieceCount || null,
-        year: lookupResult?.year || null,
-        theme: lookupResult?.theme || null,
-        subtheme: lookupResult?.subtheme || null,
-        imageUrl: lookupResult?.imageUrl || null,
+        name: lookupResult.name,
+        pieceCount: lookupResult.pieceCount || null,
+        year: lookupResult.year || null,
+        theme: lookupResult.theme || null,
+        subtheme: lookupResult.subtheme || null,
+        imageUrl: lookupResult.imageUrl || null,
         customImageUrl: processedImageUrl || undefined,
         status,
         hasBeenAssembled: status === 'assembled' || status === 'disassembled',
@@ -162,8 +215,8 @@ export function AddSetForm({
         occasion: occasion.trim(),
         dateReceived: dateReceived || null,
         notes: notes.trim() || undefined,
-        dataSource: lookupResult?.dataSource ?? 'manual',
-        dataSourceId: lookupResult?.sourceId,
+        dataSource: lookupResult.dataSource ?? 'manual',
+        dataSourceId: lookupResult.sourceId,
       });
 
       onSuccess();
@@ -173,6 +226,21 @@ export function AddSetForm({
       setIsSubmitting(false);
     }
   };
+
+  // Compute progress bar percentage
+  const progressPercent =
+    imageProcessingStage === 'fetching'
+      ? 25
+      : imageProcessingStage === 'removing'
+        ? 60
+        : imageProcessingStage === 'done'
+          ? 100
+          : imageProcessingStage === 'error'
+            ? 100
+            : 0;
+
+  const headerTitle =
+    step === 'lookup' ? 'Add Set' : step === 'preview' ? 'Confirm Set' : 'Set Details';
 
   return (
     <div
@@ -184,174 +252,301 @@ export function AddSetForm({
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.header}>
-          <h2 className={styles.title}>Add Set</h2>
-          <button type="button" onClick={handleClose} className={styles.closeButton}>
-            ×
+          {step !== 'lookup' && (
+            <button
+              type="button"
+              onClick={handleBack}
+              className={styles.backButton}
+              aria-label="Go back"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+          )}
+          <h2 className={styles.title}>{headerTitle}</h2>
+          <button type="button" onClick={handleClose} className={styles.closeButton} aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        <form id="add-set-form" onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.lookupSection}>
-            <div className={styles.lookupRow}>
-              <input
-                type="text"
-                value={setNumber}
-                onChange={(e) => setSetNumber(e.target.value)}
-                placeholder="Enter set number (e.g., 75192)"
-                className={styles.input}
-                disabled={isLookingUp}
-              />
-              <button
-                type="button"
-                onClick={handleLookup}
-                className={styles.lookupButton}
-                disabled={isLookingUp || !setNumber.trim()}
-              >
-                {isLookingUp ? 'Looking up...' : 'Lookup'}
-              </button>
-            </div>
-            {lookupError && <p className={styles.lookupError}>{lookupError}</p>}
-          </div>
-
-          {lookupResult && (
-            <div className={styles.preview}>
-              {lookupResult.imageUrl && (
-                <div
-                  className={`${styles.previewImage} ${isProcessingImage ? styles.previewImageProcessing : ''}`}
+        {/* Step 1: Lookup */}
+        {step === 'lookup' && (
+          <div className={styles.stepContent}>
+            <div className={styles.lookupSection}>
+              <label htmlFor="setNumber" className={styles.label}>
+                Set Number
+              </label>
+              <div className={styles.lookupRow}>
+                <input
+                  id="setNumber"
+                  type="text"
+                  value={setNumber}
+                  onChange={(e) => setSetNumber(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleLookup();
+                    }
+                  }}
+                  placeholder="e.g., 75192"
+                  className={styles.input}
+                  disabled={isLookingUp}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleLookup}
+                  className={styles.lookupButton}
+                  disabled={isLookingUp || !setNumber.trim()}
                 >
+                  {isLookingUp ? 'Looking up\u2026' : 'Lookup'}
+                </button>
+              </div>
+              {lookupError && <p className={styles.lookupError}>{lookupError}</p>}
+            </div>
+
+            {/* Skeleton loading state */}
+            {isLookingUp && (
+              <div className={styles.skeletonPreview}>
+                <div className={`${styles.skeletonImage} ${styles.skeleton}`} />
+                <div className={styles.skeletonInfo}>
+                  <div className={`${styles.skeletonLine} ${styles.skeletonLineName} ${styles.skeleton}`} />
+                  <div className={`${styles.skeletonLine} ${styles.skeletonLineMeta} ${styles.skeleton}`} />
+                  <div className={`${styles.skeletonLine} ${styles.skeletonLineTheme} ${styles.skeleton}`} />
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* Step 2: Preview — detail-like layout */}
+        {step === 'preview' && lookupResult && (
+          <div className={styles.stepContent}>
+            <div className={styles.detailPreview}>
+              {lookupResult.imageUrl && (
+                <div className={styles.detailImageContainer}>
                   <Image
-                    src={processedImageUrl || lookupResult.imageUrl}
+                    src={lookupResult.imageUrl}
                     alt={lookupResult.name}
-                    width={120}
-                    height={90}
+                    fill
+                    sizes="(max-width: 520px) 60vw, 240px"
                     style={{ objectFit: 'contain' }}
                   />
                 </div>
               )}
-              <div className={styles.previewInfo}>
-                <p className={styles.previewName}>{lookupResult.name}</p>
-                <p className={styles.previewMeta}>
-                  {lookupResult.year} • {lookupResult.pieceCount?.toLocaleString()} pieces
-                </p>
-                {lookupResult.theme && (
-                  <p className={styles.previewTheme}>
-                    {lookupResult.theme}
-                    {lookupResult.subtheme && ` › ${lookupResult.subtheme}`}
-                  </p>
+              <h3 className={styles.detailName}>{lookupResult.name}</h3>
+              <div className={styles.detailStats}>
+                <span className={styles.detailStat}>#{lookupResult.setNumber}</span>
+                {lookupResult.pieceCount && (
+                  <span className={styles.detailStat}>
+                    <strong>{lookupResult.pieceCount.toLocaleString()}</strong> pieces
+                  </span>
+                )}
+                {lookupResult.year && (
+                  <span className={styles.detailStat}>
+                    Released <strong>{lookupResult.year}</strong>
+                  </span>
                 )}
               </div>
-            </div>
-          )}
-
-          <div className={styles.fields}>
-            <div className={styles.field}>
-              <label htmlFor="name" className={styles.label}>
-                Name *
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={styles.input}
-                required
-              />
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label htmlFor="status" className={styles.label}>
-                  Status
-                </label>
-                <select
-                  id="status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as SetStatus)}
-                  className={styles.select}
-                >
-                  {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.field}>
-                <span className={styles.label}>Owners</span>
-                <div className={styles.ownerCheckboxes}>
-                  {availableOwners.map((ownerName) => (
-                    <label key={ownerName} className={styles.checkboxLabel}>
-                      <input
-                        type="checkbox"
-                        checked={selectedOwners.includes(ownerName)}
-                        onChange={() => toggleOwner(ownerName)}
-                        className={styles.checkbox}
-                      />
-                      {ownerName}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="occasion" className={styles.label}>
-                Occasion
-              </label>
-              <input
-                id="occasion"
-                type="text"
-                value={occasion}
-                onChange={(e) => setOccasion(e.target.value)}
-                placeholder="e.g., Christmas 2024 from Alyssa's parents"
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="dateReceived" className={styles.label}>
-                Date Received
-              </label>
-              <input
-                id="dateReceived"
-                type="date"
-                value={dateReceived}
-                onChange={(e) => setDateReceived(e.target.value)}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="notes" className={styles.label}>
-                Notes
-              </label>
-              <textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className={styles.textarea}
-                rows={3}
-              />
+              {lookupResult.theme && (
+                <p className={styles.detailTheme}>
+                  {lookupResult.theme}
+                  {lookupResult.subtheme && ` \u203A ${lookupResult.subtheme}`}
+                </p>
+              )}
             </div>
           </div>
+        )}
 
-          {submitError && <p className={styles.error}>{submitError}</p>}
+        {/* Step 3: Details form */}
+        {step === 'details' && lookupResult && (
+          <form id="add-set-form" onSubmit={handleSubmit} className={styles.stepContent}>
+            <div className={styles.scrollArea}>
+              {/* Compact preview with image processing progress */}
+              <div className={styles.compactPreview}>
+                <div className={styles.compactImageWrapper}>
+                  {lookupResult.imageUrl ? (
+                    <Image
+                      src={processedImageUrl || lookupResult.imageUrl}
+                      alt={lookupResult.name}
+                      fill
+                      sizes="80px"
+                      style={{ objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <div className={styles.compactPlaceholder}>No Image</div>
+                  )}
+                </div>
+                <div className={styles.compactInfo}>
+                  <span className={styles.compactSetNumber}>#{lookupResult.setNumber}</span>
+                  <h3 className={styles.compactName}>{lookupResult.name}</h3>
+                  <div className={styles.compactMeta}>
+                    {lookupResult.pieceCount && (
+                      <span>
+                        <strong>{lookupResult.pieceCount.toLocaleString()}</strong> pcs
+                      </span>
+                    )}
+                    {lookupResult.year && <span>{lookupResult.year}</span>}
+                    {lookupResult.theme && (
+                      <span>
+                        {lookupResult.theme}
+                        {lookupResult.subtheme && ` \u203A ${lookupResult.subtheme}`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-        </form>
+              {/* Image processing progress bar */}
+              {imageProcessingStage && (
+                <div className={styles.progressSection}>
+                  <div className={styles.progressTrack}>
+                    <div
+                      className={`${styles.progressBar} ${imageProcessingStage === 'error' ? styles.progressError : ''} ${imageProcessingStage === 'done' ? styles.progressDone : ''}`}
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                  <span
+                    className={`${styles.progressLabel} ${imageProcessingStage === 'error' ? styles.progressLabelError : ''} ${imageProcessingStage === 'done' ? styles.progressLabelDone : ''}`}
+                  >
+                    {imageProcessingStage === 'done' && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                    {STAGE_LABELS[imageProcessingStage]}
+                  </span>
+                </div>
+              )}
 
+              {/* Form fields */}
+              <div className={styles.fields}>
+                {/* Status */}
+                <div className={styles.field}>
+                  <label className={styles.label}>Status</label>
+                  <div className={styles.statusRow}>
+                    {STATUS_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`${styles.statusChip} ${status === opt.value ? styles.statusSelected : ''}`}
+                        onClick={() => setStatus(opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Owners */}
+                {availableOwners.length > 1 && (
+                  <div className={styles.field}>
+                    <label className={styles.label}>Owner</label>
+                    <div className={styles.ownerRow}>
+                      {availableOwners.map((ownerName) => (
+                        <button
+                          key={ownerName}
+                          type="button"
+                          className={`${styles.ownerChip} ${selectedOwners.includes(ownerName) ? styles.ownerSelected : ''}`}
+                          onClick={() => toggleOwner(ownerName)}
+                        >
+                          {selectedOwners.includes(ownerName) && (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                          {ownerName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Date & Occasion */}
+                <div className={styles.dateOccasionRow}>
+                  <div className={styles.dateField}>
+                    <label htmlFor="dateReceived" className={styles.label}>Date Received</label>
+                    <input
+                      id="dateReceived"
+                      type="date"
+                      value={dateReceived}
+                      onChange={(e) => setDateReceived(e.target.value)}
+                      className={styles.dateInput}
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label htmlFor="occasion" className={styles.label}>Occasion</label>
+                    <input
+                      id="occasion"
+                      type="text"
+                      value={occasion}
+                      onChange={(e) => setOccasion(e.target.value)}
+                      placeholder="Birthday, Christmas..."
+                      className={styles.input}
+                    />
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className={styles.field}>
+                  <label htmlFor="notes" className={styles.label}>Notes</label>
+                  <textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className={styles.textarea}
+                    rows={2}
+                    placeholder="Optional notes..."
+                  />
+                </div>
+              </div>
+
+              {submitError && <p className={styles.error}>{submitError}</p>}
+            </div>
+          </form>
+        )}
+
+        {/* Footer actions */}
         <div className={styles.actions}>
-          <button type="button" onClick={handleClose} className={styles.cancelButton}>
-            Cancel
-          </button>
-          <button
-            type="submit"
-            form="add-set-form"
-            className={styles.submitButton}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Adding...' : 'Add Set'}
-          </button>
+          {step === 'lookup' && (
+            <button type="button" onClick={handleClose} className={styles.cancelButton}>
+              Cancel
+            </button>
+          )}
+
+          {step === 'preview' && (
+            <button
+              type="button"
+              onClick={handleNext}
+              className={styles.submitButton}
+            >
+              Next
+            </button>
+          )}
+
+          {step === 'details' && (
+            <>
+              <button type="button" onClick={handleClose} className={styles.cancelButton}>
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="add-set-form"
+                className={styles.submitButton}
+                disabled={isSubmitting}
+              >
+                {isSubmitting && isProcessingImage
+                  ? 'Processing image\u2026'
+                  : isSubmitting
+                    ? 'Adding\u2026'
+                    : 'Add Set'}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
