@@ -19,7 +19,7 @@ interface AddSetFormProps {
 
 type Step = 'lookup' | 'details';
 
-type ImageProcessingStage = 'fetching' | 'removing' | 'done' | 'error';
+type ImageProcessingStage = 'idle' | 'fetching' | 'removing' | 'done' | 'error';
 
 const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
   { value: 'unopened', label: 'Unopened' },
@@ -30,10 +30,20 @@ const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
 ];
 
 const STAGE_LABELS: Record<ImageProcessingStage, string> = {
-  fetching: 'Fetching high-resolution image\u2026',
-  removing: 'Removing background\u2026',
+  idle: '',
+  fetching: 'Fetching high-resolution image…',
+  removing: 'Removing background…',
   done: 'Image ready',
   error: 'Background removal failed',
+};
+
+// Minimum time (ms) each stage should be visible so user can read the caption
+const STAGE_MIN_DURATION: Record<ImageProcessingStage, number> = {
+  idle: 100,
+  fetching: 1500,
+  removing: 1000,
+  done: 0,
+  error: 0,
 };
 
 export function AddSetForm({
@@ -143,25 +153,52 @@ export function AddSetForm({
 
   const startImageProcessing = useCallback((imageUrl: string) => {
     setIsProcessingImage(true);
-    setImageProcessingStage('fetching');
+    // Start at 'idle' (0%) so we can animate to the first real stage
+    setImageProcessingStage('idle');
 
     const promise = (async () => {
-      await new Promise((r) => setTimeout(r, 500));
-      setImageProcessingStage('removing');
+      // Helper to ensure minimum display time for each stage
+      const advanceStage = async (
+        nextStage: ImageProcessingStage,
+        currentStage: ImageProcessingStage,
+        stageStartTime: number
+      ): Promise<number> => {
+        const elapsed = Date.now() - stageStartTime;
+        const minDuration = STAGE_MIN_DURATION[currentStage];
+        if (elapsed < minDuration) {
+          await new Promise((r) => setTimeout(r, minDuration - elapsed));
+        }
+        setImageProcessingStage(nextStage);
+        return Date.now();
+      };
+
+      let stageStart = Date.now();
+
+      // idle → fetching (animate from 0% to 25%)
+      stageStart = await advanceStage('fetching', 'idle', stageStart);
+
+      // Start the actual background removal (runs in parallel with minimum display time)
+      const bgResultPromise = removeImageBackground(imageUrl);
+
+      // fetching → removing (after minimum display time)
+      stageStart = await advanceStage('removing', 'fetching', stageStart);
 
       try {
-        const bgResult = await removeImageBackground(imageUrl);
+        const bgResult = await bgResultPromise;
+
+        // removing → done/error (after minimum display time)
+        await advanceStage(
+          bgResult.processedImageUrl || bgResult.skipped ? 'done' : 'error',
+          'removing',
+          stageStart
+        );
+
         if (bgResult.processedImageUrl) {
           setProcessedImageUrl(bgResult.processedImageUrl);
-          setImageProcessingStage('done');
-        } else if (bgResult.skipped) {
-          setImageProcessingStage('done');
-        } else if (bgResult.error) {
-          setImageProcessingStage('error');
         }
       } catch (err) {
         console.error('[AddSetForm] Background removal error:', err);
-        setImageProcessingStage('error');
+        await advanceStage('error', 'removing', stageStart);
       } finally {
         setIsProcessingImage(false);
       }
@@ -223,13 +260,15 @@ export function AddSetForm({
   };
 
   const progressPercent =
-    imageProcessingStage === 'fetching'
-      ? 25
-      : imageProcessingStage === 'removing'
-        ? 60
-        : imageProcessingStage === 'done' || imageProcessingStage === 'error'
-          ? 100
-          : 0;
+    imageProcessingStage === 'idle'
+      ? 0
+      : imageProcessingStage === 'fetching'
+        ? 25
+        : imageProcessingStage === 'removing'
+          ? 60
+          : imageProcessingStage === 'done' || imageProcessingStage === 'error'
+            ? 100
+            : 0;
 
   return (
     <div
@@ -399,16 +438,18 @@ export function AddSetForm({
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
-                  <span
-                    className={`${styles.progressLabel} ${imageProcessingStage === 'error' ? styles.progressLabelError : ''} ${imageProcessingStage === 'done' ? styles.progressLabelDone : ''}`}
-                  >
-                    {imageProcessingStage === 'done' && (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                    {STAGE_LABELS[imageProcessingStage]}
-                  </span>
+                  {imageProcessingStage !== 'idle' && (
+                    <span
+                      className={`${styles.progressLabel} ${imageProcessingStage === 'error' ? styles.progressLabelError : ''} ${imageProcessingStage === 'done' ? styles.progressLabelDone : ''}`}
+                    >
+                      {imageProcessingStage === 'done' && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                      {STAGE_LABELS[imageProcessingStage]}
+                    </span>
+                  )}
                 </div>
               )}
 
