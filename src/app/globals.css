@@ -127,3 +127,76 @@ img {
     animation-duration: 0ms;
   }
 }
+
+/* ======================================
+   Add Set form: step view transitions
+   ====================================== */
+
+/* Persistent chrome: identical between steps, no visible animation */
+::view-transition-group(add-set-overlay),
+::view-transition-group(add-set-modal) {
+  animation-duration: 0ms;
+}
+
+/* Header & footer: morph subtle content changes (back button, button text) */
+::view-transition-group(add-set-header),
+::view-transition-group(add-set-actions) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-out;
+}
+
+/* Image & name: morph between preview and compact positions */
+::view-transition-group(add-set-image),
+::view-transition-group(add-set-name) {
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Step content area: sequenced crossfade (waits for morph to settle) */
+@keyframes vt-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Forward (Next) */
+html[data-vt-direction="forward"]::view-transition-old(add-set-content) {
+  animation: vt-fade-out 120ms ease-out forwards;
+}
+
+html[data-vt-direction="forward"]::view-transition-new(add-set-content) {
+  animation: vt-fade-in 180ms ease-out 200ms both;
+}
+
+/* Back: snappier timing */
+html[data-vt-direction="back"]::view-transition-old(add-set-content) {
+  animation: vt-fade-out 100ms ease-out forwards;
+}
+
+html[data-vt-direction="back"]::view-transition-new(add-set-content) {
+  animation: vt-fade-in 150ms ease-out 150ms both;
+}
+
+html[data-vt-direction="back"]::view-transition-group(add-set-image),
+html[data-vt-direction="back"]::view-transition-group(add-set-name) {
+  animation-duration: 250ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(add-set-image),
+  ::view-transition-group(add-set-name),
+  ::view-transition-group(add-set-header),
+  ::view-transition-group(add-set-actions) {
+    animation-duration: 0ms;
+  }
+
+  html[data-vt-direction]::view-transition-old(add-set-content),
+  html[data-vt-direction]::view-transition-new(add-set-content) {
+    animation-duration: 0ms;
+    animation-delay: 0ms;
+  }
+}

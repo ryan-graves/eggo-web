@@ -1,3 +1,7 @@
+/* ======================================
+   Modal Shell
+   ====================================== */
+
 .overlay {
   position: fixed;
   inset: 0;
@@ -28,14 +32,13 @@
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   width: 100%;
   max-width: 520px;
-  max-height: 90vh;
+  /* Fixed height prevents modal from resizing between steps */
+  height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
+  overflow: hidden;
   animation: slideUp var(--transition-normal) ease-out;
-  /* iOS momentum scrolling and prevent scroll bleed */
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
 }
 
 .modalClosing {
@@ -51,6 +54,10 @@
   from { transform: translateY(0); }
   to { transform: translateY(100%); }
 }
+
+/* ======================================
+   Header
+   ====================================== */
 
 .header {
   position: relative;
@@ -78,39 +85,134 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
+  margin: 0;
 }
 
-.closeButton {
-  width: 32px;
-  height: 32px;
+.backButton {
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
-  background: none;
-  font-size: var(--font-size-xl);
+  background-color: var(--surface-secondary);
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: var(--radius-md);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.closeButton:hover {
-  background-color: var(--surface-secondary);
+.backButton:hover {
+  background-color: var(--surface-tertiary);
   color: var(--text-primary);
 }
 
-.form {
+.backButton:active {
+  opacity: 0.7;
+}
+
+.closeButton {
+  width: 40px;
+  height: 40px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: var(--surface-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  margin-left: auto;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.closeButton:hover {
+  background-color: var(--surface-tertiary);
+  color: var(--text-primary);
+}
+
+.closeButton:active {
+  opacity: 0.7;
+}
+
+/* ======================================
+   Step Content (shared wrapper)
+   ====================================== */
+
+.stepContent {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
   gap: var(--space-4);
-  /* iOS momentum scrolling */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  animation: stepIn var(--transition-normal) ease-out;
 }
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Suppress CSS animation when view transitions handle the step change */
+@supports (view-transition-name: none) {
+  .stepContent {
+    animation: none;
+  }
+}
+
+/* ======================================
+   View Transition: pin persistent chrome
+   Only active during step transitions
+   (when data-vt-direction is set on html)
+   ====================================== */
+
+:global(html[data-vt-direction]) .overlay {
+  view-transition-name: add-set-overlay;
+}
+
+:global(html[data-vt-direction]) .modal {
+  view-transition-name: add-set-modal;
+}
+
+:global(html[data-vt-direction]) .header {
+  view-transition-name: add-set-header;
+}
+
+:global(html[data-vt-direction]) .stepContent {
+  view-transition-name: add-set-content;
+}
+
+:global(html[data-vt-direction]) .actions {
+  view-transition-name: add-set-actions;
+}
+
+.scrollArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ======================================
+   Step 1: Lookup
+   ====================================== */
 
 .lookupSection {
   display: flex;
@@ -129,17 +231,18 @@
 
 .lookupButton {
   padding: var(--space-2) var(--space-4);
-  background-color: var(--surface-secondary);
-  border: 1px solid var(--border-secondary);
+  background-color: var(--interactive-primary);
+  border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
-  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-inverse);
   cursor: pointer;
   white-space: nowrap;
 }
 
 .lookupButton:hover:not(:disabled) {
-  background-color: var(--surface-tertiary);
+  background-color: var(--interactive-primary-hover);
 }
 
 .lookupButton:disabled {
@@ -152,46 +255,236 @@
   color: var(--status-warning);
 }
 
-.preview {
-  display: flex;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  background-color: var(--surface-secondary);
-  border-radius: var(--radius-md);
+/* Skeleton loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-.previewImage {
-  flex-shrink: 0;
-  width: 120px;
-  height: 90px;
-  background-color: var(--surface-primary);
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-secondary) 25%,
+    var(--surface-tertiary) 50%,
+    var(--surface-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
   border-radius: var(--radius-sm);
+}
+
+.skeletonPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-4);
+}
+
+.skeletonImage {
+  width: 200px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+}
+
+.skeletonInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.skeletonLine {
+  height: 0.875rem;
+}
+
+.skeletonLineName {
+  width: 65%;
+  height: 1.25rem;
+}
+
+.skeletonLineMeta {
+  width: 45%;
+}
+
+.skeletonLineTheme {
+  width: 35%;
+}
+
+/* ======================================
+   Step 2: Detail Preview
+   ====================================== */
+
+.detailPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  text-align: center;
+}
+
+.detailImageContainer {
+  position: relative;
+  width: 200px;
+  aspect-ratio: 1 / 1;
+}
+
+.detailName {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  margin: 0;
+}
+
+.detailStats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.detailStat {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-full);
+}
+
+.detailStat strong {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.detailTheme {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* ======================================
+   Step 3: Compact Preview + Fields
+   ====================================== */
+
+.compactPreview {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  padding: var(--space-4);
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.compactImageWrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.compactPlaceholder {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
 }
 
-.previewInfo {
+.compactInfo {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  min-width: 0;
 }
 
-.previewName {
+.compactSetNumber {
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
+  color: var(--interactive-primary);
+  letter-spacing: 0.05em;
+}
+
+.compactName {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  margin: 0;
 }
 
-.previewMeta {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
-
-.previewTheme {
-  font-size: var(--font-size-sm);
+.compactMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
+
+.compactMeta strong {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ======================================
+   Progress Bar
+   ====================================== */
+
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.progressTrack {
+  width: 100%;
+  height: 4px;
+  background-color: var(--surface-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background-color: var(--interactive-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease-out;
+}
+
+.progressDone {
+  background-color: var(--status-success);
+}
+
+.progressError {
+  background-color: var(--status-error);
+}
+
+.progressLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.progressLabelDone {
+  color: var(--status-success);
+}
+
+.progressLabelError {
+  color: var(--status-error);
+}
+
+/* ======================================
+   Form Fields
+   ====================================== */
 
 .fields {
   display: flex;
@@ -199,48 +492,16 @@
   gap: var(--space-4);
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-}
-
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-}
-
-.ownerCheckboxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  background-color: var(--surface-secondary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-secondary);
-}
-
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.checkbox {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: var(--interactive-primary);
+  color: var(--text-secondary);
 }
 
 .input,
@@ -249,30 +510,133 @@
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
   background-color: var(--surface-primary);
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .input:focus,
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--border-focus);
+  border-color: var(--interactive-primary);
 }
 
 .textarea {
   resize: vertical;
   font-family: inherit;
+  height: auto;
+  min-height: 60px;
 }
+
+/* Date & occasion row */
+.dateOccasionRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.dateInput {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  color: var(--text-primary);
+  background-color: var(--surface-primary);
+  width: auto;
+  height: 40px;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--interactive-primary);
+}
+
+/* Status chips */
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.statusChip {
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--surface-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.statusChip:hover {
+  background-color: var(--surface-tertiary);
+}
+
+.statusSelected {
+  background-color: var(--interactive-primary-bg);
+  border-color: var(--interactive-primary);
+  color: var(--interactive-primary);
+}
+
+/* Owner chips */
+.ownerRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ownerChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--surface-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.ownerChip:hover {
+  background-color: var(--surface-tertiary);
+}
+
+.ownerSelected {
+  background-color: var(--interactive-primary-bg);
+  border-color: var(--interactive-primary);
+  color: var(--interactive-primary);
+}
+
+/* ======================================
+   Error
+   ====================================== */
 
 .error {
   color: var(--status-error);
   font-size: var(--font-size-sm);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   background-color: var(--status-error-bg);
   border-radius: var(--radius-md);
 }
+
+/* ======================================
+   Footer / Actions
+   ====================================== */
 
 .actions {
   display: flex;
@@ -286,18 +650,17 @@
 }
 
 .cancelButton {
-  padding: var(--space-2) var(--space-4);
-  background-color: transparent;
+  padding: var(--space-2) var(--space-3);
+  background: none;
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   cursor: pointer;
 }
 
 .cancelButton:hover {
   background-color: var(--surface-secondary);
-  color: var(--text-primary);
 }
 
 .submitButton {
@@ -305,7 +668,7 @@
   background-color: var(--interactive-primary);
   border: none;
   border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--text-inverse);
   cursor: pointer;
@@ -320,14 +683,30 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 480px) {
-  .row {
-    grid-template-columns: 1fr;
+/* ======================================
+   Mobile
+   ====================================== */
+
+@media (max-width: 640px) {
+  .modal {
+    max-width: 100%;
   }
 
-  .preview {
+  .compactPreview {
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .compactImageWrapper {
+    width: 64px;
+    height: 64px;
+  }
+
+  .dateOccasionRow {
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+  }
+
+  .actions {
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
   }
 }

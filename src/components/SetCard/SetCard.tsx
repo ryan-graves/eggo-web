@@ -41,6 +41,9 @@ export function SetCard({ set, compact = false, linkPrefix, hideOwner = false }:
             <div className={styles.placeholder}>No Image</div>
           )}
         </div>
+        {set.imageUrl && !set.customImageUrl && (
+          <span className={styles.imageDot} aria-label="Missing processed image" />
+        )}
       </div>
 
       <div className={styles.content}>

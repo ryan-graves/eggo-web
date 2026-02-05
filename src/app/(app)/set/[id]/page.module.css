@@ -117,6 +117,42 @@
   gap: var(--space-6);
 }
 
+.imageBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--status-error-bg);
+  border-radius: var(--radius-md);
+}
+
+.imageBannerText {
+  font-size: var(--font-size-sm);
+  color: var(--status-error);
+}
+
+.imageBannerButton {
+  padding: var(--space-1) var(--space-3);
+  background: none;
+  border: 1px solid var(--status-error);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--status-error);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.imageBannerButton:hover:not(:disabled) {
+  background-color: rgb(239 68 68 / 0.1);
+}
+
+.imageBannerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .titleSection {
   display: flex;
   flex-wrap: wrap;
