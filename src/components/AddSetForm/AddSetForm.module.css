@@ -160,6 +160,32 @@
   }
 }
 
+/* ======================================
+   View Transition: pin persistent chrome
+   Only active during step transitions
+   (when data-vt-direction is set on html)
+   ====================================== */
+
+:global(html[data-vt-direction]) .overlay {
+  view-transition-name: add-set-overlay;
+}
+
+:global(html[data-vt-direction]) .modal {
+  view-transition-name: add-set-modal;
+}
+
+:global(html[data-vt-direction]) .header {
+  view-transition-name: add-set-header;
+}
+
+:global(html[data-vt-direction]) .stepContent {
+  view-transition-name: add-set-content;
+}
+
+:global(html[data-vt-direction]) .actions {
+  view-transition-name: add-set-actions;
+}
+
 .scrollArea {
   display: flex;
   flex-direction: column;
