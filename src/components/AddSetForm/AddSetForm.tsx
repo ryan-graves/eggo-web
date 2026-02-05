@@ -16,7 +16,7 @@ interface AddSetFormProps {
   onCancel: () => void;
 }
 
-type Step = 'lookup' | 'preview' | 'details';
+type Step = 'lookup' | 'details';
 
 type ImageProcessingStage = 'fetching' | 'removing' | 'done' | 'error';
 
@@ -87,13 +87,6 @@ export function AddSetForm({
     };
   }, []);
 
-  // Auto-advance from lookup to preview once we have a result
-  useEffect(() => {
-    if (lookupResult && step === 'lookup') {
-      setStep('preview');
-    }
-  }, [lookupResult, step]);
-
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -138,7 +131,6 @@ export function AddSetForm({
     setImageProcessingStage('fetching');
 
     const promise = (async () => {
-      // Brief pause to show the fetching stage visually
       await new Promise((r) => setTimeout(r, 500));
       setImageProcessingStage('removing');
 
@@ -148,7 +140,6 @@ export function AddSetForm({
           setProcessedImageUrl(bgResult.processedImageUrl);
           setImageProcessingStage('done');
         } else if (bgResult.skipped) {
-          // Background removal not configured — treat as done with no processed image
           setImageProcessingStage('done');
         } else if (bgResult.error) {
           setImageProcessingStage('error');
@@ -166,23 +157,13 @@ export function AddSetForm({
 
   const handleNext = () => {
     setStep('details');
-
-    // Begin image processing when moving to details step
     if (lookupResult?.imageUrl) {
       startImageProcessing(lookupResult.imageUrl);
     }
   };
 
   const handleBack = () => {
-    if (step === 'details') {
-      setStep('preview');
-    } else if (step === 'preview') {
-      setStep('lookup');
-      setLookupResult(null);
-      setProcessedImageUrl(null);
-      setIsProcessingImage(false);
-      setImageProcessingStage(null);
-    }
+    setStep('lookup');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -193,7 +174,6 @@ export function AddSetForm({
     setIsSubmitting(true);
     setSubmitError(null);
 
-    // Wait for image processing to finish if still in progress
     if (imageProcessingPromise.current) {
       await imageProcessingPromise.current;
     }
@@ -227,20 +207,14 @@ export function AddSetForm({
     }
   };
 
-  // Compute progress bar percentage
   const progressPercent =
     imageProcessingStage === 'fetching'
       ? 25
       : imageProcessingStage === 'removing'
         ? 60
-        : imageProcessingStage === 'done'
+        : imageProcessingStage === 'done' || imageProcessingStage === 'error'
           ? 100
-          : imageProcessingStage === 'error'
-            ? 100
-            : 0;
-
-  const headerTitle =
-    step === 'lookup' ? 'Add Set' : step === 'preview' ? 'Confirm Set' : 'Set Details';
+          : 0;
 
   return (
     <div
@@ -252,7 +226,7 @@ export function AddSetForm({
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.header}>
-          {step !== 'lookup' && (
+          {step === 'details' && (
             <button
               type="button"
               onClick={handleBack}
@@ -264,7 +238,7 @@ export function AddSetForm({
               </svg>
             </button>
           )}
-          <h2 className={styles.title}>{headerTitle}</h2>
+          <h2 className={styles.title}>Add Set</h2>
           <button type="button" onClick={handleClose} className={styles.closeButton} aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -272,9 +246,9 @@ export function AddSetForm({
           </button>
         </div>
 
-        {/* Step 1: Lookup */}
+        {/* Step 1: Lookup + Preview (combined) */}
         {step === 'lookup' && (
-          <div className={styles.stepContent}>
+          <div className={styles.stepContent} key="lookup">
             <div className={styles.lookupSection}>
               <label htmlFor="setNumber" className={styles.label}>
                 Set Number
@@ -310,7 +284,7 @@ export function AddSetForm({
 
             {/* Skeleton loading state */}
             {isLookingUp && (
-              <div className={styles.skeletonPreview}>
+              <div className={styles.detailPreview}>
                 <div className={`${styles.skeletonImage} ${styles.skeleton}`} />
                 <div className={styles.skeletonInfo}>
                   <div className={`${styles.skeletonLine} ${styles.skeletonLineName} ${styles.skeleton}`} />
@@ -320,51 +294,48 @@ export function AddSetForm({
               </div>
             )}
 
-          </div>
-        )}
-
-        {/* Step 2: Preview — detail-like layout */}
-        {step === 'preview' && lookupResult && (
-          <div className={styles.stepContent}>
-            <div className={styles.detailPreview}>
-              {lookupResult.imageUrl && (
-                <div className={styles.detailImageContainer}>
-                  <Image
-                    src={lookupResult.imageUrl}
-                    alt={lookupResult.name}
-                    fill
-                    sizes="(max-width: 520px) 60vw, 240px"
-                    style={{ objectFit: 'contain' }}
-                  />
-                </div>
-              )}
-              <h3 className={styles.detailName}>{lookupResult.name}</h3>
-              <div className={styles.detailStats}>
-                <span className={styles.detailStat}>#{lookupResult.setNumber}</span>
-                {lookupResult.pieceCount && (
-                  <span className={styles.detailStat}>
-                    <strong>{lookupResult.pieceCount.toLocaleString()}</strong> pieces
-                  </span>
+            {/* Preview result */}
+            {lookupResult && !isLookingUp && (
+              <div className={styles.detailPreview}>
+                {lookupResult.imageUrl && (
+                  <div className={styles.detailImageContainer}>
+                    <Image
+                      src={lookupResult.imageUrl}
+                      alt={lookupResult.name}
+                      fill
+                      sizes="(max-width: 520px) 60vw, 240px"
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </div>
                 )}
-                {lookupResult.year && (
-                  <span className={styles.detailStat}>
-                    Released <strong>{lookupResult.year}</strong>
-                  </span>
+                <h3 className={styles.detailName}>{lookupResult.name}</h3>
+                <div className={styles.detailStats}>
+                  <span className={styles.detailStat}>#{lookupResult.setNumber}</span>
+                  {lookupResult.pieceCount && (
+                    <span className={styles.detailStat}>
+                      <strong>{lookupResult.pieceCount.toLocaleString()}</strong> pieces
+                    </span>
+                  )}
+                  {lookupResult.year && (
+                    <span className={styles.detailStat}>
+                      Released <strong>{lookupResult.year}</strong>
+                    </span>
+                  )}
+                </div>
+                {lookupResult.theme && (
+                  <p className={styles.detailTheme}>
+                    {lookupResult.theme}
+                    {lookupResult.subtheme && ` \u203A ${lookupResult.subtheme}`}
+                  </p>
                 )}
               </div>
-              {lookupResult.theme && (
-                <p className={styles.detailTheme}>
-                  {lookupResult.theme}
-                  {lookupResult.subtheme && ` \u203A ${lookupResult.subtheme}`}
-                </p>
-              )}
-            </div>
+            )}
           </div>
         )}
 
-        {/* Step 3: Details form */}
+        {/* Step 2: Details form */}
         {step === 'details' && lookupResult && (
-          <form id="add-set-form" onSubmit={handleSubmit} className={styles.stepContent}>
+          <form id="add-set-form" onSubmit={handleSubmit} className={styles.stepContent} key="details">
             <div className={styles.scrollArea}>
               {/* Compact preview with image processing progress */}
               <div className={styles.compactPreview}>
@@ -425,7 +396,6 @@ export function AddSetForm({
 
               {/* Form fields */}
               <div className={styles.fields}>
-                {/* Status */}
                 <div className={styles.field}>
                   <label className={styles.label}>Status</label>
                   <div className={styles.statusRow}>
@@ -442,7 +412,6 @@ export function AddSetForm({
                   </div>
                 </div>
 
-                {/* Owners */}
                 {availableOwners.length > 1 && (
                   <div className={styles.field}>
                     <label className={styles.label}>Owner</label>
@@ -466,7 +435,6 @@ export function AddSetForm({
                   </div>
                 )}
 
-                {/* Date & Occasion */}
                 <div className={styles.dateOccasionRow}>
                   <div className={styles.dateField}>
                     <label htmlFor="dateReceived" className={styles.label}>Date Received</label>
@@ -491,7 +459,6 @@ export function AddSetForm({
                   </div>
                 </div>
 
-                {/* Notes */}
                 <div className={styles.field}>
                   <label htmlFor="notes" className={styles.label}>Notes</label>
                   <textarea
@@ -513,19 +480,20 @@ export function AddSetForm({
         {/* Footer actions */}
         <div className={styles.actions}>
           {step === 'lookup' && (
-            <button type="button" onClick={handleClose} className={styles.cancelButton}>
-              Cancel
-            </button>
-          )}
-
-          {step === 'preview' && (
-            <button
-              type="button"
-              onClick={handleNext}
-              className={styles.submitButton}
-            >
-              Next
-            </button>
+            <>
+              <button type="button" onClick={handleClose} className={styles.cancelButton}>
+                Cancel
+              </button>
+              {lookupResult && (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className={styles.submitButton}
+                >
+                  Next
+                </button>
+              )}
+            </>
           )}
 
           {step === 'details' && (
