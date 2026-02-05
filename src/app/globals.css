@@ -127,3 +127,17 @@ img {
     animation-duration: 0ms;
   }
 }
+
+/* Add Set form: morph shared elements between steps */
+::view-transition-group(add-set-image),
+::view-transition-group(add-set-name) {
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(add-set-image),
+  ::view-transition-group(add-set-name) {
+    animation-duration: 0ms;
+  }
+}

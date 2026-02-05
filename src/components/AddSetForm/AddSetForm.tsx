@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { createSet } from '@/lib/firebase';
@@ -95,6 +96,16 @@ export function AddSetForm({
     }, 200);
   };
 
+  const transitionStep = (callback: () => void): void => {
+    if ('startViewTransition' in document && typeof document.startViewTransition === 'function') {
+      document.startViewTransition(() => {
+        flushSync(callback);
+      });
+    } else {
+      callback();
+    }
+  };
+
   const handleLookup = async () => {
     if (!setNumber.trim()) {
       setLookupError('Please enter a set number');
@@ -156,14 +167,14 @@ export function AddSetForm({
   }, []);
 
   const handleNext = () => {
-    setStep('details');
+    transitionStep(() => setStep('details'));
     if (lookupResult?.imageUrl) {
       startImageProcessing(lookupResult.imageUrl);
     }
   };
 
   const handleBack = () => {
-    setStep('lookup');
+    transitionStep(() => setStep('lookup'));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -298,7 +309,7 @@ export function AddSetForm({
             {lookupResult && !isLookingUp && (
               <div className={styles.detailPreview}>
                 {lookupResult.imageUrl && (
-                  <div className={styles.detailImageContainer}>
+                  <div className={styles.detailImageContainer} style={{ viewTransitionName: 'add-set-image' }}>
                     <Image
                       src={lookupResult.imageUrl}
                       alt={lookupResult.name}
@@ -308,7 +319,7 @@ export function AddSetForm({
                     />
                   </div>
                 )}
-                <h3 className={styles.detailName}>{lookupResult.name}</h3>
+                <h3 className={styles.detailName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h3>
                 <div className={styles.detailStats}>
                   <span className={styles.detailStat}>#{lookupResult.setNumber}</span>
                   {lookupResult.pieceCount && (
@@ -339,7 +350,10 @@ export function AddSetForm({
             <div className={styles.scrollArea}>
               {/* Compact preview with image processing progress */}
               <div className={styles.compactPreview}>
-                <div className={styles.compactImageWrapper}>
+                <div
+                  className={styles.compactImageWrapper}
+                  style={lookupResult.imageUrl ? { viewTransitionName: 'add-set-image' } : undefined}
+                >
                   {lookupResult.imageUrl ? (
                     <Image
                       src={processedImageUrl || lookupResult.imageUrl}
@@ -354,7 +368,7 @@ export function AddSetForm({
                 </div>
                 <div className={styles.compactInfo}>
                   <span className={styles.compactSetNumber}>#{lookupResult.setNumber}</span>
-                  <h3 className={styles.compactName}>{lookupResult.name}</h3>
+                  <h3 className={styles.compactName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h3>
                   <div className={styles.compactMeta}>
                     {lookupResult.pieceCount && (
                       <span>

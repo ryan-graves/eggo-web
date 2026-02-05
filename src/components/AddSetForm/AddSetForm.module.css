@@ -153,6 +153,13 @@
   }
 }
 
+/* Suppress CSS animation when view transitions handle the step change */
+@supports (view-transition-name: none) {
+  .stepContent {
+    animation: none;
+  }
+}
+
 .scrollArea {
   display: flex;
   flex-direction: column;
