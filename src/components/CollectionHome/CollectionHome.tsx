@@ -1,117 +1,47 @@
 'use client';
 
-import { useMemo } from 'react';
-import type { Timestamp } from 'firebase/firestore';
+import { useMemo, useState } from 'react';
 import { SetCarousel } from '@/components/SetCarousel';
-import type { LegoSet } from '@/types';
+import { HomeSectionsSheet } from '@/components/HomeSectionsSheet';
+import { useHomeSections } from '@/hooks/useUserPreferences';
+import type { LegoSet, HomeSectionConfig } from '@/types';
+import { resolveSection, DEFAULT_HOME_SECTIONS } from './sectionRegistry';
 import styles from './CollectionHome.module.css';
-
-/**
- * Safely convert a dateReceived value to a sortable string.
- * Handles both string (YYYY-MM-DD) and legacy Firestore Timestamp formats.
- */
-function getDateString(dateReceived: string | Timestamp | null | undefined): string {
-  if (!dateReceived) return '';
-  if (typeof dateReceived === 'string') return dateReceived;
-  // Handle Firestore Timestamp objects
-  if (typeof dateReceived === 'object' && 'toDate' in dateReceived) {
-    const date = dateReceived.toDate();
-    return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
-  }
-  return '';
-}
 
 interface CollectionHomeProps {
   sets: LegoSet[];
 }
 
-// Shuffle array using Fisher-Yates algorithm
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
-
-// Section definitions with their logic
-interface Section {
-  id: string;
-  title: string;
-  getSets: (sets: LegoSet[]) => LegoSet[];
-  emptyMessage: string;
-  viewAllFilter?: string;
-}
-
-const SECTIONS: Section[] = [
-  {
-    id: 'in_progress',
-    title: 'In Progress',
-    getSets: (sets) =>
-      sets.filter((s) => s.status === 'in_progress' || s.status === 'rebuild_in_progress'),
-    emptyMessage: 'No builds in progress',
-    viewAllFilter: 'status=in_progress',
-  },
-  {
-    id: 'discover',
-    title: 'Discover Something New',
-    getSets: (sets) =>
-      shuffleArray(sets.filter((s) => s.status === 'unopened' || s.status === 'disassembled')),
-    emptyMessage: 'All sets have been built!',
-  },
-  {
-    id: 'recently_added',
-    title: 'Recently Added',
-    getSets: (sets) =>
-      [...sets]
-        .filter((s) => s.dateReceived)
-        .sort((a, b) => {
-          // Use helper to handle both string and legacy Timestamp formats
-          const dateA = getDateString(a.dateReceived);
-          const dateB = getDateString(b.dateReceived);
-          return dateB.localeCompare(dateA);
-        }),
-    emptyMessage: 'No sets with dates yet',
-  },
-  {
-    id: 'star_wars',
-    title: 'Star Wars',
-    getSets: (sets) => sets.filter((s) => s.theme?.toLowerCase().includes('star wars')),
-    emptyMessage: 'No Star Wars sets',
-    viewAllFilter: 'theme=Star%20Wars',
-  },
-  {
-    id: 'largest',
-    title: 'Biggest Builds',
-    getSets: (sets) =>
-      [...sets].filter((s) => s.pieceCount).sort((a, b) => (b.pieceCount || 0) - (a.pieceCount || 0)),
-    emptyMessage: 'No piece counts available',
-  },
-  {
-    id: 'icons',
-    title: 'Icons',
-    getSets: (sets) => sets.filter((s) => s.theme?.toLowerCase() === 'icons'),
-    emptyMessage: 'No Icons sets',
-    viewAllFilter: 'theme=Icons',
-  },
-  {
-    id: 'technic',
-    title: 'Technic',
-    getSets: (sets) => sets.filter((s) => s.theme?.toLowerCase().includes('technic')),
-    emptyMessage: 'No Technic sets',
-    viewAllFilter: 'theme=Technic',
-  },
-];
-
 export function CollectionHome({ sets }: CollectionHomeProps): React.JSX.Element {
-  // Compute sections with their sets
-  const sections = useMemo(() => {
-    return SECTIONS.map((section) => ({
-      ...section,
-      sets: section.getSets(sets),
-    })).filter((section) => section.sets.length > 0);
+  const { homeSections, setHomeSections } = useHomeSections();
+  const [showCustomize, setShowCustomize] = useState(false);
+
+  const sectionConfigs = homeSections ?? DEFAULT_HOME_SECTIONS;
+
+  const availableThemes = useMemo(() => {
+    const themeSet = new Set<string>();
+    sets.forEach((s) => {
+      if (s.theme) themeSet.add(s.theme);
+    });
+    return Array.from(themeSet).sort();
   }, [sets]);
+
+  const sections = useMemo(() => {
+    return sectionConfigs
+      .map((config) => {
+        const resolved = resolveSection(config);
+        return {
+          ...resolved,
+          sets: resolved.getSets(sets),
+        };
+      })
+      .filter((section) => section.sets.length > 0);
+  }, [sectionConfigs, sets]);
+
+  const handleSaveSections = (newSections: HomeSectionConfig[]): void => {
+    setHomeSections(newSections);
+    setShowCustomize(false);
+  };
 
   if (sets.length === 0) {
     return (
@@ -124,14 +54,58 @@ export function CollectionHome({ sets }: CollectionHomeProps): React.JSX.Element
 
   return (
     <div className={styles.container}>
-      {sections.map((section) => (
-        <SetCarousel
-          key={section.id}
-          title={section.title}
-          sets={section.sets}
-          emptyMessage={section.emptyMessage}
-        />
-      ))}
+      <div className={styles.customizeRow}>
+        <button
+          type="button"
+          className={styles.customizeButton}
+          onClick={() => setShowCustomize(true)}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          Customize
+        </button>
+      </div>
+
+      {sections.length === 0 ? (
+        <div className={styles.emptySections}>
+          <p>No sections have matching sets.</p>
+          <button
+            type="button"
+            className={styles.customizeLinkButton}
+            onClick={() => setShowCustomize(true)}
+          >
+            Customize your home sections
+          </button>
+        </div>
+      ) : (
+        sections.map((section) => (
+          <SetCarousel
+            key={section.id}
+            title={section.title}
+            sets={section.sets}
+            emptyMessage={section.emptyMessage}
+          />
+        ))
+      )}
+
+      <HomeSectionsSheet
+        isOpen={showCustomize}
+        onClose={() => setShowCustomize(false)}
+        sections={sectionConfigs}
+        onSave={handleSaveSections}
+        availableThemes={availableThemes}
+      />
     </div>
   );
 }
