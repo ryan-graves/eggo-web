@@ -220,9 +220,15 @@
   flex: 1;
 }
 
-.sectionType {
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+}
+
+.sectionTitle svg {
+  flex-shrink: 0;
 }
 
 .sectionName {
@@ -232,6 +238,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.sectionDescription {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
 }
 
 .removeButton {
