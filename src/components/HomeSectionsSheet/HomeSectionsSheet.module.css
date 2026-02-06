@@ -193,6 +193,8 @@
   padding: var(--space-3);
   background-color: var(--surface-secondary);
   border-radius: var(--radius-md);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .dragHandle {
