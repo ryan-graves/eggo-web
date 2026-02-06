@@ -231,6 +231,12 @@ export const DEFAULT_HOME_SECTIONS: HomeSectionConfig[] = [
   { type: 'discover' },
   { type: 'recently_added' },
   { type: 'largest' },
+  { type: 'disassembled' },
+  { type: 'unopened' },
+  { type: 'assembled' },
+  { type: 'smallest' },
+  { type: 'newest_year' },
+  { type: 'oldest_year' },
 ];
 
 /**
