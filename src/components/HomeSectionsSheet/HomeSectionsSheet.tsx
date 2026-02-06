@@ -320,7 +320,7 @@ export function HomeSectionsSheet({
   };
 
   const removeSection = (index: number): void => {
-    setDraft(draft.filter((_, i) => i !== index));
+    setDraft((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleDragEnd = (event: DragEndEvent): void => {
@@ -329,6 +329,7 @@ export function HomeSectionsSheet({
       setDraft((prev) => {
         const oldIndex = prev.findIndex((c) => sectionKey(c) === active.id);
         const newIndex = prev.findIndex((c) => sectionKey(c) === over.id);
+        if (oldIndex === -1 || newIndex === -1) return prev;
         return arrayMove(prev, oldIndex, newIndex);
       });
     }
