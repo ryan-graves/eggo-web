@@ -21,11 +21,35 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 export type UITheme = 'baseplate' | 'mono';
 
 /**
+ * Smart filter section types for the Home view
+ */
+export type SmartSectionType =
+  | 'in_progress'
+  | 'discover'
+  | 'recently_added'
+  | 'largest'
+  | 'smallest'
+  | 'newest_year'
+  | 'oldest_year'
+  | 'unopened'
+  | 'assembled'
+  | 'disassembled';
+
+/**
+ * A home section configuration entry.
+ * Either a smart filter (type is a SmartSectionType) or a theme filter (type is 'theme').
+ */
+export type HomeSectionConfig =
+  | { type: SmartSectionType }
+  | { type: 'theme'; themeName: string };
+
+/**
  * User preferences stored in Firestore
  */
 export interface UserPreferences {
   theme: ThemePreference;
   uiTheme: UITheme;
+  homeSections?: HomeSectionConfig[];
   updatedAt: Timestamp;
 }
 

@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { getFirebaseDb } from './config';
-import type { UserPreferences, ThemePreference, UITheme } from '@/types';
+import type { UserPreferences, ThemePreference, UITheme, HomeSectionConfig } from '@/types';
 
 const COLLECTION = 'users';
 
@@ -57,6 +57,16 @@ export async function updateUIThemePreference(
   uiTheme: UITheme
 ): Promise<void> {
   await setUserPreferences(userId, { uiTheme });
+}
+
+/**
+ * Update home sections configuration
+ */
+export async function updateHomeSections(
+  userId: string,
+  homeSections: HomeSectionConfig[]
+): Promise<void> {
+  await setUserPreferences(userId, { homeSections });
 }
 
 /**

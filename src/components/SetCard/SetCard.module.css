@@ -155,8 +155,23 @@
   color: var(--text-tertiary);
 }
 
-/* Compact mode for carousels - minimal status badge */
+/* Compact mode for carousels */
 .compact {
+}
+
+.compactFooter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: auto;
+}
+
+.detail {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .statusCompact {
@@ -165,7 +180,6 @@
   border-radius: var(--radius-sm);
   font-weight: var(--font-weight-medium);
   align-self: flex-start;
-  margin-top: auto;
 }
 
 /* Dark mode adjustments */
