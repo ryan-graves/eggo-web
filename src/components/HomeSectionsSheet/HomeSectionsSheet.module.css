@@ -195,34 +195,19 @@
   border-radius: var(--radius-md);
 }
 
-.sectionItemDragging {
-  opacity: 0.4;
-}
-
-.sectionItemDragOver {
-  outline: 2px solid var(--interactive-primary);
-  outline-offset: -2px;
-}
-
-/* Drag handle - only shown on hover-capable devices */
 .dragHandle {
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
   cursor: grab;
   flex-shrink: 0;
   padding: var(--space-1);
+  touch-action: none;
 }
 
 .dragHandle:active {
   cursor: grabbing;
-}
-
-@media (hover: hover) {
-  .dragHandle {
-    display: flex;
-  }
 }
 
 .sectionInfo {

@@ -1,6 +1,22 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable';
 import type { HomeSectionConfig } from '@/types';
 import {
   getSectionLabel,
@@ -24,6 +40,111 @@ type SheetView = 'list' | 'add-smart' | 'add-theme';
 
 const DRAG_CLOSE_THRESHOLD = 100;
 
+interface SortableSectionItemProps {
+  config: HomeSectionConfig;
+  isFirst: boolean;
+  isLast: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onRemove: () => void;
+}
+
+function SortableSectionItem({
+  config,
+  isFirst,
+  isLast,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
+}: SortableSectionItemProps): React.JSX.Element {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: sectionKey(config),
+    animateLayoutChanges: () => true,
+  });
+
+  const style: React.CSSProperties = {
+    transform: transform
+      ? `translate3d(${Math.round(transform.x)}px, ${Math.round(transform.y)}px, 0)`
+      : undefined,
+    transition,
+    ...(isDragging && { opacity: 0.4, zIndex: 1, position: 'relative' as const }),
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={styles.sectionItem}
+    >
+      <div
+        className={styles.dragHandle}
+        {...attributes}
+        {...listeners}
+        aria-label={`Reorder ${getSectionLabel(config)}`}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <circle cx="5.5" cy="3" r="1.5" />
+          <circle cx="10.5" cy="3" r="1.5" />
+          <circle cx="5.5" cy="8" r="1.5" />
+          <circle cx="10.5" cy="8" r="1.5" />
+          <circle cx="5.5" cy="13" r="1.5" />
+          <circle cx="10.5" cy="13" r="1.5" />
+        </svg>
+      </div>
+      <div className={styles.sectionInfo}>
+        <span className={styles.sectionType}>
+          {config.type === 'theme' ? 'Theme' : 'Smart'}
+        </span>
+        <span className={styles.sectionName}>
+          {getSectionLabel(config)}
+        </span>
+      </div>
+      <div className={styles.sectionActions}>
+        <button
+          type="button"
+          className={styles.moveButton}
+          onClick={onMoveUp}
+          disabled={isFirst}
+          aria-label="Move up"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className={styles.moveButton}
+          onClick={onMoveDown}
+          disabled={isLast}
+          aria-label="Move down"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className={styles.removeButton}
+          onClick={onRemove}
+          aria-label={`Remove ${getSectionLabel(config)}`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+    </li>
+  );
+}
+
 export function HomeSectionsSheet({
   isOpen,
   onClose,
@@ -32,7 +153,6 @@ export function HomeSectionsSheet({
   availableThemes,
 }: HomeSectionsSheetProps): React.JSX.Element | null {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -41,14 +161,18 @@ export function HomeSectionsSheet({
   const [draft, setDraft] = useState<HomeSectionConfig[]>(sections);
   const [view, setView] = useState<SheetView>('list');
 
-  // Drag-and-drop reordering state
-  const [dndDraggedIndex, setDndDraggedIndex] = useState<number | null>(null);
-  const [dndOverIndex, setDndOverIndex] = useState<number | null>(null);
-
-  // FLIP animation: store positions before state changes
-  const itemPositions = useRef<Map<string, number>>(new Map());
-
   const isVisible = isOpen || isClosing;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Reset draft when sheet opens
   const prevIsOpen = useRef(false);
@@ -103,68 +227,6 @@ export function HomeSectionsSheet({
     }
   }, [isOpen]);
 
-  // Capture item positions before a reorder for FLIP animation
-  const capturePositions = useCallback((): void => {
-    if (!listRef.current) return;
-    const items = listRef.current.children;
-    itemPositions.current.clear();
-    for (let i = 0; i < items.length; i++) {
-      const el = items[i] as HTMLElement;
-      const key = el.dataset.sectionKey;
-      if (key) {
-        itemPositions.current.set(key, el.getBoundingClientRect().top);
-      }
-    }
-  }, []);
-
-  // FLIP: animate items from old positions to new positions after reorder
-  useLayoutEffect(() => {
-    if (!listRef.current || itemPositions.current.size === 0) return;
-
-    const items = listRef.current.children;
-    const animations: Array<{ el: HTMLElement; delta: number }> = [];
-
-    for (let i = 0; i < items.length; i++) {
-      const el = items[i] as HTMLElement;
-      const key = el.dataset.sectionKey;
-      if (!key) continue;
-
-      const oldTop = itemPositions.current.get(key);
-      if (oldTop === undefined) continue;
-
-      const newTop = el.getBoundingClientRect().top;
-      const delta = oldTop - newTop;
-
-      if (Math.abs(delta) > 1) {
-        animations.push({ el, delta });
-      }
-    }
-
-    if (animations.length > 0) {
-      for (const { el, delta } of animations) {
-        el.style.transform = `translateY(${delta}px)`;
-        el.style.transition = 'none';
-      }
-
-      requestAnimationFrame(() => {
-        for (const { el } of animations) {
-          el.style.transition = 'transform 200ms ease-out';
-          el.style.transform = '';
-        }
-
-        const cleanup = (): void => {
-          for (const { el } of animations) {
-            el.style.transition = '';
-            el.style.transform = '';
-          }
-        };
-        animations[0].el.addEventListener('transitionend', cleanup, { once: true });
-      });
-    }
-
-    itemPositions.current.clear();
-  }, [draft]);
-
   const handleTouchStart = (e: React.TouchEvent): void => {
     dragStartY.current = e.touches[0].clientY;
     setIsDragging(true);
@@ -187,66 +249,24 @@ export function HomeSectionsSheet({
   };
 
   const moveSection = (index: number, direction: 'up' | 'down'): void => {
-    const newDraft = [...draft];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= newDraft.length) return;
-    capturePositions();
-    [newDraft[index], newDraft[targetIndex]] = [newDraft[targetIndex], newDraft[index]];
-    setDraft(newDraft);
+    if (targetIndex < 0 || targetIndex >= draft.length) return;
+    setDraft(arrayMove(draft, index, targetIndex));
   };
 
   const removeSection = (index: number): void => {
     setDraft(draft.filter((_, i) => i !== index));
   };
 
-  // Drag-and-drop handlers for desktop reordering
-  const handleDndDragStart = (e: React.DragEvent, index: number): void => {
-    const handle = (e.currentTarget as HTMLElement).querySelector(
-      `.${styles.dragHandle}`
-    );
-    if (handle && !handle.contains(e.target as Node)) {
-      e.preventDefault();
-      return;
+  const handleDragEnd = (event: DragEndEvent): void => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setDraft((prev) => {
+        const oldIndex = prev.findIndex((c) => sectionKey(c) === active.id);
+        const newIndex = prev.findIndex((c) => sectionKey(c) === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
     }
-    setDndDraggedIndex(index);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', String(index));
-  };
-
-  const handleDndDragOver = (e: React.DragEvent, index: number): void => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (dndDraggedIndex === null || dndDraggedIndex === index) {
-      setDndOverIndex(null);
-      return;
-    }
-    setDndOverIndex(index);
-  };
-
-  const handleDndDragLeave = (e: React.DragEvent): void => {
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-    setDndOverIndex(null);
-  };
-
-  const handleDndDragEnd = (): void => {
-    setDndDraggedIndex(null);
-    setDndOverIndex(null);
-  };
-
-  const handleDndDrop = (e: React.DragEvent, dropIndex: number): void => {
-    e.preventDefault();
-    if (dndDraggedIndex === null || dndDraggedIndex === dropIndex) {
-      setDndDraggedIndex(null);
-      setDndOverIndex(null);
-      return;
-    }
-    capturePositions();
-    const newDraft = [...draft];
-    const [removed] = newDraft.splice(dndDraggedIndex, 1);
-    newDraft.splice(dropIndex, 0, removed);
-    setDraft(newDraft);
-    setDndDraggedIndex(null);
-    setDndOverIndex(null);
   };
 
   const addSection = (config: HomeSectionConfig): void => {
@@ -355,75 +375,30 @@ export function HomeSectionsSheet({
                   <p>Add sections to customize your home view.</p>
                 </div>
               ) : (
-                <ul ref={listRef} className={styles.sectionList}>
-                  {draft.map((config, index) => (
-                    <li
-                      key={sectionKey(config)}
-                      data-section-key={sectionKey(config)}
-                      className={`${styles.sectionItem}${dndDraggedIndex === index ? ` ${styles.sectionItemDragging}` : ''}${dndOverIndex === index ? ` ${styles.sectionItemDragOver}` : ''}`}
-                      draggable
-                      onDragStart={(e) => handleDndDragStart(e, index)}
-                      onDragOver={(e) => handleDndDragOver(e, index)}
-                      onDragLeave={handleDndDragLeave}
-                      onDragEnd={handleDndDragEnd}
-                      onDrop={(e) => handleDndDrop(e, index)}
-                    >
-                      <div className={styles.dragHandle} aria-hidden="true">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                          <circle cx="5.5" cy="3" r="1.5" />
-                          <circle cx="10.5" cy="3" r="1.5" />
-                          <circle cx="5.5" cy="8" r="1.5" />
-                          <circle cx="10.5" cy="8" r="1.5" />
-                          <circle cx="5.5" cy="13" r="1.5" />
-                          <circle cx="10.5" cy="13" r="1.5" />
-                        </svg>
-                      </div>
-                      <div className={styles.sectionInfo}>
-                        <span className={styles.sectionType}>
-                          {config.type === 'theme' ? 'Theme' : 'Smart'}
-                        </span>
-                        <span className={styles.sectionName}>
-                          {getSectionLabel(config)}
-                        </span>
-                      </div>
-                      <div className={styles.sectionActions}>
-                        <button
-                          type="button"
-                          className={styles.moveButton}
-                          onClick={() => moveSection(index, 'up')}
-                          disabled={index === 0}
-                          aria-label="Move up"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="18 15 12 9 6 15" />
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.moveButton}
-                          onClick={() => moveSection(index, 'down')}
-                          disabled={index === draft.length - 1}
-                          aria-label="Move down"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.removeButton}
-                          onClick={() => removeSection(index)}
-                          aria-label={`Remove ${getSectionLabel(config)}`}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                          </svg>
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={draft.map(sectionKey)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <ul className={styles.sectionList}>
+                      {draft.map((config, index) => (
+                        <SortableSectionItem
+                          key={sectionKey(config)}
+                          config={config}
+                          isFirst={index === 0}
+                          isLast={index === draft.length - 1}
+                          onMoveUp={() => moveSection(index, 'up')}
+                          onMoveDown={() => moveSection(index, 'down')}
+                          onRemove={() => removeSection(index)}
+                        />
+                      ))}
+                    </ul>
+                  </SortableContext>
+                </DndContext>
               )}
 
               <div className={styles.addButtons}>
