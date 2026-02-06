@@ -92,7 +92,9 @@ function SortableSectionItem({
       </div>
       <div className={styles.sectionInfo}>
         <span className={styles.sectionType}>
-          {config.type === 'theme' ? 'Theme' : 'Smart'}
+          {config.type === 'theme'
+            ? 'Theme'
+            : getSmartSectionDescription(config.type)}
         </span>
         <span className={styles.sectionName}>
           {getSectionLabel(config)}
