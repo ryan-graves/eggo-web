@@ -87,7 +87,7 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
           localStorage.setItem(UI_THEME_STORAGE_KEY, prefs.uiTheme);
           applyUITheme(prefs.uiTheme);
         }
-        if (prefs.homeSections) {
+        if (prefs.homeSections !== undefined) {
           setHomeSectionsState(prefs.homeSections);
         }
       }

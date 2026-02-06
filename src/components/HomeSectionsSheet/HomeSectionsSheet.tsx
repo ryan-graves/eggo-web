@@ -144,7 +144,12 @@ export function HomeSectionsSheet({
   );
 
   const handleSave = (): void => {
-    onSave(draft);
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      setDragOffset(0);
+      onSave(draft);
+    }, 200);
   };
 
   const handleResetToDefaults = (): void => {

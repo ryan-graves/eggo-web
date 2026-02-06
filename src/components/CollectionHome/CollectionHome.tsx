@@ -30,12 +30,16 @@ export function CollectionHome({ sets }: CollectionHomeProps): React.JSX.Element
     return sectionConfigs
       .map((config) => {
         const resolved = resolveSection(config);
+        if (!resolved) return null;
         return {
           ...resolved,
           sets: resolved.getSets(sets),
         };
       })
-      .filter((section) => section.sets.length > 0);
+      .filter(
+        (section): section is NonNullable<typeof section> =>
+          section !== null && section.sets.length > 0
+      );
   }, [sectionConfigs, sets]);
 
   const handleSaveSections = (newSections: HomeSectionConfig[]): void => {

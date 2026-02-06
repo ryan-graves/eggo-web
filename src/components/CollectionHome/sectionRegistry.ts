@@ -26,13 +26,18 @@ function formatDate(dateStr: string): string | undefined {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+/**
+ * Return a random sample of up to `count` items from the array.
+ * Uses a partial Fisher-Yates shuffle to avoid shuffling the entire array.
+ */
+function randomSample<T>(array: T[], count: number): T[] {
+  const copy = [...array];
+  const n = Math.min(count, copy.length);
+  for (let i = 0; i < n; i++) {
+    const j = i + Math.floor(Math.random() * (copy.length - i));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  return shuffled;
+  return copy.slice(0, n);
 }
 
 interface SmartSectionDefinition {
@@ -62,7 +67,10 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
     title: 'Discover Something New',
     description: 'Random picks from your unopened or disassembled sets',
     getSets: (sets) =>
-      shuffleArray(sets.filter((s) => s.status === 'unopened' || s.status === 'disassembled')),
+      randomSample(
+        sets.filter((s) => s.status === 'unopened' || s.status === 'disassembled'),
+        10
+      ),
     emptyMessage: 'All sets have been built!',
     maxItems: 10,
     getDetail: (set) =>
@@ -180,7 +188,11 @@ export interface ResolvedSection {
   getDetail?: (set: LegoSet) => string | undefined;
 }
 
-export function resolveSection(config: HomeSectionConfig): ResolvedSection {
+function isValidSmartType(type: string): type is SmartSectionType {
+  return type in SMART_SECTIONS;
+}
+
+export function resolveSection(config: HomeSectionConfig): ResolvedSection | null {
   if (config.type === 'theme') {
     const themeName = config.themeName;
     return {
@@ -193,6 +205,10 @@ export function resolveSection(config: HomeSectionConfig): ResolvedSection {
       getDetail: (set) =>
         set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
     };
+  }
+
+  if (!isValidSmartType(config.type)) {
+    return null;
   }
 
   const def = SMART_SECTIONS[config.type];
@@ -222,6 +238,9 @@ export function getAllSmartTypes(): SmartSectionType[] {
 export function getSectionLabel(config: HomeSectionConfig): string {
   if (config.type === 'theme') {
     return config.themeName;
+  }
+  if (!isValidSmartType(config.type)) {
+    return config.type;
   }
   return SMART_SECTIONS[config.type].title;
 }
