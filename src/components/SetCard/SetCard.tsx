@@ -8,6 +8,8 @@ import styles from './SetCard.module.css';
 interface SetCardProps {
   set: LegoSet;
   compact?: boolean;
+  /** Optional detail text shown below set number in compact mode */
+  detail?: string;
   linkPrefix?: string; // e.g., '/share/abc123/set' for public links
   hideOwner?: boolean; // Hide owner in public view
 }
@@ -20,7 +22,7 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
   disassembled: 'Disassembled',
 };
 
-export function SetCard({ set, compact = false, linkPrefix, hideOwner = false }: SetCardProps): React.JSX.Element {
+export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = false }: SetCardProps): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
   const cardClassName = compact ? `${styles.card} ${styles.compact}` : styles.card;
   const href = linkPrefix ? `${linkPrefix}/${set.id}` : `/set/${set.id}`;
@@ -69,9 +71,12 @@ export function SetCard({ set, compact = false, linkPrefix, hideOwner = false }:
         )}
 
         {compact && (
-          <span className={`${styles.statusCompact} ${styles[set.status]}`}>
-            {STATUS_LABELS[set.status]}
-          </span>
+          <div className={styles.compactFooter}>
+            {detail && <span className={styles.detail}>{detail}</span>}
+            <span className={`${styles.statusCompact} ${styles[set.status]}`}>
+              {STATUS_LABELS[set.status]}
+            </span>
+          </div>
         )}
       </div>
     </Link>

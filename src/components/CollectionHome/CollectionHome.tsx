@@ -96,6 +96,7 @@ export function CollectionHome({ sets }: CollectionHomeProps): React.JSX.Element
             sets={section.sets}
             emptyMessage={section.emptyMessage}
             maxItems={section.maxItems}
+            getDetail={section.getDetail}
           />
         ))
       )}

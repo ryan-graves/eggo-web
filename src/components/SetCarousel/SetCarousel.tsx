@@ -11,6 +11,8 @@ interface SetCarouselProps {
   viewAllHref?: string;
   emptyMessage?: string;
   maxItems?: number;
+  /** Extract a detail string from a set for display on each card. */
+  getDetail?: (set: LegoSet) => string | undefined;
 }
 
 export function SetCarousel({
@@ -19,6 +21,7 @@ export function SetCarousel({
   viewAllHref,
   emptyMessage = 'No sets to display',
   maxItems,
+  getDetail,
 }: SetCarouselProps): React.JSX.Element {
   const displaySets = maxItems !== undefined ? sets.slice(0, maxItems) : sets;
 
@@ -54,7 +57,7 @@ export function SetCarousel({
           <div className={styles.track}>
             {displaySets.map((set) => (
               <div key={set.id} className={styles.item}>
-                <SetCard set={set} compact />
+                <SetCard set={set} compact detail={getDetail?.(set)} />
               </div>
             ))}
           </div>

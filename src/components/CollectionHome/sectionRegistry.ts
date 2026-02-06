@@ -15,6 +15,17 @@ function getDateString(dateReceived: string | Timestamp | null | undefined): str
   return '';
 }
 
+/**
+ * Format a YYYY-MM-DD date string into a human-readable format.
+ */
+function formatDate(dateStr: string): string | undefined {
+  if (!dateStr) return undefined;
+  const [year, month, day] = dateStr.split('-');
+  if (!year || !month || !day) return dateStr;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -32,6 +43,8 @@ interface SmartSectionDefinition {
   viewAllFilter?: string;
   /** Max items to show in the carousel. Undefined means show all. */
   maxItems?: number;
+  /** Extract a detail string from a set for display on the card. */
+  getDetail?: (set: LegoSet) => string | undefined;
 }
 
 const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
@@ -42,6 +55,8 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
       sets.filter((s) => s.status === 'in_progress' || s.status === 'rebuild_in_progress'),
     emptyMessage: 'No builds in progress',
     viewAllFilter: 'status=in_progress',
+    getDetail: (set) =>
+      set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
   discover: {
     title: 'Discover Something New',
@@ -50,6 +65,8 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
       shuffleArray(sets.filter((s) => s.status === 'unopened' || s.status === 'disassembled')),
     emptyMessage: 'All sets have been built!',
     maxItems: 10,
+    getDetail: (set) =>
+      set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
   recently_added: {
     title: 'Recently Added',
@@ -64,6 +81,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         }),
     emptyMessage: 'No sets with dates yet',
     maxItems: 10,
+    getDetail: (set) => formatDate(getDateString(set.dateReceived)),
   },
   largest: {
     title: 'Biggest Builds',
@@ -74,6 +92,8 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .sort((a, b) => (b.pieceCount || 0) - (a.pieceCount || 0)),
     emptyMessage: 'No piece counts available',
     maxItems: 10,
+    getDetail: (set) =>
+      set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
   smallest: {
     title: 'Quick Builds',
@@ -84,6 +104,8 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .sort((a, b) => (a.pieceCount || 0) - (b.pieceCount || 0)),
     emptyMessage: 'No piece counts available',
     maxItems: 10,
+    getDetail: (set) =>
+      set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
   newest_year: {
     title: 'Newest Releases',
@@ -94,6 +116,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .sort((a, b) => (b.year || 0) - (a.year || 0)),
     emptyMessage: 'No release years available',
     maxItems: 10,
+    getDetail: (set) => (set.year ? String(set.year) : undefined),
   },
   oldest_year: {
     title: 'Vintage Collection',
@@ -104,6 +127,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .sort((a, b) => (a.year || 0) - (b.year || 0)),
     emptyMessage: 'No release years available',
     maxItems: 10,
+    getDetail: (set) => (set.year ? String(set.year) : undefined),
   },
   unopened: {
     title: 'Unopened',
@@ -111,6 +135,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
     getSets: (sets) => sets.filter((s) => s.status === 'unopened'),
     emptyMessage: 'No unopened sets',
     viewAllFilter: 'status=unopened',
+    getDetail: (set) => set.theme ?? undefined,
   },
   assembled: {
     title: 'On Display',
@@ -118,6 +143,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
     getSets: (sets) => sets.filter((s) => s.status === 'assembled'),
     emptyMessage: 'No assembled sets',
     viewAllFilter: 'status=assembled',
+    getDetail: (set) => set.theme ?? undefined,
   },
   disassembled: {
     title: 'Ready for Rebuild',
@@ -125,6 +151,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
     getSets: (sets) => sets.filter((s) => s.status === 'disassembled'),
     emptyMessage: 'No disassembled sets',
     viewAllFilter: 'status=disassembled',
+    getDetail: (set) => set.theme ?? undefined,
   },
 };
 
@@ -149,6 +176,8 @@ export interface ResolvedSection {
   viewAllFilter?: string;
   /** Max items to show in the carousel. Undefined means show all. */
   maxItems?: number;
+  /** Extract a detail string from a set for display on the card. */
+  getDetail?: (set: LegoSet) => string | undefined;
 }
 
 export function resolveSection(config: HomeSectionConfig): ResolvedSection {
@@ -161,6 +190,8 @@ export function resolveSection(config: HomeSectionConfig): ResolvedSection {
         sets.filter((s) => s.theme?.toLowerCase() === themeName.toLowerCase()),
       emptyMessage: `No ${themeName} sets`,
       viewAllFilter: `theme=${encodeURIComponent(themeName)}`,
+      getDetail: (set) =>
+        set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
     };
   }
 
@@ -172,6 +203,7 @@ export function resolveSection(config: HomeSectionConfig): ResolvedSection {
     emptyMessage: def.emptyMessage,
     viewAllFilter: def.viewAllFilter,
     maxItems: def.maxItems,
+    getDetail: def.getDetail,
   };
 }
 
