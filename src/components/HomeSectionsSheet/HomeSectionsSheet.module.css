@@ -235,41 +235,6 @@
   text-overflow: ellipsis;
 }
 
-.sectionActions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  flex-shrink: 0;
-}
-
-.moveButton {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.moveButton:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-@media (hover: hover) {
-  .moveButton:not(:disabled):hover {
-    background-color: var(--surface-primary);
-    color: var(--text-primary);
-  }
-}
-
 .removeButton {
   width: 28px;
   height: 28px;
@@ -281,6 +246,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: var(--radius-sm);
+  flex-shrink: 0;
   transition:
     background-color var(--transition-fast),
     color var(--transition-fast);

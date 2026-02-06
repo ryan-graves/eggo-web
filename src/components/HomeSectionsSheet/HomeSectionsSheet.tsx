@@ -42,19 +42,11 @@ const DRAG_CLOSE_THRESHOLD = 100;
 
 interface SortableSectionItemProps {
   config: HomeSectionConfig;
-  isFirst: boolean;
-  isLast: boolean;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
   onRemove: () => void;
 }
 
 function SortableSectionItem({
   config,
-  isFirst,
-  isLast,
-  onMoveUp,
-  onMoveDown,
   onRemove,
 }: SortableSectionItemProps): React.JSX.Element {
   const {
@@ -66,7 +58,7 @@ function SortableSectionItem({
     isDragging,
   } = useSortable({
     id: sectionKey(config),
-    animateLayoutChanges: () => true,
+    animateLayoutChanges: ({ wasDragging }) => !wasDragging,
   });
 
   const style: React.CSSProperties = {
@@ -106,41 +98,17 @@ function SortableSectionItem({
           {getSectionLabel(config)}
         </span>
       </div>
-      <div className={styles.sectionActions}>
-        <button
-          type="button"
-          className={styles.moveButton}
-          onClick={onMoveUp}
-          disabled={isFirst}
-          aria-label="Move up"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="18 15 12 9 6 15" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          className={styles.moveButton}
-          onClick={onMoveDown}
-          disabled={isLast}
-          aria-label="Move down"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          className={styles.removeButton}
-          onClick={onRemove}
-          aria-label={`Remove ${getSectionLabel(config)}`}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
+      <button
+        type="button"
+        className={styles.removeButton}
+        onClick={onRemove}
+        aria-label={`Remove ${getSectionLabel(config)}`}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
     </li>
   );
 }
@@ -246,12 +214,6 @@ export function HomeSectionsSheet({
     } else {
       setDragOffset(0);
     }
-  };
-
-  const moveSection = (index: number, direction: 'up' | 'down'): void => {
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= draft.length) return;
-    setDraft(arrayMove(draft, index, targetIndex));
   };
 
   const removeSection = (index: number): void => {
@@ -389,10 +351,6 @@ export function HomeSectionsSheet({
                         <SortableSectionItem
                           key={sectionKey(config)}
                           config={config}
-                          isFirst={index === 0}
-                          isLast={index === draft.length - 1}
-                          onMoveUp={() => moveSection(index, 'up')}
-                          onMoveDown={() => moveSection(index, 'down')}
                           onRemove={() => removeSection(index)}
                         />
                       ))}
