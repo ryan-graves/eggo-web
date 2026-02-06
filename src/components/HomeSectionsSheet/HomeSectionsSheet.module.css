@@ -102,50 +102,65 @@
 }
 
 .closeButton {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
-  background: none;
-  font-size: var(--font-size-2xl);
+  background-color: var(--surface-secondary);
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: var(--radius-md);
-  transition: background-color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @media (hover: hover) {
   .closeButton:hover {
-    background-color: var(--surface-secondary);
+    background-color: var(--surface-tertiary);
     color: var(--text-primary);
   }
 }
 
+.closeButton:active {
+  opacity: 0.7;
+}
+
 .backButton {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
-  background: none;
+  background-color: var(--surface-secondary);
   color: var(--text-secondary);
   cursor: pointer;
   border-radius: var(--radius-md);
-  transition: background-color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @media (hover: hover) {
   .backButton:hover {
-    background-color: var(--surface-secondary);
+    background-color: var(--surface-tertiary);
     color: var(--text-primary);
   }
 }
 
+.backButton:active {
+  opacity: 0.7;
+}
+
 .headerSpacer {
-  width: 32px;
+  width: 40px;
 }
 
 .content {
@@ -180,11 +195,42 @@
   border-radius: var(--radius-md);
 }
 
+.sectionItemDragging {
+  opacity: 0.4;
+}
+
+.sectionItemDragOver {
+  outline: 2px solid var(--interactive-primary);
+  outline-offset: -2px;
+}
+
+/* Drag handle - only shown on hover-capable devices */
+.dragHandle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  cursor: grab;
+  flex-shrink: 0;
+  padding: var(--space-1);
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+@media (hover: hover) {
+  .dragHandle {
+    display: flex;
+  }
+}
+
 .sectionInfo {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   min-width: 0;
+  flex: 1;
 }
 
 .sectionType {

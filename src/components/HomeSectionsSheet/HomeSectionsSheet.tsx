@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import type { HomeSectionConfig } from '@/types';
 import {
   getSectionLabel,
@@ -32,6 +32,7 @@ export function HomeSectionsSheet({
   availableThemes,
 }: HomeSectionsSheetProps): React.JSX.Element | null {
   const sheetRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -39,6 +40,13 @@ export function HomeSectionsSheet({
 
   const [draft, setDraft] = useState<HomeSectionConfig[]>(sections);
   const [view, setView] = useState<SheetView>('list');
+
+  // Drag-and-drop reordering state
+  const [dndDraggedIndex, setDndDraggedIndex] = useState<number | null>(null);
+  const [dndOverIndex, setDndOverIndex] = useState<number | null>(null);
+
+  // FLIP animation: store positions before state changes
+  const itemPositions = useRef<Map<string, number>>(new Map());
 
   const isVisible = isOpen || isClosing;
 
@@ -95,6 +103,68 @@ export function HomeSectionsSheet({
     }
   }, [isOpen]);
 
+  // Capture item positions before a reorder for FLIP animation
+  const capturePositions = useCallback((): void => {
+    if (!listRef.current) return;
+    const items = listRef.current.children;
+    itemPositions.current.clear();
+    for (let i = 0; i < items.length; i++) {
+      const el = items[i] as HTMLElement;
+      const key = el.dataset.sectionKey;
+      if (key) {
+        itemPositions.current.set(key, el.getBoundingClientRect().top);
+      }
+    }
+  }, []);
+
+  // FLIP: animate items from old positions to new positions after reorder
+  useLayoutEffect(() => {
+    if (!listRef.current || itemPositions.current.size === 0) return;
+
+    const items = listRef.current.children;
+    const animations: Array<{ el: HTMLElement; delta: number }> = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const el = items[i] as HTMLElement;
+      const key = el.dataset.sectionKey;
+      if (!key) continue;
+
+      const oldTop = itemPositions.current.get(key);
+      if (oldTop === undefined) continue;
+
+      const newTop = el.getBoundingClientRect().top;
+      const delta = oldTop - newTop;
+
+      if (Math.abs(delta) > 1) {
+        animations.push({ el, delta });
+      }
+    }
+
+    if (animations.length > 0) {
+      for (const { el, delta } of animations) {
+        el.style.transform = `translateY(${delta}px)`;
+        el.style.transition = 'none';
+      }
+
+      requestAnimationFrame(() => {
+        for (const { el } of animations) {
+          el.style.transition = 'transform 200ms ease-out';
+          el.style.transform = '';
+        }
+
+        const cleanup = (): void => {
+          for (const { el } of animations) {
+            el.style.transition = '';
+            el.style.transform = '';
+          }
+        };
+        animations[0].el.addEventListener('transitionend', cleanup, { once: true });
+      });
+    }
+
+    itemPositions.current.clear();
+  }, [draft]);
+
   const handleTouchStart = (e: React.TouchEvent): void => {
     dragStartY.current = e.touches[0].clientY;
     setIsDragging(true);
@@ -120,12 +190,63 @@ export function HomeSectionsSheet({
     const newDraft = [...draft];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= newDraft.length) return;
+    capturePositions();
     [newDraft[index], newDraft[targetIndex]] = [newDraft[targetIndex], newDraft[index]];
     setDraft(newDraft);
   };
 
   const removeSection = (index: number): void => {
     setDraft(draft.filter((_, i) => i !== index));
+  };
+
+  // Drag-and-drop handlers for desktop reordering
+  const handleDndDragStart = (e: React.DragEvent, index: number): void => {
+    const handle = (e.currentTarget as HTMLElement).querySelector(
+      `.${styles.dragHandle}`
+    );
+    if (handle && !handle.contains(e.target as Node)) {
+      e.preventDefault();
+      return;
+    }
+    setDndDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+  };
+
+  const handleDndDragOver = (e: React.DragEvent, index: number): void => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dndDraggedIndex === null || dndDraggedIndex === index) {
+      setDndOverIndex(null);
+      return;
+    }
+    setDndOverIndex(index);
+  };
+
+  const handleDndDragLeave = (e: React.DragEvent): void => {
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setDndOverIndex(null);
+  };
+
+  const handleDndDragEnd = (): void => {
+    setDndDraggedIndex(null);
+    setDndOverIndex(null);
+  };
+
+  const handleDndDrop = (e: React.DragEvent, dropIndex: number): void => {
+    e.preventDefault();
+    if (dndDraggedIndex === null || dndDraggedIndex === dropIndex) {
+      setDndDraggedIndex(null);
+      setDndOverIndex(null);
+      return;
+    }
+    capturePositions();
+    const newDraft = [...draft];
+    const [removed] = newDraft.splice(dndDraggedIndex, 1);
+    newDraft.splice(dropIndex, 0, removed);
+    setDraft(newDraft);
+    setDndDraggedIndex(null);
+    setDndOverIndex(null);
   };
 
   const addSection = (config: HomeSectionConfig): void => {
@@ -200,7 +321,9 @@ export function HomeSectionsSheet({
                 className={styles.closeButton}
                 aria-label="Close"
               >
-                &times;
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
               </button>
             </>
           ) : (
@@ -211,16 +334,7 @@ export function HomeSectionsSheet({
                 className={styles.backButton}
                 aria-label="Back"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
               </button>
@@ -241,9 +355,29 @@ export function HomeSectionsSheet({
                   <p>Add sections to customize your home view.</p>
                 </div>
               ) : (
-                <ul className={styles.sectionList}>
+                <ul ref={listRef} className={styles.sectionList}>
                   {draft.map((config, index) => (
-                    <li key={`${sectionKey(config)}-${index}`} className={styles.sectionItem}>
+                    <li
+                      key={sectionKey(config)}
+                      data-section-key={sectionKey(config)}
+                      className={`${styles.sectionItem}${dndDraggedIndex === index ? ` ${styles.sectionItemDragging}` : ''}${dndOverIndex === index ? ` ${styles.sectionItemDragOver}` : ''}`}
+                      draggable
+                      onDragStart={(e) => handleDndDragStart(e, index)}
+                      onDragOver={(e) => handleDndDragOver(e, index)}
+                      onDragLeave={handleDndDragLeave}
+                      onDragEnd={handleDndDragEnd}
+                      onDrop={(e) => handleDndDrop(e, index)}
+                    >
+                      <div className={styles.dragHandle} aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                          <circle cx="5.5" cy="3" r="1.5" />
+                          <circle cx="10.5" cy="3" r="1.5" />
+                          <circle cx="5.5" cy="8" r="1.5" />
+                          <circle cx="10.5" cy="8" r="1.5" />
+                          <circle cx="5.5" cy="13" r="1.5" />
+                          <circle cx="10.5" cy="13" r="1.5" />
+                        </svg>
+                      </div>
                       <div className={styles.sectionInfo}>
                         <span className={styles.sectionType}>
                           {config.type === 'theme' ? 'Theme' : 'Smart'}
