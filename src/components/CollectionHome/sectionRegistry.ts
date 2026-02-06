@@ -30,6 +30,8 @@ interface SmartSectionDefinition {
   getSets: (sets: LegoSet[]) => LegoSet[];
   emptyMessage: string;
   viewAllFilter?: string;
+  /** Max items to show in the carousel. Undefined means show all. */
+  maxItems?: number;
 }
 
 const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
@@ -47,6 +49,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
     getSets: (sets) =>
       shuffleArray(sets.filter((s) => s.status === 'unopened' || s.status === 'disassembled')),
     emptyMessage: 'All sets have been built!',
+    maxItems: 10,
   },
   recently_added: {
     title: 'Recently Added',
@@ -60,6 +63,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
           return dateB.localeCompare(dateA);
         }),
     emptyMessage: 'No sets with dates yet',
+    maxItems: 10,
   },
   largest: {
     title: 'Biggest Builds',
@@ -69,6 +73,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.pieceCount)
         .sort((a, b) => (b.pieceCount || 0) - (a.pieceCount || 0)),
     emptyMessage: 'No piece counts available',
+    maxItems: 10,
   },
   smallest: {
     title: 'Quick Builds',
@@ -78,6 +83,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.pieceCount)
         .sort((a, b) => (a.pieceCount || 0) - (b.pieceCount || 0)),
     emptyMessage: 'No piece counts available',
+    maxItems: 10,
   },
   newest_year: {
     title: 'Newest Releases',
@@ -87,6 +93,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.year)
         .sort((a, b) => (b.year || 0) - (a.year || 0)),
     emptyMessage: 'No release years available',
+    maxItems: 10,
   },
   oldest_year: {
     title: 'Vintage Collection',
@@ -96,6 +103,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.year)
         .sort((a, b) => (a.year || 0) - (b.year || 0)),
     emptyMessage: 'No release years available',
+    maxItems: 10,
   },
   unopened: {
     title: 'Unopened',
@@ -139,6 +147,8 @@ export interface ResolvedSection {
   getSets: (sets: LegoSet[]) => LegoSet[];
   emptyMessage: string;
   viewAllFilter?: string;
+  /** Max items to show in the carousel. Undefined means show all. */
+  maxItems?: number;
 }
 
 export function resolveSection(config: HomeSectionConfig): ResolvedSection {
@@ -161,6 +171,7 @@ export function resolveSection(config: HomeSectionConfig): ResolvedSection {
     getSets: def.getSets,
     emptyMessage: def.emptyMessage,
     viewAllFilter: def.viewAllFilter,
+    maxItems: def.maxItems,
   };
 }
 

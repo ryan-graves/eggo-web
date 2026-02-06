@@ -18,9 +18,9 @@ export function SetCarousel({
   sets,
   viewAllHref,
   emptyMessage = 'No sets to display',
-  maxItems = 10,
+  maxItems,
 }: SetCarouselProps): React.JSX.Element {
-  const displaySets = sets.slice(0, maxItems);
+  const displaySets = maxItems !== undefined ? sets.slice(0, maxItems) : sets;
 
   return (
     <section className={styles.section}>

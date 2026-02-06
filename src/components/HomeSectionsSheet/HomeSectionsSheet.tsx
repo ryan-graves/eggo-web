@@ -8,6 +8,7 @@ import {
   getSmartSectionDescription,
   getAllSmartTypes,
   sectionKey,
+  DEFAULT_HOME_SECTIONS,
 } from '@/components/CollectionHome/sectionRegistry';
 import styles from './HomeSectionsSheet.module.css';
 
@@ -145,6 +146,14 @@ export function HomeSectionsSheet({
   const handleSave = (): void => {
     onSave(draft);
   };
+
+  const handleResetToDefaults = (): void => {
+    setDraft(DEFAULT_HOME_SECTIONS);
+  };
+
+  const isDefaultConfig =
+    draft.length === DEFAULT_HOME_SECTIONS.length &&
+    draft.every((config, i) => sectionKey(config) === sectionKey(DEFAULT_HOME_SECTIONS[i]));
 
   if (!isVisible) return null;
 
@@ -351,6 +360,11 @@ export function HomeSectionsSheet({
 
         {view === 'list' && (
           <div className={styles.footer}>
+            {!isDefaultConfig && (
+              <button type="button" onClick={handleResetToDefaults} className={styles.resetButton}>
+                Reset
+              </button>
+            )}
             <button type="button" onClick={handleClose} className={styles.cancelButton}>
               Cancel
             </button>

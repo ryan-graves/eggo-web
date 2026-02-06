@@ -365,6 +365,28 @@
   flex-shrink: 0;
 }
 
+.resetButton {
+  padding: var(--space-3) var(--space-4);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .resetButton:hover {
+    background-color: var(--surface-secondary);
+    color: var(--text-primary);
+  }
+}
+
 .cancelButton {
   flex: 1;
   padding: var(--space-3) var(--space-4);
