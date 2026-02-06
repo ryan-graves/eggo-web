@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import {
   createCollection,
@@ -151,6 +152,26 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
           owners,
           memberUserIds: [user.uid],
         });
+
+        // Optimistically update state so the UI transitions immediately
+        // rather than waiting for the Firestore subscription to detect the new document
+        const now = Timestamp.now();
+        const newCollection: Collection = {
+          id: collectionId,
+          name,
+          owners,
+          memberUserIds: [user.uid],
+          createdAt: now,
+          updatedAt: now,
+        };
+        setCollections((prev) => {
+          if (prev.some((c) => c.id === collectionId)) {
+            return prev;
+          }
+          return [...prev, newCollection];
+        });
+        setActiveCollectionState((current) => current ?? newCollection);
+
         return collectionId;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to create collection';
