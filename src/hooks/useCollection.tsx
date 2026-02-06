@@ -147,11 +147,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
 
       setError(null);
       try {
-        const collectionId = await createCollection({
-          name,
-          owners,
-          memberUserIds: [user.uid],
-        });
+        const collectionId = await createCollection({ name, owners });
 
         // Optimistically update state so the UI transitions immediately
         // rather than waiting for the Firestore subscription to detect the new document
@@ -171,6 +167,11 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
           return [...prev, newCollection];
         });
         setActiveCollectionState((current) => current ?? newCollection);
+        // A brand-new collection has no sets — mark sets as initialized so
+        // isInitializing resolves to false immediately (avoids skeleton flash)
+        setSets([]);
+        setSetsInitialized(true);
+        loadedCollectionIdRef.current = collectionId;
 
         return collectionId;
       } catch (err) {

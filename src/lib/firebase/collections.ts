@@ -28,14 +28,13 @@ function getCollectionDocRef(collectionId: string) {
 /**
  * Create a new collection via the server-side API route.
  *
- * Uses the Admin SDK on the server to bypass client-side Firestore security rules,
- * which incorrectly deny CREATE operations (the `allow write` rule references
- * `resource.data` which is null for new documents).
+ * Uses the Admin SDK on the server so that collection creation works regardless
+ * of whether the deployed Firestore security rules properly handle CREATE
+ * operations (CREATE requires `request.resource.data`, not `resource.data`).
  */
 export async function createCollection(data: {
   name: string;
   owners: string[];
-  memberUserIds: string[];
 }): Promise<string> {
   const auth = getFirebaseAuth();
   const user = auth.currentUser;
