@@ -67,7 +67,7 @@ export function FilterSheet({
           aria-describedby={undefined}
           aria-label="Filter options"
         >
-          <Drawer.Handle className={styles.handle} />
+          <Drawer.Handle />
 
           <div className={styles.header}>
             <Drawer.Title className={styles.title}>Filters</Drawer.Title>

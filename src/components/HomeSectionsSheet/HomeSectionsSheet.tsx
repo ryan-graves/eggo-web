@@ -307,7 +307,7 @@ export function HomeSectionsSheet({
           aria-describedby={undefined}
           aria-label="Customize home sections"
         >
-          <Drawer.Handle className={styles.handle} />
+          <Drawer.Handle />
 
           <div className={styles.header}>
             {view === 'list' ? (

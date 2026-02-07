@@ -143,7 +143,7 @@ export function EditSetModal({
       <Drawer.Portal>
         <Drawer.Overlay className="modal-overlay" />
         <Drawer.Content className="modal-sheet" aria-describedby={undefined}>
-          <Drawer.Handle className="modal-handle" />
+          <Drawer.Handle />
           <div className="modal-header">
             <Drawer.Title className="modal-title">Edit Set</Drawer.Title>
             <Drawer.Close

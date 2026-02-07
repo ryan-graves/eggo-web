@@ -86,7 +86,7 @@ export function CollectionSettingsModal({
       <Drawer.Portal>
         <Drawer.Overlay className="modal-overlay" />
         <Drawer.Content className={`modal-sheet ${styles.scrollable}`} aria-describedby={undefined}>
-          <Drawer.Handle className="modal-handle" />
+          <Drawer.Handle />
           <div className="modal-header">
             <Drawer.Title className="modal-title">Collection Settings</Drawer.Title>
             <Drawer.Close className="modal-icon-button" aria-label="Close">

@@ -284,7 +284,7 @@ export function AddSetForm({
       <Drawer.Portal>
         <Drawer.Overlay className="modal-overlay" />
         <Drawer.Content className={`modal-sheet ${styles.modal}`} aria-describedby={undefined}>
-          <Drawer.Handle className="modal-handle" />
+          <Drawer.Handle />
           <div className="modal-header">
             {step === 'details' && (
               <button
