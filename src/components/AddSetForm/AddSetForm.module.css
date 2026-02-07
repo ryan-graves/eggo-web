@@ -15,7 +15,7 @@
    ====================================== */
 
 .stepContent {
-  animation: stepIn var(--transition-normal) ease-out;
+  animation: stepIn var(--duration-normal) ease-out;
 }
 
 @keyframes stepIn {

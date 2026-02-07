@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
+import { useSheetDrag } from '@/hooks/useSheetDrag';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './EditSetModal.module.css';
 
@@ -52,6 +53,16 @@ export function EditSetModal({
   const [isClosing, setIsClosing] = useState(false);
   const imageUrl = currentSet.customImageUrl || currentSet.imageUrl;
 
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onCancel();
+    }, 200);
+  }, [onCancel]);
+
+  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
+
   // Lock body scroll when modal is open
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -61,14 +72,6 @@ export function EditSetModal({
       document.body.style.overflow = originalOverflow;
     };
   }, []);
-
-  const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsClosing(false);
-      onCancel();
-    }, 200);
-  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -149,8 +152,12 @@ export function EditSetModal({
     >
       <div
         className={`modal-sheet${isClosing ? ' modal-sheet-closing' : ''}`}
+        style={sheetStyle}
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="modal-handle-area" {...handleProps}>
+          <div className="modal-handle" />
+        </div>
         <div className="modal-header">
           <h2 className="modal-title">Edit Set</h2>
           <button

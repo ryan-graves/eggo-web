@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useSheetDrag } from '@/hooks/useSheetDrag';
 import type { SetStatus } from '@/types';
 import styles from './FilterSheet.module.css';
 
@@ -23,8 +24,6 @@ interface FilterSheetProps {
   sortOptions: { value: string; label: string }[];
 }
 
-const DRAG_CLOSE_THRESHOLD = 100;
-
 export function FilterSheet({
   isOpen,
   onClose,
@@ -45,9 +44,6 @@ export function FilterSheet({
 }: FilterSheetProps): React.JSX.Element | null {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [isClosing, setIsClosing] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartY = useRef(0);
 
   // Derive visibility: show when open OR when playing close animation
   const isVisible = isOpen || isClosing;
@@ -56,10 +52,11 @@ export function FilterSheet({
     setIsClosing(true);
     setTimeout(() => {
       setIsClosing(false);
-      setDragOffset(0);
       onClose();
     }, 200);
   }, [onClose]);
+
+  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
 
   // Handle escape key
   useEffect(() => {
@@ -92,28 +89,6 @@ export function FilterSheet({
     }
   }, [isOpen]);
 
-  // Touch handlers for drag-to-close
-  const handleTouchStart = (e: React.TouchEvent) => {
-    dragStartY.current = e.touches[0].clientY;
-    setIsDragging(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    const currentY = e.touches[0].clientY;
-    const offset = Math.max(0, currentY - dragStartY.current);
-    setDragOffset(offset);
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-    if (dragOffset > DRAG_CLOSE_THRESHOLD) {
-      handleClose();
-    } else {
-      setDragOffset(0);
-    }
-  };
-
   const handleClearAll = () => {
     onStatusChange('all');
     onOwnerChange('all');
@@ -124,11 +99,6 @@ export function FilterSheet({
     statusFilter !== 'all' || ownerFilter !== 'all' || themeFilter !== 'all';
 
   if (!isVisible) return null;
-
-  const sheetStyle = {
-    transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
-    transition: isDragging ? 'none' : undefined,
-  };
 
   return (
     <div
@@ -146,9 +116,7 @@ export function FilterSheet({
       >
         <div
           className={styles.handleArea}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          {...handleProps}
         >
           <div className={styles.handle} />
         </div>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { updateCollection, deleteCollection } from '@/lib/firebase';
+import { useSheetDrag } from '@/hooks/useSheetDrag';
 import type { Collection } from '@/types';
 import styles from './CollectionSettingsModal.module.css';
 
@@ -24,13 +25,15 @@ export function CollectionSettingsModal({
   const [error, setError] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
       setIsClosing(false);
       onCancel();
     }, 200);
-  };
+  }, [onCancel]);
+
+  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,9 +90,13 @@ export function CollectionSettingsModal({
     >
       <div
         className={`modal-sheet${isClosing ? ' modal-sheet-closing' : ''} ${styles.scrollable}`}
+        style={sheetStyle}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`modal-header ${styles.headerPadding}`}>
+        <div className="modal-handle-area" {...handleProps}>
+          <div className="modal-handle" />
+        </div>
+        <div className="modal-header">
           <h2 className="modal-title">Collection Settings</h2>
           <button type="button" className="modal-icon-button" onClick={handleClose}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">

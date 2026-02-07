@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { createSet } from '@/lib/firebase';
 import { getSetDataProvider } from '@/lib/providers';
 import { removeImageBackground } from '@/lib/image';
+import { useSheetDrag } from '@/hooks/useSheetDrag';
 import type { SetStatus, SetLookupResult } from '@/types';
 import styles from './AddSetForm.module.css';
 
@@ -101,13 +102,15 @@ export function AddSetForm({
     };
   }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
       setIsClosing(false);
       onCancel();
     }, 200);
-  };
+  }, [onCancel]);
+
+  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
 
   const transitionStep = (callback: () => void, direction: 'forward' | 'back'): void => {
     if ('startViewTransition' in document && typeof document.startViewTransition === 'function') {
@@ -280,8 +283,12 @@ export function AddSetForm({
     >
       <div
         className={`modal-sheet ${styles.modal} ${isClosing ? 'modal-sheet-closing' : ''}`}
+        style={sheetStyle}
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="modal-handle-area" {...handleProps}>
+          <div className="modal-handle" />
+        </div>
         <div className="modal-header">
           {step === 'details' && (
             <button

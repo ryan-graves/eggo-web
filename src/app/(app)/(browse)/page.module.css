@@ -279,7 +279,7 @@
 /* Content transitions */
 @media (prefers-reduced-motion: no-preference) {
   .content {
-    animation: fadeIn var(--transition-normal);
+    animation: fadeIn var(--duration-normal);
   }
 }
 

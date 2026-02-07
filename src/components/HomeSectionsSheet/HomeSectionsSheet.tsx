@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useSheetDrag } from '@/hooks/useSheetDrag';
 import {
   DndContext,
   closestCenter,
@@ -37,8 +38,6 @@ interface HomeSectionsSheetProps {
 }
 
 type SheetView = 'list' | 'add-smart' | 'add-theme';
-
-const DRAG_CLOSE_THRESHOLD = 100;
 
 const SECTION_ICON_PROPS = {
   width: 16,
@@ -225,9 +224,6 @@ export function HomeSectionsSheet({
 }: HomeSectionsSheetProps): React.JSX.Element | null {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [isClosing, setIsClosing] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartY = useRef(0);
 
   const [draft, setDraft] = useState<HomeSectionConfig[]>(sections);
   const [view, setView] = useState<SheetView>('list');
@@ -260,10 +256,11 @@ export function HomeSectionsSheet({
     setIsClosing(true);
     setTimeout(() => {
       setIsClosing(false);
-      setDragOffset(0);
       onClose();
     }, 200);
   }, [onClose]);
+
+  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent): void => {
@@ -297,27 +294,6 @@ export function HomeSectionsSheet({
       }
     }
   }, [isOpen]);
-
-  const handleTouchStart = (e: React.TouchEvent): void => {
-    dragStartY.current = e.touches[0].clientY;
-    setIsDragging(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent): void => {
-    if (!isDragging) return;
-    const currentY = e.touches[0].clientY;
-    const offset = Math.max(0, currentY - dragStartY.current);
-    setDragOffset(offset);
-  };
-
-  const handleTouchEnd = (): void => {
-    setIsDragging(false);
-    if (dragOffset > DRAG_CLOSE_THRESHOLD) {
-      handleClose();
-    } else {
-      setDragOffset(0);
-    }
-  };
 
   const removeSection = (index: number): void => {
     setDraft((prev) => prev.filter((_, i) => i !== index));
@@ -354,7 +330,6 @@ export function HomeSectionsSheet({
     setIsClosing(true);
     setTimeout(() => {
       setIsClosing(false);
-      setDragOffset(0);
       onSave(draft);
     }, 200);
   };
@@ -368,11 +343,6 @@ export function HomeSectionsSheet({
     draft.every((config, i) => sectionKey(config) === sectionKey(DEFAULT_HOME_SECTIONS[i]));
 
   if (!isVisible) return null;
-
-  const sheetStyle = {
-    transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
-    transition: isDragging ? 'none' : undefined,
-  };
 
   return (
     <div
@@ -390,9 +360,7 @@ export function HomeSectionsSheet({
       >
         <div
           className={styles.handleArea}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          {...handleProps}
         >
           <div className={styles.handle} />
         </div>
