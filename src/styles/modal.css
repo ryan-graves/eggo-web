@@ -6,13 +6,20 @@
  * the package doesn't export the CSS file and the source has a syntax bug
  * that breaks Turbopack's strict parser.
  *
- * Structure: Drawer.Overlay(.modal-overlay) + Drawer.Content(.modal-sheet)
+ * Structure: Drawer.Overlay + Drawer.Content(.modal-sheet)
  *            > Drawer.Handle + .modal-header + content + .modal-footer
  */
 
 /* ==========================================================================
  * Vaul defaults (from vaul/style.css, bottom-direction only)
  * ========================================================================== */
+
+[data-vaul-overlay] {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 0.4);
+  z-index: 100;
+}
 
 [data-vaul-drawer] {
   touch-action: none;
@@ -146,20 +153,7 @@
 }
 
 /* ==========================================================================
- * Overlay (Drawer.Overlay)
- * ========================================================================== */
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgb(0 0 0 / 0.4);
-  z-index: 100;
-  /* Force GPU compositing to prevent iOS Safari safe area flicker */
-  -webkit-transform: translate3d(0, 0, 0);
-}
-
-/* ==========================================================================
- * Sheet (Drawer.Content)
+ * Sheet (Drawer.Content) — positioning required by vaul
  * ========================================================================== */
 
 .modal-sheet {
@@ -167,33 +161,13 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding-top: var(--space-2);
   background-color: var(--surface-primary);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
-  overflow: hidden;
   z-index: 101;
   outline: none;
-}
-
-@media (max-width: 640px) {
-  .modal-sheet {
-    max-width: 100%;
-  }
-}
-
-/* ==========================================================================
- * Handle — theme-aware color override
- * ========================================================================== */
-
-[data-vaul-handle] {
-  background: var(--border-secondary) !important;
 }
 
 /* ==========================================================================
