@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { Link } from 'next-view-transitions';
 import type { LegoSet } from '@/types';
+import { useNavigationLoading } from '@/hooks/useNavigationLoading';
 import styles from './SetCard.module.css';
 
 interface SetCardProps {
@@ -24,8 +25,10 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 
 export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = false }: SetCardProps): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
-  const cardClassName = styles.card;
   const href = linkPrefix ? `${linkPrefix}/${set.id}` : `/set/${set.id}`;
+  const { pendingHref } = useNavigationLoading();
+  const isLoading = pendingHref === href;
+  const cardClassName = `${styles.card} ${isLoading ? styles.cardLoading : ''}`;
 
   return (
     <Link href={href} className={cardClassName}>
