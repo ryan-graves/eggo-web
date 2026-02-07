@@ -2,11 +2,148 @@
  * Modal Utilities
  *
  * Shared styles for bottom-sheet modals powered by Vaul (Drawer).
- * Use these classes alongside CSS modules for component-specific overrides.
+ * Includes vaul's default styles (from vaul/style.css) inlined here because
+ * the package doesn't export the CSS file and the source has a syntax bug
+ * that breaks Turbopack's strict parser.
  *
  * Structure: Drawer.Overlay(.modal-overlay) + Drawer.Content(.modal-sheet)
  *            > Drawer.Handle + .modal-header + content + .modal-footer
  */
+
+/* ==========================================================================
+ * Vaul defaults (from vaul/style.css, bottom-direction only)
+ * ========================================================================== */
+
+[data-vaul-drawer] {
+  touch-action: none;
+  will-change: transform;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='open'] {
+  animation-name: slideFromBottom;
+}
+[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='closed'] {
+  animation-name: slideToBottom;
+}
+
+[data-vaul-drawer][data-vaul-snap-points='true'][data-vaul-drawer-direction='bottom'] {
+  transform: translate3d(0, var(--initial-transform, 100%), 0);
+}
+
+[data-vaul-drawer][data-vaul-delayed-snap-points='true'][data-vaul-drawer-direction='bottom'] {
+  transform: translate3d(0, var(--snap-point-height, 0), 0);
+}
+
+[data-vaul-overlay][data-vaul-snap-points='false'] {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-vaul-overlay][data-vaul-snap-points='false'][data-state='open'] {
+  animation-name: fadeIn;
+}
+[data-vaul-overlay][data-state='closed'] {
+  animation-name: fadeOut;
+}
+
+[data-vaul-animate='false'] {
+  animation: none !important;
+}
+
+[data-vaul-overlay][data-vaul-snap-points='true'] {
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+[data-vaul-overlay][data-vaul-snap-points='true'] {
+  opacity: 1;
+}
+
+[data-vaul-drawer]:not([data-vaul-custom-container='true'])::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  background-color: inherit;
+}
+
+[data-vaul-drawer][data-vaul-drawer-direction='bottom']::after {
+  top: 100%;
+  bottom: initial;
+  left: 0;
+  right: 0;
+  height: 200%;
+}
+
+[data-vaul-overlay][data-vaul-snap-points='true']:not([data-vaul-snap-points-overlay='true']):not(
+    [data-state='closed']
+  ) {
+  opacity: 0;
+}
+
+[data-vaul-overlay][data-vaul-snap-points-overlay='true'] {
+  opacity: 1;
+}
+
+[data-vaul-handle] {
+  display: block;
+  position: relative;
+  opacity: 0.7;
+  background: #e2e2e4;
+  margin-left: auto;
+  margin-right: auto;
+  height: 5px;
+  width: 32px;
+  border-radius: 1rem;
+  touch-action: pan-y;
+}
+
+[data-vaul-handle]:hover,
+[data-vaul-handle]:active {
+  opacity: 1;
+}
+
+[data-vaul-handle-hitarea] {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, 2.75rem);
+  height: max(100%, 2.75rem);
+  touch-action: inherit;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-vaul-drawer] {
+    user-select: none;
+  }
+}
+
+@media (pointer: fine) {
+  [data-vaul-handle-hitarea] {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; }
+}
+
+@keyframes slideFromBottom {
+  from { transform: translate3d(0, var(--initial-transform, 100%), 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes slideToBottom {
+  to { transform: translate3d(0, var(--initial-transform, 100%), 0); }
+}
 
 /* ==========================================================================
  * Overlay (Drawer.Overlay)
@@ -49,7 +186,7 @@
 }
 
 /* ==========================================================================
- * Handle — theme-aware color, all other styles from Vaul defaults
+ * Handle — theme-aware color override
  * ========================================================================== */
 
 [data-vaul-handle] {
