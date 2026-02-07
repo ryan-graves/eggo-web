@@ -99,6 +99,7 @@
   cursor: pointer;
   font-size: var(--font-size-sm);
   min-width: 36px;
+  transition: background-color var(--transition-fast);
 }
 
 .sortButton:hover {

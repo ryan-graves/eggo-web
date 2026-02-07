@@ -107,37 +107,7 @@
   padding-top: var(--space-2);
 }
 
-.status {
-  font-size: 10px;
-  padding: 2px var(--space-1);
-  border-radius: var(--radius-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.unopened {
-  background-color: var(--color-gray-200);
-  color: var(--color-gray-700);
-}
-
-.in_progress {
-  background-color: var(--status-info-bg);
-  color: var(--status-info);
-}
-
-.rebuild_in_progress {
-  background-color: var(--status-info-bg);
-  color: var(--status-info);
-}
-
-.assembled {
-  background-color: var(--status-success-bg);
-  color: var(--status-success);
-}
-
-.disassembled {
-  background-color: var(--status-warning-bg);
-  color: var(--status-warning);
-}
+/* Status badges use global .status-badge-sm / .status-* classes from status.css */
 
 .owner {
   font-size: 10px;
@@ -153,10 +123,6 @@
   gap: var(--space-2);
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
-}
-
-/* Compact mode for carousels */
-.compact {
 }
 
 .compactFooter {
@@ -175,15 +141,5 @@
 }
 
 .statusCompact {
-  font-size: 10px;
-  padding: 2px var(--space-1);
-  border-radius: var(--radius-sm);
-  font-weight: var(--font-weight-medium);
   align-self: flex-start;
-}
-
-/* Dark mode adjustments */
-[data-theme='dark'] .unopened {
-  background-color: var(--color-gray-700);
-  color: var(--color-gray-200);
 }

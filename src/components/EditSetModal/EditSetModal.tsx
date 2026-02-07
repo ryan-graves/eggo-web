@@ -144,19 +144,19 @@ export function EditSetModal({
 
   return (
     <div
-      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      className={`modal-overlay${isClosing ? ' modal-overlay-closing' : ''}`}
       onClick={handleClose}
     >
       <div
-        className={`${styles.modal} ${isClosing ? styles.modalClosing : ''}`}
+        className={`modal-sheet${isClosing ? ' modal-sheet-closing' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={styles.header}>
-          <h2 className={styles.title}>Edit Set</h2>
+        <div className="modal-header">
+          <h2 className="modal-title">Edit Set</h2>
           <button
             type="button"
             onClick={handleClose}
-            className={styles.closeButton}
+            className="modal-icon-button"
             disabled={isBusy}
             aria-label="Close"
           >
@@ -167,7 +167,7 @@ export function EditSetModal({
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.scrollArea}>
+          <div className="modal-scroll-area">
             {/* API Data Card - Bold treatment */}
             <div className={styles.apiCard}>
               {imageUrl && (
@@ -227,14 +227,14 @@ export function EditSetModal({
             </div>
 
             {/* Status */}
-            <div className={styles.field}>
-              <label className={styles.label}>Status</label>
-              <div className={styles.statusRow}>
+            <div className="form-field">
+              <label className="form-label">Status</label>
+              <div className="form-chip-row">
                 {STATUS_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
-                    className={`${styles.statusChip} ${status === opt.value ? styles.statusSelected : ''}`}
+                    className={`form-chip${status === opt.value ? ' form-chip-selected' : ''}`}
                     onClick={() => setStatus(opt.value)}
                   >
                     {opt.label}
@@ -245,14 +245,14 @@ export function EditSetModal({
 
             {/* Owner */}
             {availableOwners.length > 1 && (
-              <div className={styles.field}>
-                <label className={styles.label}>Owner</label>
-                <div className={styles.ownerRow}>
+              <div className="form-field">
+                <label className="form-label">Owner</label>
+                <div className="form-chip-row">
                   {availableOwners.map((ownerName) => (
                     <button
                       key={ownerName}
                       type="button"
-                      className={`${styles.ownerChip} ${selectedOwners.includes(ownerName) ? styles.ownerSelected : ''}`}
+                      className={`form-chip${selectedOwners.includes(ownerName) ? ' form-chip-selected' : ''}`}
                       onClick={() => toggleOwner(ownerName)}
                     >
                       {selectedOwners.includes(ownerName) && (
@@ -268,39 +268,39 @@ export function EditSetModal({
             )}
 
             {/* Display Name */}
-            <div className={styles.field}>
-              <label htmlFor="name" className={styles.label}>Display Name</label>
+            <div className="form-field">
+              <label htmlFor="name" className="form-label">Display Name</label>
               <input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={styles.input}
+                className="form-input"
                 required
               />
             </div>
 
             {/* Date & Occasion */}
-            <div className={styles.dateOccasionRow}>
-              <div className={styles.dateField}>
-                <label htmlFor="dateReceived" className={styles.label}>Date Received</label>
+            <div className="form-date-occasion-row">
+              <div className="form-date-field">
+                <label htmlFor="dateReceived" className="form-label">Date Received</label>
                 <input
                   id="dateReceived"
                   type="date"
                   value={dateReceived}
                   onChange={(e) => setDateReceived(e.target.value)}
-                  className={styles.dateInput}
+                  className="form-date-input"
                 />
               </div>
-              <div className={styles.field}>
-                <label htmlFor="occasion" className={styles.label}>Occasion (optional)</label>
+              <div className="form-field">
+                <label htmlFor="occasion" className="form-label">Occasion (optional)</label>
                 <input
                   id="occasion"
                   type="text"
                   value={occasion}
                   onChange={(e) => setOccasion(e.target.value)}
                   placeholder="Birthday, Christmas..."
-                  className={styles.input}
+                  className="form-input"
                 />
               </div>
             </div>
@@ -317,22 +317,22 @@ export function EditSetModal({
             </label>
 
             {/* Notes */}
-            <div className={styles.field}>
-              <label htmlFor="notes" className={styles.label}>Notes</label>
+            <div className="form-field">
+              <label htmlFor="notes" className="form-label">Notes</label>
               <textarea
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className={styles.textarea}
+                className="form-textarea"
                 rows={2}
                 placeholder="Optional notes..."
               />
             </div>
 
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p className="form-error">{error}</p>}
           </div>
 
-          <div className={styles.footer}>
+          <div className={`modal-footer ${styles.footer}`}>
             {showDeleteConfirm ? (
               <div className={styles.deleteConfirm}>
                 <span>Delete this set?</span>
@@ -365,10 +365,10 @@ export function EditSetModal({
                   </svg>
                 </button>
                 <div className={styles.rightActions}>
-                  <button type="button" onClick={handleClose} className={styles.cancelButton}>
+                  <button type="button" onClick={handleClose} className="btn-default btn-secondary">
                     Cancel
                   </button>
-                  <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+                  <button type="submit" className="btn-default btn-primary" disabled={isSubmitting}>
                     {isSubmitting ? 'Saving...' : 'Save'}
                   </button>
                 </div>

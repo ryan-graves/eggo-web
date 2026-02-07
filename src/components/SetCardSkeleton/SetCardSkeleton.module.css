@@ -92,11 +92,6 @@
   width: 3rem;
 }
 
-/* Compact mode for carousels - same base layout, just different content */
-.compact {
-  /* Inherits from base card - same dimensions */
-}
-
 .statusCompactSkeleton {
   height: 1rem;
   width: 4rem;

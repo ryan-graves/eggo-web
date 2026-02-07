@@ -1,0 +1,54 @@
+/*
+ * Status Badge Utilities
+ *
+ * Shared styles for set status badges used across cards and detail pages.
+ * Use as: <span class="status-badge status-unopened">Unopened</span>
+ */
+
+.status-badge {
+  font-size: var(--font-size-xs);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* Smaller variant for cards */
+.status-badge-sm {
+  font-size: 10px;
+  padding: 2px var(--space-1);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.status-unopened {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+.status-in_progress {
+  background-color: var(--status-info-bg);
+  color: var(--status-info);
+}
+
+.status-rebuild_in_progress {
+  background-color: var(--status-info-bg);
+  color: var(--status-info);
+}
+
+.status-assembled {
+  background-color: var(--status-success-bg);
+  color: var(--status-success);
+}
+
+.status-disassembled {
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning);
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .status-unopened {
+  background-color: var(--color-gray-700);
+  color: var(--color-gray-200);
+}

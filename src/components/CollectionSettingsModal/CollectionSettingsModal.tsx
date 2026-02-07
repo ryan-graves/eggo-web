@@ -82,16 +82,16 @@ export function CollectionSettingsModal({
 
   return (
     <div
-      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      className={`modal-overlay${isClosing ? ' modal-overlay-closing' : ''}`}
       onClick={handleClose}
     >
       <div
-        className={`${styles.modal} ${isClosing ? styles.modalClosing : ''}`}
+        className={`modal-sheet${isClosing ? ' modal-sheet-closing' : ''} ${styles.scrollable}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={styles.header}>
-          <h2 className={styles.title}>Collection Settings</h2>
-          <button type="button" className={styles.closeButton} onClick={handleClose}>
+        <div className={`modal-header ${styles.headerPadding}`}>
+          <h2 className="modal-title">Collection Settings</h2>
+          <button type="button" className="modal-icon-button" onClick={handleClose}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
                 d="M15 5L5 15M5 5L15 15"
@@ -112,11 +112,11 @@ export function CollectionSettingsModal({
               This will permanently delete the collection and all its sets. This action cannot be
               undone.
             </p>
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p className="form-error">{error}</p>}
             <div className={styles.deleteActions}>
               <button
                 type="button"
-                className={styles.cancelButton}
+                className="btn-default btn-secondary"
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeleting}
               >
@@ -124,7 +124,7 @@ export function CollectionSettingsModal({
               </button>
               <button
                 type="button"
-                className={styles.confirmDeleteButton}
+                className="btn-default btn-danger"
                 onClick={handleDelete}
                 disabled={isDeleting}
               >
@@ -134,8 +134,8 @@ export function CollectionSettingsModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.field}>
-              <label htmlFor="collectionName" className={styles.label}>
+            <div className="form-field">
+              <label htmlFor="collectionName" className="form-label">
                 Collection Name
               </label>
               <input
@@ -143,13 +143,13 @@ export function CollectionSettingsModal({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={styles.input}
+                className={`form-input ${styles.input}`}
                 disabled={isSubmitting}
               />
             </div>
 
-            <div className={styles.field}>
-              <label htmlFor="owners" className={styles.label}>
+            <div className="form-field">
+              <label htmlFor="owners" className="form-label">
                 Owners
               </label>
               <input
@@ -158,24 +158,24 @@ export function CollectionSettingsModal({
                 value={ownersInput}
                 onChange={(e) => setOwnersInput(e.target.value)}
                 placeholder="e.g., Ryan, Alyssa"
-                className={styles.input}
+                className={`form-input ${styles.input}`}
                 disabled={isSubmitting}
               />
               <p className={styles.hint}>Separate multiple owners with commas</p>
             </div>
 
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p className="form-error">{error}</p>}
 
             <div className={styles.actions}>
               <button
                 type="button"
-                className={styles.cancelButton}
+                className="btn-default btn-secondary"
                 onClick={handleClose}
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
-              <button type="submit" className={styles.saveButton} disabled={isSubmitting}>
+              <button type="submit" className="btn-default btn-primary" disabled={isSubmitting}>
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </button>
             </div>

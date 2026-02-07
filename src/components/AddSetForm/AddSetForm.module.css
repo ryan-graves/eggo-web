@@ -1,162 +1,20 @@
 /* ======================================
-   Modal Shell
+   Modal Overrides
+   AddSetForm uses fixed height (not max-height)
+   and a wider max-width than the shared modal.
    ====================================== */
-
-.overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgb(0 0 0 / 0.5);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 100;
-  animation: fadeIn var(--transition-fast) ease-out;
-}
-
-.overlayClosing {
-  animation: fadeOut var(--transition-fast) ease-in forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
 
 .modal {
-  background-color: var(--surface-primary);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  width: 100%;
   max-width: 520px;
-  /* Fixed height prevents modal from resizing between steps */
   height: 85vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
-  overflow: hidden;
-  animation: slideUp var(--transition-normal) ease-out;
-}
-
-.modalClosing {
-  animation: slideDown var(--transition-normal) ease-in forwards;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-@keyframes slideDown {
-  from { transform: translateY(0); }
-  to { transform: translateY(100%); }
 }
 
 /* ======================================
-   Header
-   ====================================== */
-
-.header {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-6) var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--border-primary);
-  flex-shrink: 0;
-}
-
-.header::before {
-  content: '';
-  position: absolute;
-  top: var(--space-2);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 36px;
-  height: 4px;
-  background-color: var(--border-secondary);
-  border-radius: var(--radius-full);
-}
-
-.title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.backButton {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background-color: var(--surface-secondary);
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.backButton:hover {
-  background-color: var(--surface-tertiary);
-  color: var(--text-primary);
-}
-
-.backButton:active {
-  opacity: 0.7;
-}
-
-.closeButton {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background-color: var(--surface-secondary);
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  margin-left: auto;
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.closeButton:hover {
-  background-color: var(--surface-tertiary);
-  color: var(--text-primary);
-}
-
-.closeButton:active {
-  opacity: 0.7;
-}
-
-/* ======================================
-   Step Content (shared wrapper)
+   Step Content (animation + view transition)
+   Base scroll-area styles come from .modal-scroll-area
    ====================================== */
 
 .stepContent {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
   animation: stepIn var(--transition-normal) ease-out;
 }
 
@@ -184,7 +42,7 @@
    (when data-vt-direction is set on html)
    ====================================== */
 
-:global(html[data-vt-direction]) .overlay {
+:global(html[data-vt-direction] .modal-overlay) {
   view-transition-name: add-set-overlay;
 }
 
@@ -192,7 +50,7 @@
   view-transition-name: add-set-modal;
 }
 
-:global(html[data-vt-direction]) .header {
+:global(html[data-vt-direction] .modal-header) {
   view-transition-name: add-set-header;
 }
 
@@ -202,6 +60,15 @@
 
 :global(html[data-vt-direction]) .actions {
   view-transition-name: add-set-actions;
+}
+
+/* ======================================
+   Footer Override
+   AddSetForm uses right-aligned actions
+   ====================================== */
+
+.actions {
+  justify-content: flex-end;
 }
 
 .scrollArea {
@@ -225,29 +92,8 @@
   gap: var(--space-2);
 }
 
-.lookupRow .input {
+.lookupRow :global(.form-input) {
   flex: 1;
-}
-
-.lookupButton {
-  padding: var(--space-2) var(--space-4);
-  background-color: var(--interactive-primary);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-inverse);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.lookupButton:hover:not(:disabled) {
-  background-color: var(--interactive-primary-hover);
-}
-
-.lookupButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .lookupError {
@@ -256,22 +102,6 @@
 }
 
 /* Skeleton loading */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--surface-secondary) 25%,
-    var(--surface-tertiary) 50%,
-    var(--surface-secondary) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: var(--radius-sm);
-}
 
 .skeletonPreview {
   display: flex;
@@ -483,7 +313,7 @@
 }
 
 /* ======================================
-   Form Fields
+   Form Fields Container
    ====================================== */
 
 .fields {
@@ -492,206 +322,11 @@
   gap: var(--space-4);
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-}
-
-.input,
-.select,
-.textarea {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  background-color: var(--surface-primary);
-  height: 40px;
-  box-sizing: border-box;
-}
-
-.input:focus,
-.select:focus,
-.textarea:focus {
-  outline: none;
-  border-color: var(--interactive-primary);
-}
-
-.textarea {
-  resize: vertical;
-  font-family: inherit;
-  height: auto;
-  min-height: 60px;
-}
-
-/* Date & occasion row */
-.dateOccasionRow {
-  display: flex;
-  gap: var(--space-3);
-}
-
-.dateField {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  flex-shrink: 0;
-}
-
-.dateInput {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-family: inherit;
-  color: var(--text-primary);
-  background-color: var(--surface-primary);
-  width: auto;
-  height: 40px;
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.dateInput:focus {
-  outline: none;
-  border-color: var(--interactive-primary);
-}
-
-/* Status chips */
-.statusRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.statusChip {
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--surface-secondary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.statusChip:hover {
-  background-color: var(--surface-tertiary);
-}
-
-.statusSelected {
-  background-color: var(--interactive-primary-bg);
-  border-color: var(--interactive-primary);
-  color: var(--interactive-primary);
-}
-
-/* Owner chips */
-.ownerRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.ownerChip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--surface-secondary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.ownerChip:hover {
-  background-color: var(--surface-tertiary);
-}
-
-.ownerSelected {
-  background-color: var(--interactive-primary-bg);
-  border-color: var(--interactive-primary);
-  color: var(--interactive-primary);
-}
-
-/* ======================================
-   Error
-   ====================================== */
-
-.error {
-  color: var(--status-error);
-  font-size: var(--font-size-sm);
-  padding: var(--space-2) var(--space-3);
-  background-color: var(--status-error-bg);
-  border-radius: var(--radius-md);
-}
-
-/* ======================================
-   Footer / Actions
-   ====================================== */
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--border-primary);
-  background-color: var(--surface-primary);
-  flex-shrink: 0;
-}
-
-.cancelButton {
-  padding: var(--space-2) var(--space-3);
-  background: none;
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.cancelButton:hover {
-  background-color: var(--surface-secondary);
-}
-
-.submitButton {
-  padding: var(--space-2) var(--space-4);
-  background-color: var(--interactive-primary);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-inverse);
-  cursor: pointer;
-}
-
-.submitButton:hover:not(:disabled) {
-  background-color: var(--interactive-primary-hover);
-}
-
-.submitButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 /* ======================================
    Mobile
    ====================================== */
 
 @media (max-width: 640px) {
-  .modal {
-    max-width: 100%;
-  }
-
   .compactPreview {
     gap: var(--space-3);
     padding: var(--space-3);
@@ -700,13 +335,5 @@
   .compactImageWrapper {
     width: 64px;
     height: 64px;
-  }
-
-  .dateOccasionRow {
-    flex-direction: column;
-  }
-
-  .actions {
-    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
   }
 }

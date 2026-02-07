@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { Link } from 'next-view-transitions';
 import { PublicCollectionProvider, usePublicCollection } from '@/hooks/usePublicCollection';
-import { PublicSetList } from '@/components/PublicSetList';
+import { SetList } from '@/components/SetList';
 import { PublicBanner } from '@/components/PublicBanner';
 import styles from './page.module.css';
 
@@ -47,11 +47,12 @@ function PublicCollectionContent(): React.JSX.Element {
       </header>
 
       <main className={styles.main}>
-        <PublicSetList
+        <SetList
           sets={sets}
           availableOwners={collection.owners}
-          shareToken={shareToken}
+          linkPrefix={`/share/${shareToken}/set`}
           viewSettings={collection.publicViewSettings}
+          emptyMessage="This collection is empty."
         />
       </main>
 
