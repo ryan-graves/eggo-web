@@ -10,8 +10,8 @@
 
 # Redirect www to non-www
 [[redirects]]
-  from = "https://www.eggo.app/*"
-  to = "https://eggo.app/:splat"
+  from = "https://www.eggo.fun/*"
+  to = "https://eggo.fun/:splat"
   status = 301
   force = true
 
