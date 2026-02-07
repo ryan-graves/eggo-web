@@ -301,7 +301,7 @@ export function HomeSectionsSheet({
   return (
     <Drawer.Root open={isOpen} onOpenChange={handleOpenChange}>
       <Drawer.Portal>
-        <Drawer.Overlay className={styles.overlay} />
+        <Drawer.Overlay />
         <Drawer.Content
           className={styles.sheet}
           aria-describedby={undefined}

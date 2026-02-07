@@ -141,7 +141,7 @@ export function EditSetModal({
   return (
     <Drawer.Root open={open} onOpenChange={handleOpenChange}>
       <Drawer.Portal>
-        <Drawer.Overlay className="modal-overlay" />
+        <Drawer.Overlay />
         <Drawer.Content className="modal-sheet" aria-describedby={undefined}>
           <Drawer.Handle />
           <div className="modal-header">
