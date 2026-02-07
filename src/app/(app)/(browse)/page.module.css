@@ -277,8 +277,10 @@
 }
 
 /* Content transitions */
-.content {
-  animation: fadeIn var(--transition-normal);
+@media (prefers-reduced-motion: no-preference) {
+  .content {
+    animation: fadeIn var(--transition-normal);
+  }
 }
 
 @keyframes fadeIn {

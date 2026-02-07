@@ -75,7 +75,7 @@
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-fast);
 }
 
 .signOutButton:hover {
@@ -120,7 +120,7 @@
   padding: var(--space-3);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--transition-fast);
 }
 
 .themeOption:hover {
@@ -225,7 +225,7 @@
   background-color: var(--surface-primary);
   border-radius: var(--radius-full);
   transition: transform var(--transition-fast);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
 }
 
 .toggleOn .toggleKnob {

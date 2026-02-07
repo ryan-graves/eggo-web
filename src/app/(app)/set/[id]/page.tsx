@@ -169,7 +169,7 @@ function SetDetailContent(): React.JSX.Element {
 
             <div className={styles.titleSection}>
               <h1 className={styles.name}>{set.name}</h1>
-              <span className={`${styles.status} ${styles[set.status]}`}>
+              <span className={`status-badge status-${set.status}`}>
                 {STATUS_LABELS[set.status]}
               </span>
             </div>

@@ -184,24 +184,26 @@ export function FilterSheet({
             </select>
           </div>
 
-          <div className={styles.section}>
-            <label className={styles.label} htmlFor="filter-owner">
-              Owner
-            </label>
-            <select
-              id="filter-owner"
-              value={ownerFilter}
-              onChange={(e) => onOwnerChange(e.target.value)}
-              className={styles.select}
-            >
-              <option value="all">All Owners</option>
-              {availableOwners.map((owner) => (
-                <option key={owner} value={owner}>
-                  {owner}
-                </option>
-              ))}
-            </select>
-          </div>
+          {availableOwners.length > 0 && (
+            <div className={styles.section}>
+              <label className={styles.label} htmlFor="filter-owner">
+                Owner
+              </label>
+              <select
+                id="filter-owner"
+                value={ownerFilter}
+                onChange={(e) => onOwnerChange(e.target.value)}
+                className={styles.select}
+              >
+                <option value="all">All Owners</option>
+                {availableOwners.map((owner) => (
+                  <option key={owner} value={owner}>
+                    {owner}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className={styles.section}>
             <label className={styles.label} htmlFor="filter-theme">

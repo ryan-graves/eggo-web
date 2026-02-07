@@ -7,7 +7,7 @@ interface SetCardSkeletonProps {
 }
 
 export function SetCardSkeleton({ compact = false }: SetCardSkeletonProps): React.JSX.Element {
-  const cardClassName = compact ? `${styles.card} ${styles.compact}` : styles.card;
+  const cardClassName = styles.card;
 
   return (
     <div className={cardClassName}>

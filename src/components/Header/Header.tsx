@@ -1,6 +1,6 @@
 'use client';
 
-import { useBackNavigation } from '@/hooks/useBackNavigation';
+import { useBackNavigation } from '@/hooks/useViewTransition';
 import styles from './Header.module.css';
 
 interface HeaderProps {

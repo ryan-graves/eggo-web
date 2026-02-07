@@ -9,7 +9,12 @@
     calc(var(--space-3) + env(safe-area-inset-left));
   gap: var(--space-3);
   background-color: var(--surface-background);
-  animation: slideIn var(--transition-normal) ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .page {
+    animation: slideIn var(--transition-normal) ease-out;
+  }
 }
 
 @keyframes slideIn {
@@ -82,19 +87,12 @@
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
+/* shimmer keyframes defined in globals.css */
 
 .image {
   object-fit: contain;
   opacity: 0;
-  transition: opacity 0.3s ease-out;
+  transition: opacity var(--transition-normal);
 }
 
 .imageLoaded {
@@ -169,37 +167,7 @@
   margin: 0;
 }
 
-.status {
-  font-size: var(--font-size-xs);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.unopened {
-  background-color: var(--color-gray-200);
-  color: var(--color-gray-700);
-}
-
-.in_progress {
-  background-color: var(--status-info-bg);
-  color: var(--status-info);
-}
-
-.rebuild_in_progress {
-  background-color: var(--status-info-bg);
-  color: var(--status-info);
-}
-
-.assembled {
-  background-color: var(--status-success-bg);
-  color: var(--status-success);
-}
-
-.disassembled {
-  background-color: var(--status-warning-bg);
-  color: var(--status-warning);
-}
+/* Status badges use global .status-badge / .status-* classes from status.css */
 
 /* Set Stats - horizontal wrapping tags */
 .setStats {
@@ -314,11 +282,7 @@
   background-color: var(--interactive-primary-hover);
 }
 
-/* Dark mode adjustments */
-[data-theme='dark'] .unopened {
-  background-color: var(--color-gray-700);
-  color: var(--color-gray-200);
-}
+/* Dark mode for status badges handled by global status.css */
 
 @media (max-width: 768px) {
   .page {

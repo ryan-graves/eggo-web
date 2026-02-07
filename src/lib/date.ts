@@ -1,3 +1,5 @@
+import type { Timestamp } from 'firebase/firestore';
+
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -33,4 +35,18 @@ export function formatDateForDisplay(dateString: string | null): string {
     month: 'long',
     day: 'numeric',
   });
+}
+
+/**
+ * Safely convert a dateReceived value to a sortable YYYY-MM-DD string.
+ * Handles both string and legacy Firestore Timestamp formats.
+ */
+export function getDateSortString(dateReceived: string | Timestamp | null | undefined): string {
+  if (!dateReceived) return '';
+  if (typeof dateReceived === 'string') return dateReceived;
+  if (typeof dateReceived === 'object' && 'toDate' in dateReceived) {
+    const date = dateReceived.toDate();
+    return date.toISOString().split('T')[0];
+  }
+  return '';
 }

@@ -7,7 +7,7 @@
   padding: var(--space-2) var(--space-4);
   background-color: var(--surface-primary);
   border-top: 1px solid var(--border-primary);
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
 }
 
 .content {

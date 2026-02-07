@@ -24,7 +24,7 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
 
 export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = false }: SetCardProps): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
-  const cardClassName = compact ? `${styles.card} ${styles.compact}` : styles.card;
+  const cardClassName = styles.card;
   const href = linkPrefix ? `${linkPrefix}/${set.id}` : `/set/${set.id}`;
 
   return (
@@ -55,7 +55,7 @@ export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = 
         {!compact && (
           <>
             <div className={styles.meta}>
-              <span className={`${styles.status} ${styles[set.status]}`}>
+              <span className={`status-badge-sm status-${set.status}`}>
                 {STATUS_LABELS[set.status]}
               </span>
               {!hideOwner && set.owners.length > 0 && (
@@ -73,7 +73,7 @@ export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = 
         {compact && (
           <div className={styles.compactFooter}>
             {detail && <span className={styles.detail}>{detail}</span>}
-            <span className={`${styles.statusCompact} ${styles[set.status]}`}>
+            <span className={`status-badge-sm status-${set.status} ${styles.statusCompact}`}>
               {STATUS_LABELS[set.status]}
             </span>
           </div>

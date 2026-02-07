@@ -1,6 +1,9 @@
 @import '../styles/tokens.css';
 @import '../styles/theme.css';
 @import '../styles/button.css';
+@import '../styles/modal.css';
+@import '../styles/form.css';
+@import '../styles/status.css';
 
 *,
 *::before,
@@ -109,6 +112,30 @@ img {
   textarea,
   select {
     font-size: 16px !important;
+  }
+}
+
+/* Shared skeleton shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--surface-secondary) 25%,
+      var(--surface-tertiary) 50%,
+      var(--surface-secondary) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 }
 

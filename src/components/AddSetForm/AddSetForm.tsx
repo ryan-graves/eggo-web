@@ -275,19 +275,19 @@ export function AddSetForm({
 
   return (
     <div
-      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      className={`modal-overlay ${isClosing ? 'modal-overlay-closing' : ''}`}
       onClick={handleClose}
     >
       <div
-        className={`${styles.modal} ${isClosing ? styles.modalClosing : ''}`}
+        className={`modal-sheet ${styles.modal} ${isClosing ? 'modal-sheet-closing' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={styles.header}>
+        <div className="modal-header">
           {step === 'details' && (
             <button
               type="button"
               onClick={handleBack}
-              className={styles.backButton}
+              className="modal-icon-button"
               aria-label="Go back"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -295,8 +295,8 @@ export function AddSetForm({
               </svg>
             </button>
           )}
-          <h2 className={styles.title}>Add Set</h2>
-          <button type="button" onClick={handleClose} className={styles.closeButton} aria-label="Close">
+          <h2 className="modal-title">Add Set</h2>
+          <button type="button" onClick={handleClose} className="modal-icon-button" aria-label="Close">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
@@ -305,9 +305,9 @@ export function AddSetForm({
 
         {/* Step 1: Lookup + Preview (combined) */}
         {step === 'lookup' && (
-          <div className={styles.stepContent} key="lookup">
+          <div className={`modal-scroll-area ${styles.stepContent}`} key="lookup">
             <div className={styles.lookupSection}>
-              <label htmlFor="setNumber" className={styles.label}>
+              <label htmlFor="setNumber" className="form-label">
                 Set Number
               </label>
               <div className={styles.lookupRow}>
@@ -323,14 +323,14 @@ export function AddSetForm({
                     }
                   }}
                   placeholder="e.g., 75192"
-                  className={styles.input}
+                  className="form-input"
                   disabled={isLookingUp}
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={handleLookup}
-                  className={styles.lookupButton}
+                  className="btn-default btn-primary"
                   disabled={isLookingUp || !setNumber.trim()}
                 >
                   {isLookingUp ? 'Looking up\u2026' : 'Lookup'}
@@ -342,11 +342,11 @@ export function AddSetForm({
             {/* Skeleton loading state */}
             {isLookingUp && (
               <div className={styles.detailPreview}>
-                <div className={`${styles.skeletonImage} ${styles.skeleton}`} />
+                <div className={`${styles.skeletonImage} skeleton-shimmer`} />
                 <div className={styles.skeletonInfo}>
-                  <div className={`${styles.skeletonLine} ${styles.skeletonLineName} ${styles.skeleton}`} />
-                  <div className={`${styles.skeletonLine} ${styles.skeletonLineMeta} ${styles.skeleton}`} />
-                  <div className={`${styles.skeletonLine} ${styles.skeletonLineTheme} ${styles.skeleton}`} />
+                  <div className={`${styles.skeletonLine} ${styles.skeletonLineName} skeleton-shimmer`} />
+                  <div className={`${styles.skeletonLine} ${styles.skeletonLineMeta} skeleton-shimmer`} />
+                  <div className={`${styles.skeletonLine} ${styles.skeletonLineTheme} skeleton-shimmer`} />
                 </div>
               </div>
             )}
@@ -392,7 +392,7 @@ export function AddSetForm({
 
         {/* Step 2: Details form */}
         {step === 'details' && lookupResult && (
-          <form id="add-set-form" onSubmit={handleSubmit} className={styles.stepContent} key="details">
+          <form id="add-set-form" onSubmit={handleSubmit} className={`modal-scroll-area ${styles.stepContent}`} key="details">
             <div className={styles.scrollArea}>
               {/* Compact preview with image processing progress */}
               <div className={styles.compactPreview}>
@@ -458,14 +458,14 @@ export function AddSetForm({
 
               {/* Form fields */}
               <div className={styles.fields}>
-                <div className={styles.field}>
-                  <label className={styles.label}>Status</label>
-                  <div className={styles.statusRow}>
+                <div className="form-field">
+                  <label className="form-label">Status</label>
+                  <div className="form-chip-row">
                     {STATUS_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         type="button"
-                        className={`${styles.statusChip} ${status === opt.value ? styles.statusSelected : ''}`}
+                        className={`form-chip ${status === opt.value ? 'form-chip-selected' : ''}`}
                         onClick={() => setStatus(opt.value)}
                       >
                         {opt.label}
@@ -475,14 +475,14 @@ export function AddSetForm({
                 </div>
 
                 {availableOwners.length > 1 && (
-                  <div className={styles.field}>
-                    <label className={styles.label}>Owner</label>
-                    <div className={styles.ownerRow}>
+                  <div className="form-field">
+                    <label className="form-label">Owner</label>
+                    <div className="form-chip-row">
                       {availableOwners.map((ownerName) => (
                         <button
                           key={ownerName}
                           type="button"
-                          className={`${styles.ownerChip} ${selectedOwners.includes(ownerName) ? styles.ownerSelected : ''}`}
+                          className={`form-chip ${selectedOwners.includes(ownerName) ? 'form-chip-selected' : ''}`}
                           onClick={() => toggleOwner(ownerName)}
                         >
                           {selectedOwners.includes(ownerName) && (
@@ -497,60 +497,60 @@ export function AddSetForm({
                   </div>
                 )}
 
-                <div className={styles.dateOccasionRow}>
-                  <div className={styles.dateField}>
-                    <label htmlFor="dateReceived" className={styles.label}>Date Received</label>
+                <div className="form-date-occasion-row">
+                  <div className="form-date-field">
+                    <label htmlFor="dateReceived" className="form-label">Date Received</label>
                     <input
                       id="dateReceived"
                       type="date"
                       value={dateReceived}
                       onChange={(e) => setDateReceived(e.target.value)}
-                      className={styles.dateInput}
+                      className="form-date-input"
                     />
                   </div>
-                  <div className={styles.field}>
-                    <label htmlFor="occasion" className={styles.label}>Occasion</label>
+                  <div className="form-field">
+                    <label htmlFor="occasion" className="form-label">Occasion</label>
                     <input
                       id="occasion"
                       type="text"
                       value={occasion}
                       onChange={(e) => setOccasion(e.target.value)}
                       placeholder="Birthday, Christmas..."
-                      className={styles.input}
+                      className="form-input"
                     />
                   </div>
                 </div>
 
-                <div className={styles.field}>
-                  <label htmlFor="notes" className={styles.label}>Notes</label>
+                <div className="form-field">
+                  <label htmlFor="notes" className="form-label">Notes</label>
                   <textarea
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className={styles.textarea}
+                    className="form-textarea"
                     rows={2}
                     placeholder="Optional notes..."
                   />
                 </div>
               </div>
 
-              {submitError && <p className={styles.error}>{submitError}</p>}
+              {submitError && <p className="form-error">{submitError}</p>}
             </div>
           </form>
         )}
 
         {/* Footer actions */}
-        <div className={styles.actions}>
+        <div className={`modal-footer ${styles.actions}`}>
           {step === 'lookup' && (
             <>
-              <button type="button" onClick={handleClose} className={styles.cancelButton}>
+              <button type="button" onClick={handleClose} className="btn-default btn-secondary">
                 Cancel
               </button>
               {lookupResult && (
                 <button
                   type="button"
                   onClick={handleNext}
-                  className={styles.submitButton}
+                  className="btn-default btn-primary"
                 >
                   Next
                 </button>
@@ -560,13 +560,13 @@ export function AddSetForm({
 
           {step === 'details' && (
             <>
-              <button type="button" onClick={handleClose} className={styles.cancelButton}>
+              <button type="button" onClick={handleClose} className="btn-default btn-secondary">
                 Cancel
               </button>
               <button
                 type="submit"
                 form="add-set-form"
-                className={styles.submitButton}
+                className="btn-default btn-primary"
                 disabled={isSubmitting}
               >
                 {isSubmitting && isProcessingImage

@@ -1,127 +1,8 @@
-.overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgb(0 0 0 / 0.5);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 100;
-  animation: fadeIn var(--transition-fast) ease-out;
-}
-
-.overlayClosing {
-  animation: fadeOut var(--transition-fast) ease-in forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-.modal {
-  background-color: var(--surface-primary);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
-  overflow: hidden;
-  animation: slideUp var(--transition-normal) ease-out;
-}
-
-.modalClosing {
-  animation: slideDown var(--transition-normal) ease-in forwards;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-@keyframes slideDown {
-  from { transform: translateY(0); }
-  to { transform: translateY(100%); }
-}
-
-.header {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-6) var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.header::before {
-  content: '';
-  position: absolute;
-  top: var(--space-2);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 36px;
-  height: 4px;
-  background-color: var(--border-secondary);
-  border-radius: var(--radius-full);
-}
-
-.title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.closeButton {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background-color: var(--surface-secondary);
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.closeButton:hover {
-  background-color: var(--surface-tertiary);
-  color: var(--text-primary);
-}
-
-.closeButton:active {
-  opacity: 0.7;
-}
-
 .form {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-}
-
-.scrollArea {
-  flex: 1;
-  overflow-y: auto;
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  /* iOS momentum scrolling and prevent scroll bleed */
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
 }
 
 /* API Data Card */
@@ -204,7 +85,6 @@
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
-  /* Prevent tap highlight causing visual issues */
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -247,138 +127,10 @@
   animation: spin 1s linear infinite;
 }
 
-/* Fields */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-}
-
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
-}
-
-.dateOccasionRow {
-  display: flex;
-  gap: var(--space-3);
-}
-
-.dateField {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  flex-shrink: 0;
-}
-
-.dateInput {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-family: inherit;
-  color: var(--text-primary);
-  background-color: var(--surface-primary);
-  width: auto;
-  height: 40px;
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.dateInput:focus {
-  outline: none;
-  border-color: var(--interactive-primary);
-}
-
-.input,
-.textarea {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  background-color: var(--surface-primary);
-  height: 40px;
-  box-sizing: border-box;
-}
-
-.input:focus,
-.textarea:focus {
-  outline: none;
-  border-color: var(--interactive-primary);
-}
-
-.textarea {
-  resize: vertical;
-  font-family: inherit;
-  height: auto;
-  min-height: 60px;
-}
-
-/* Status chips */
-.statusRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.statusChip {
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--surface-secondary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.statusChip:hover {
-  background-color: var(--surface-tertiary);
-}
-
-.statusSelected {
-  background-color: var(--interactive-primary-bg);
-  border-color: var(--interactive-primary);
-  color: var(--interactive-primary);
-}
-
-/* Owner chips */
-.ownerRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.ownerChip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--surface-secondary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.ownerChip:hover {
-  background-color: var(--surface-tertiary);
-}
-
-.ownerSelected {
-  background-color: var(--interactive-primary-bg);
-  border-color: var(--interactive-primary);
-  color: var(--interactive-primary);
 }
 
 /* Checkbox */
@@ -397,23 +149,10 @@
   accent-color: var(--interactive-primary);
 }
 
-/* Error */
-.error {
-  color: var(--status-error);
-  font-size: var(--font-size-sm);
-  padding: var(--space-2) var(--space-3);
-  background-color: var(--status-error-bg);
-  border-radius: var(--radius-md);
-}
-
-/* Footer */
+/* Footer override — shared .modal-footer handles base layout */
 .footer {
-  display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--border-primary);
 }
 
 .rightActions {
@@ -455,7 +194,7 @@
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
-  color: white;
+  color: var(--text-inverse);
   cursor: pointer;
 }
 
@@ -469,46 +208,8 @@
   cursor: pointer;
 }
 
-.cancelButton {
-  padding: var(--space-2) var(--space-3);
-  background: none;
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.cancelButton:hover {
-  background-color: var(--surface-secondary);
-}
-
-.submitButton {
-  padding: var(--space-2) var(--space-4);
-  background-color: var(--interactive-primary);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-inverse);
-  cursor: pointer;
-}
-
-.submitButton:hover:not(:disabled) {
-  background-color: var(--interactive-primary-hover);
-}
-
-.submitButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 /* Mobile */
 @media (max-width: 640px) {
-  .modal {
-    max-width: 100%;
-  }
-
   .apiCard {
     gap: var(--space-3);
     padding: var(--space-3);
@@ -527,12 +228,6 @@
     grid-template-columns: 1fr;
   }
 
-  .footer {
-    flex-direction: row;
-    gap: var(--space-3);
-    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
-  }
-
   .deleteIconButton {
     order: 0;
   }
@@ -544,10 +239,5 @@
   .rightActions {
     flex: 1;
     justify-content: flex-end;
-  }
-
-  .cancelButton,
-  .submitButton {
-    flex: 0 0 auto;
   }
 }
