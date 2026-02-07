@@ -1,4 +1,6 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
+import { getAuth, type Auth } from 'firebase-admin/auth';
+import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { getStorage, type Storage } from 'firebase-admin/storage';
 
 /**
@@ -20,6 +22,8 @@ import { getStorage, type Storage } from 'firebase-admin/storage';
  */
 
 let adminApp: App | null = null;
+let adminAuth: Auth | null = null;
+let adminDb: Firestore | null = null;
 let adminStorage: Storage | null = null;
 
 function getPrivateKey(): string | undefined {
@@ -65,6 +69,20 @@ function getAdminApp(): App {
   });
 
   return adminApp;
+}
+
+export function getAdminAuth(): Auth {
+  if (!adminAuth) {
+    adminAuth = getAuth(getAdminApp());
+  }
+  return adminAuth;
+}
+
+export function getAdminFirestore(): Firestore {
+  if (!adminDb) {
+    adminDb = getFirestore(getAdminApp());
+  }
+  return adminDb;
 }
 
 export function getAdminStorage(): Storage {

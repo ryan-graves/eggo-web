@@ -1,7 +1,6 @@
 import {
   collection,
   doc,
-  addDoc,
   getDoc,
   getDocs,
   updateDoc,
@@ -13,7 +12,7 @@ import {
   serverTimestamp,
   type Unsubscribe,
 } from 'firebase/firestore';
-import { getFirebaseDb } from './config';
+import { getFirebaseDb, getFirebaseAuth } from './config';
 import type { Collection, PublicViewSettings } from '@/types';
 
 const COLLECTIONS_PATH = 'collections';
@@ -27,19 +26,40 @@ function getCollectionDocRef(collectionId: string) {
 }
 
 /**
- * Create a new collection
+ * Create a new collection via the server-side API route.
+ *
+ * Uses the Admin SDK on the server so that collection creation works regardless
+ * of whether the deployed Firestore security rules properly handle CREATE
+ * operations (CREATE requires `request.resource.data`, not `resource.data`).
  */
 export async function createCollection(data: {
   name: string;
   owners: string[];
-  memberUserIds: string[];
 }): Promise<string> {
-  const docRef = await addDoc(getCollectionsRef(), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Must be logged in to create a collection');
+  }
+
+  const idToken = await user.getIdToken();
+
+  const response = await fetch('/api/collections', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${idToken}`,
+    },
+    body: JSON.stringify({ name: data.name, owners: data.owners }),
   });
-  return docRef.id;
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Failed to create collection' }));
+    throw new Error(errorData.error || 'Failed to create collection');
+  }
+
+  const result = await response.json();
+  return result.id;
 }
 
 /**

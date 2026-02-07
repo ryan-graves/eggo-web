@@ -224,10 +224,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Collections - members can read/write, public can read if isPublic
+    // Note: create uses request.resource.data (incoming), update/delete use resource.data (existing)
     match /collections/{collectionId} {
       allow read: if request.auth != null && request.auth.uid in resource.data.memberUserIds;
       allow read: if resource.data.isPublic == true;
-      allow write: if request.auth != null && request.auth.uid in resource.data.memberUserIds;
+      allow create: if request.auth != null && request.auth.uid in request.resource.data.memberUserIds;
+      allow update, delete: if request.auth != null && request.auth.uid in resource.data.memberUserIds;
     }
 
     // Sets - members can read/write, public can read if parent collection is public
