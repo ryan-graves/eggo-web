@@ -19,11 +19,16 @@
   align-items: flex-end;
   justify-content: center;
   z-index: 100;
-  animation: modal-fade-in var(--transition-fast) ease-out;
 }
 
-.modal-overlay-closing {
-  animation: modal-fade-out var(--transition-fast) ease-in forwards;
+@media (prefers-reduced-motion: no-preference) {
+  .modal-overlay {
+    animation: modal-fade-in var(--transition-fast) ease-out;
+  }
+
+  .modal-overlay-closing {
+    animation: modal-fade-out var(--transition-fast) ease-in forwards;
+  }
 }
 
 /* ==========================================================================
@@ -40,11 +45,16 @@
   flex-direction: column;
   box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
   overflow: hidden;
-  animation: modal-slide-up var(--transition-normal) ease-out;
 }
 
-.modal-sheet-closing {
-  animation: modal-slide-down var(--transition-normal) ease-in forwards;
+@media (prefers-reduced-motion: no-preference) {
+  .modal-sheet {
+    animation: modal-slide-up var(--transition-normal) ease-out;
+  }
+
+  .modal-sheet-closing {
+    animation: modal-slide-down var(--transition-normal) ease-in forwards;
+  }
 }
 
 @media (max-width: 640px) {
