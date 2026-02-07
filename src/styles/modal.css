@@ -23,11 +23,11 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .modal-overlay {
-    animation: modal-fade-in var(--duration-fast) ease-out;
+    animation: modal-overlay-in var(--duration-fast) ease-out;
   }
 
   .modal-overlay-closing {
-    animation: modal-fade-out var(--duration-fast) ease-in forwards;
+    animation: modal-overlay-out 100ms ease-in forwards;
   }
 }
 
@@ -173,14 +173,20 @@
  * Keyframes
  * ========================================================================== */
 
-@keyframes modal-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Overlay uses background-color instead of opacity to avoid iOS Safari
+   compositing lag in the safe area (status bar region). Opacity on a
+   position:fixed element creates a compositing layer that iOS updates
+   out of sync with the safe area. background-color is a paint change
+   that stays in sync. This also keeps the sheet fully opaque during
+   close, matching native iOS bottom-sheet behavior. */
+@keyframes modal-overlay-in {
+  from { background-color: transparent; }
+  to { background-color: rgb(0 0 0 / 0.5); }
 }
 
-@keyframes modal-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+@keyframes modal-overlay-out {
+  from { background-color: rgb(0 0 0 / 0.5); }
+  to { background-color: transparent; }
 }
 
 @keyframes modal-slide-up {

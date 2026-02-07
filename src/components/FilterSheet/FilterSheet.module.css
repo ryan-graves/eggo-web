@@ -3,29 +3,23 @@
   inset: 0;
   background-color: rgb(0 0 0 / 0.5);
   z-index: 100;
-  animation: fadeIn var(--duration-fast) ease-out;
+  animation: overlayIn var(--duration-fast) ease-out;
 }
 
 .overlayClosing {
-  animation: fadeOut var(--duration-fast) ease-in forwards;
+  animation: overlayOut 100ms ease-in forwards;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+/* Use background-color instead of opacity to avoid iOS Safari safe area
+   compositing lag. See modal.css for full explanation. */
+@keyframes overlayIn {
+  from { background-color: transparent; }
+  to { background-color: rgb(0 0 0 / 0.5); }
 }
 
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+@keyframes overlayOut {
+  from { background-color: rgb(0 0 0 / 0.5); }
+  to { background-color: transparent; }
 }
 
 .sheet {
