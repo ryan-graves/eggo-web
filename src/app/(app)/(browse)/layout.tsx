@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useTransition } from 'react';
 import Image from 'next/image';
 import { Link, useTransitionRouter } from 'next-view-transitions';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
@@ -120,7 +120,8 @@ function SuspenseFallback(): React.JSX.Element {
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const router = useTransitionRouter();
+  const transitionRouter = useTransitionRouter();
+  const standardRouter = useRouter();
   const { user } = useAuth();
   const { collections, activeCollection, setActiveCollection, sets, isInitializing } = useCollection();
   const [showCollectionSettings, setShowCollectionSettings] = useState(false);
@@ -140,10 +141,10 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
   // Prefetch sibling routes for instant navigation
   useEffect(() => {
-    router.prefetch('/home');
-    router.prefetch('/all');
-    router.prefetch('/settings');
-  }, [router]);
+    transitionRouter.prefetch('/home');
+    transitionRouter.prefetch('/all');
+    transitionRouter.prefetch('/settings');
+  }, [transitionRouter]);
 
   // Prefetch all set detail routes and preload images for instant navigation
   useEffect(() => {
@@ -151,7 +152,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
     const prefetchSets = () => {
       for (const set of sets) {
-        router.prefetch(`/set/${set.id}`);
+        transitionRouter.prefetch(`/set/${set.id}`);
 
         // Preload the set image into the browser cache
         const imageUrl = set.customImageUrl || set.imageUrl;
@@ -169,7 +170,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     }
     const id = setTimeout(prefetchSets, 200);
     return () => clearTimeout(id);
-  }, [sets, router]);
+  }, [sets, transitionRouter]);
 
   const handleViewChange = (view: 'home' | 'all') => {
     const targetPath = view === 'all' ? '/all' : '/home';
@@ -180,16 +181,20 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
     // Navigate in a transition so it doesn't block the UI
     startTransition(() => {
-      router.push(targetPath);
+      transitionRouter.push(targetPath);
     });
   };
 
+  // Use the standard router for modal open/close — these are query param
+  // changes, not page navigations, so a view transition crossfade would
+  // fight the modal's own CSS animation and break the overlay's fixed
+  // positioning on iOS Safari (safe area clipping).
   const openAddForm = () => {
-    router.push(`${pathname}?action=add-set`);
+    standardRouter.push(`${pathname}?action=add-set`);
   };
 
   const closeAddForm = () => {
-    router.push(pathname);
+    standardRouter.push(pathname);
   };
 
   const handleAddSuccess = () => {

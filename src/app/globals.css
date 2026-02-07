@@ -163,7 +163,6 @@ img {
    ====================================== */
 
 /* Persistent chrome: identical between steps, no visible animation */
-::view-transition-group(add-set-overlay),
 ::view-transition-group(add-set-modal) {
   animation-duration: 0ms;
 }

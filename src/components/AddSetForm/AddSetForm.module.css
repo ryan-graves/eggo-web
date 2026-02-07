@@ -40,11 +40,10 @@
    View Transition: pin persistent chrome
    Only active during step transitions
    (when data-vt-direction is set on html)
+   The overlay is NOT included — capturing it as a
+   view-transition snapshot breaks position:fixed on
+   iOS Safari, causing it to not cover the safe area.
    ====================================== */
-
-:global(html[data-vt-direction] .modal-overlay) {
-  view-transition-name: add-set-overlay;
-}
 
 :global(html[data-vt-direction]) .modal {
   view-transition-name: add-set-modal;
