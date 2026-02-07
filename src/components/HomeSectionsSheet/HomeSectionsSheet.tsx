@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSheetDrag } from '@/hooks/useSheetDrag';
 import {
   DndContext,
@@ -342,7 +343,7 @@ export function HomeSectionsSheet({
 
   if (!isVisible) return null;
 
-  return (
+  return createPortal(
     <div
       className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
       onClick={handleClose}
@@ -516,6 +517,7 @@ export function HomeSectionsSheet({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

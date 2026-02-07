@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSheetDrag } from '@/hooks/useSheetDrag';
 import type { SetStatus } from '@/types';
 import styles from './FilterSheet.module.css';
@@ -99,7 +100,7 @@ export function FilterSheet({
 
   if (!isVisible) return null;
 
-  return (
+  return createPortal(
     <div
       className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
       onClick={handleClose}
@@ -233,6 +234,7 @@ export function FilterSheet({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

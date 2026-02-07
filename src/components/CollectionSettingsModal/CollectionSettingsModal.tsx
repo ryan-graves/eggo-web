@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { updateCollection, deleteCollection } from '@/lib/firebase';
 import { useSheetDrag } from '@/hooks/useSheetDrag';
 import type { Collection } from '@/types';
@@ -82,7 +83,7 @@ export function CollectionSettingsModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
       className={`modal-overlay${isClosing ? ' modal-overlay-closing' : ''}`}
       onClick={handleClose}
@@ -203,6 +204,7 @@ export function CollectionSettingsModal({
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

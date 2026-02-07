@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { flushSync } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { createSet } from '@/lib/firebase';
@@ -275,7 +275,7 @@ export function AddSetForm({
             ? 100
             : 0;
 
-  return (
+  return createPortal(
     <div
       className={`modal-overlay ${isClosing ? 'modal-overlay-closing' : ''}`}
       onClick={handleClose}
@@ -585,6 +585,7 @@ export function AddSetForm({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

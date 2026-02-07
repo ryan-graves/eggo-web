@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
@@ -144,7 +145,7 @@ export function EditSetModal({
 
   const isBusy = isSubmitting || isDeleting || isRefreshing;
 
-  return (
+  return createPortal(
     <div
       className={`modal-overlay${isClosing ? ' modal-overlay-closing' : ''}`}
       onClick={handleClose}
@@ -383,6 +384,7 @@ export function EditSetModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
