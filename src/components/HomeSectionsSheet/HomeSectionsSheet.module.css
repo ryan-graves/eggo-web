@@ -3,21 +3,6 @@
   inset: 0;
   background-color: rgb(0 0 0 / 0.5);
   z-index: 100;
-  animation: overlayIn var(--duration-fast) ease-out;
-}
-
-.overlayClosing {
-  animation: overlayOut var(--duration-fast) ease-in forwards;
-}
-
-@keyframes overlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes overlayOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
 }
 
 .sheet {
@@ -30,51 +15,18 @@
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  animation: slideUp var(--duration-normal) ease-out;
   box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
-  transition: transform var(--duration-normal) ease-out;
-}
-
-.sheetClosing {
-  animation: slideDown var(--duration-normal) ease-in forwards;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(100%);
-  }
-}
-
-.handleArea {
-  display: flex;
-  justify-content: center;
-  padding: var(--space-3) var(--space-4) var(--space-1);
-  cursor: grab;
-  touch-action: none;
-  flex-shrink: 0;
-}
-
-.handleArea:active {
-  cursor: grabbing;
+  z-index: 101;
+  outline: none;
 }
 
 .handle {
-  width: 36px;
-  height: 4px;
-  background-color: var(--border-secondary);
-  border-radius: var(--radius-full);
+  width: 36px !important;
+  height: 4px !important;
+  border-radius: var(--radius-full) !important;
+  background-color: var(--border-secondary) !important;
+  margin-top: var(--space-3) !important;
+  margin-bottom: var(--space-1) !important;
 }
 
 .header {

@@ -1,60 +1,45 @@
 /*
  * Modal Utilities
  *
- * Shared styles for bottom-sheet modals.
+ * Shared styles for bottom-sheet modals powered by Vaul (Drawer).
  * Use these classes alongside CSS modules for component-specific overrides.
  *
- * Structure: .modal-overlay > .modal-sheet > .modal-handle-area + .modal-header + content + footer
+ * Structure: Drawer.Overlay(.modal-overlay) + Drawer.Content(.modal-sheet)
+ *            > Drawer.Handle(.modal-handle) + .modal-header + content + .modal-footer
  */
 
 /* ==========================================================================
- * Overlay
+ * Overlay (Drawer.Overlay)
  * ========================================================================== */
 
 .modal-overlay {
   position: fixed;
   inset: 0;
   background-color: rgb(0 0 0 / 0.5);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   z-index: 100;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .modal-overlay {
-    animation: modal-overlay-in var(--duration-fast) ease-out;
-  }
-
-  .modal-overlay-closing {
-    animation: modal-overlay-out var(--duration-fast) ease-in forwards;
-  }
-}
-
 /* ==========================================================================
- * Sheet
+ * Sheet (Drawer.Content)
  * ========================================================================== */
 
 .modal-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background-color: var(--surface-primary);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   width: 100%;
   max-width: 500px;
+  margin: 0 auto;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
   overflow: hidden;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .modal-sheet {
-    animation: modal-slide-up var(--duration-normal) ease-out;
-  }
-
-  .modal-sheet-closing {
-    animation: modal-slide-down var(--duration-normal) ease-in forwards;
-  }
+  z-index: 101;
+  outline: none;
 }
 
 @media (max-width: 640px) {
@@ -64,27 +49,16 @@
 }
 
 /* ==========================================================================
- * Drag Handle Area
+ * Handle (Drawer.Handle) — override Vaul defaults
  * ========================================================================== */
 
-.modal-handle-area {
-  display: flex;
-  justify-content: center;
-  padding: var(--space-3) var(--space-4) var(--space-1);
-  cursor: grab;
-  touch-action: none;
-  flex-shrink: 0;
-}
-
-.modal-handle-area:active {
-  cursor: grabbing;
-}
-
 .modal-handle {
-  width: 36px;
-  height: 4px;
-  background-color: var(--border-secondary);
-  border-radius: var(--radius-full);
+  width: 36px !important;
+  height: 4px !important;
+  border-radius: var(--radius-full) !important;
+  background-color: var(--border-secondary) !important;
+  margin-top: var(--space-3) !important;
+  margin-bottom: var(--space-1) !important;
 }
 
 /* ==========================================================================
@@ -167,28 +141,4 @@
   border-top: 1px solid var(--border-primary);
   background-color: var(--surface-primary);
   flex-shrink: 0;
-}
-
-/* ==========================================================================
- * Keyframes
- * ========================================================================== */
-
-@keyframes modal-overlay-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes modal-overlay-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes modal-slide-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-@keyframes modal-slide-down {
-  from { transform: translateY(0); }
-  to { transform: translateY(100%); }
 }

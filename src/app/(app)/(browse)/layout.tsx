@@ -286,20 +286,22 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
         )}
       </main>
 
-      {showAddForm && activeCollection && (
+      {activeCollection && (
         <AddSetForm
+          open={showAddForm}
+          onClose={closeAddForm}
           collectionId={activeCollection.id}
           availableOwners={activeCollection.owners}
           onSuccess={handleAddSuccess}
-          onCancel={closeAddForm}
         />
       )}
 
-      {showCollectionSettings && activeCollection && (
+      {activeCollection && (
         <CollectionSettingsModal
+          open={showCollectionSettings}
+          onClose={() => setShowCollectionSettings(false)}
           collection={activeCollection}
           onSuccess={() => setShowCollectionSettings(false)}
-          onCancel={() => setShowCollectionSettings(false)}
         />
       )}
     </div>

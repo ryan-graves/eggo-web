@@ -234,12 +234,13 @@ function SetDetailContent(): React.JSX.Element {
         </div>
       </main>
 
-      {showEditModal && activeCollection && (
+      {activeCollection && (
         <EditSetModal
+          open={showEditModal}
+          onClose={closeEditModal}
           set={set}
           availableOwners={activeCollection.owners}
           onSuccess={handleEditSuccess}
-          onCancel={closeEditModal}
         />
       )}
     </div>

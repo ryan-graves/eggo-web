@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { useSheetDrag } from '@/hooks/useSheetDrag';
+import { Drawer } from 'vaul';
 import {
   DndContext,
   closestCenter,
@@ -175,6 +174,7 @@ function SortableSectionItem({
     >
       <div
         className={styles.dragHandle}
+        data-vaul-no-drag
         {...attributes}
         {...listeners}
         aria-label={`Reorder ${getSectionLabel(config)}`}
@@ -222,14 +222,9 @@ export function HomeSectionsSheet({
   sections,
   onSave,
   availableThemes,
-}: HomeSectionsSheetProps): React.JSX.Element | null {
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const [isClosing, setIsClosing] = useState(false);
-
+}: HomeSectionsSheetProps): React.JSX.Element {
   const [draft, setDraft] = useState<HomeSectionConfig[]>(sections);
   const [view, setView] = useState<SheetView>('list');
-
-  const isVisible = isOpen || isClosing;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -253,47 +248,12 @@ export function HomeSectionsSheet({
     prevIsOpen.current = isOpen;
   }, [isOpen, sections]);
 
-  const handleClose = useCallback(() => {
-    setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-    }, 200);
-  }, [onClose]);
-
-  const { handleProps, sheetStyle, closingFromDrag } = useSheetDrag(handleClose);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') {
-        if (view !== 'list') {
-          setView('list');
-        } else {
-          handleClose();
-        }
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, handleClose, view]);
-
-  useEffect(() => {
-    if (isOpen && sheetRef.current) {
-      const focusableElements = sheetRef.current.querySelectorAll(
-        'button, select, input, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusableElements.length > 0) {
-        (focusableElements[0] as HTMLElement).focus();
-      }
-    }
-  }, [isOpen]);
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) onClose();
+    },
+    [onClose]
+  );
 
   const removeSection = (index: number): void => {
     setDraft((prev) => prev.filter((_, i) => i !== index));
@@ -327,10 +287,7 @@ export function HomeSectionsSheet({
   );
 
   const handleSave = (): void => {
-    setIsClosing(true);
-    setTimeout(() => {
-      onSave(draft);
-    }, 200);
+    onSave(draft);
   };
 
   const handleResetToDefaults = (): void => {
@@ -341,183 +298,169 @@ export function HomeSectionsSheet({
     draft.length === DEFAULT_HOME_SECTIONS.length &&
     draft.every((config, i) => sectionKey(config) === sectionKey(DEFAULT_HOME_SECTIONS[i]));
 
-  if (!isVisible) return null;
-
-  return createPortal(
-    <div
-      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
-      onClick={handleClose}
-    >
-      <div
-        ref={sheetRef}
-        className={`${styles.sheet} ${isClosing && !closingFromDrag ? styles.sheetClosing : ''}`}
-        style={sheetStyle}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Customize home sections"
-      >
-        <div
-          className={styles.handleArea}
-          {...handleProps}
+  return (
+    <Drawer.Root open={isOpen} onOpenChange={handleOpenChange}>
+      <Drawer.Portal>
+        <Drawer.Overlay className={styles.overlay} />
+        <Drawer.Content
+          className={styles.sheet}
+          aria-describedby={undefined}
+          aria-label="Customize home sections"
         >
-          <div className={styles.handle} />
-        </div>
+          <Drawer.Handle className={styles.handle} />
 
-        <div className={styles.header}>
-          {view === 'list' ? (
-            <>
-              <h2 className={styles.title}>Customize Home</h2>
-              <button
-                type="button"
-                onClick={handleClose}
-                className={styles.closeButton}
-                aria-label="Close"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => setView('list')}
-                className={styles.backButton}
-                aria-label="Back"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-              <h2 className={styles.title}>
-                {view === 'add-smart' ? 'Add Smart Section' : 'Add Theme Section'}
-              </h2>
-              <div className={styles.headerSpacer} />
-            </>
-          )}
-        </div>
-
-        <div className={styles.content}>
-          {view === 'list' && (
-            <>
-              {draft.length === 0 ? (
-                <div className={styles.emptyDraft}>
-                  <p>No sections configured.</p>
-                  <p>Add sections to customize your home view.</p>
-                </div>
-              ) : (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
+          <div className={styles.header}>
+            {view === 'list' ? (
+              <>
+                <Drawer.Title className={styles.title}>Customize Home</Drawer.Title>
+                <Drawer.Close
+                  className={styles.closeButton}
+                  aria-label="Close"
                 >
-                  <SortableContext
-                    items={draft.map(sectionKey)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <ul className={styles.sectionList}>
-                      {draft.map((config, index) => (
-                        <SortableSectionItem
-                          key={sectionKey(config)}
-                          config={config}
-                          onRemove={() => removeSection(index)}
-                        />
-                      ))}
-                    </ul>
-                  </SortableContext>
-                </DndContext>
-              )}
-
-              <div className={styles.addButtons}>
-                {availableSmartTypes.length > 0 && (
-                  <button
-                    type="button"
-                    className={styles.addButton}
-                    onClick={() => setView('add-smart')}
-                  >
-                    + Add Smart Section
-                  </button>
-                )}
-                {availableThemesForAdd.length > 0 && (
-                  <button
-                    type="button"
-                    className={styles.addButton}
-                    onClick={() => setView('add-theme')}
-                  >
-                    + Add Theme Section
-                  </button>
-                )}
-              </div>
-            </>
-          )}
-
-          {view === 'add-smart' && (
-            <ul className={styles.addList}>
-              {availableSmartTypes.map((type) => (
-                <li key={type}>
-                  <button
-                    type="button"
-                    className={styles.addListItem}
-                    onClick={() => addSection({ type })}
-                  >
-                    <span className={styles.addItemName}>
-                      {getSmartSectionTitle(type)}
-                    </span>
-                    <span className={styles.addItemDescription}>
-                      {getSmartSectionDescription(type)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-              {availableSmartTypes.length === 0 && (
-                <li className={styles.addListEmpty}>
-                  All smart sections have been added.
-                </li>
-              )}
-            </ul>
-          )}
-
-          {view === 'add-theme' && (
-            <ul className={styles.addList}>
-              {availableThemesForAdd.map((theme) => (
-                <li key={theme}>
-                  <button
-                    type="button"
-                    className={styles.addListItem}
-                    onClick={() => addSection({ type: 'theme', themeName: theme })}
-                  >
-                    <span className={styles.addItemName}>{theme}</span>
-                  </button>
-                </li>
-              ))}
-              {availableThemesForAdd.length === 0 && (
-                <li className={styles.addListEmpty}>
-                  All themes from your collection have been added.
-                </li>
-              )}
-            </ul>
-          )}
-        </div>
-
-        {view === 'list' && (
-          <div className={styles.footer}>
-            {!isDefaultConfig && (
-              <button type="button" onClick={handleResetToDefaults} className={styles.resetButton}>
-                Reset
-              </button>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </Drawer.Close>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setView('list')}
+                  className={styles.backButton}
+                  aria-label="Back"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+                <Drawer.Title className={styles.title}>
+                  {view === 'add-smart' ? 'Add Smart Section' : 'Add Theme Section'}
+                </Drawer.Title>
+                <div className={styles.headerSpacer} />
+              </>
             )}
-            <button type="button" onClick={handleClose} className={styles.cancelButton}>
-              Cancel
-            </button>
-            <button type="button" onClick={handleSave} className={styles.saveButton}>
-              Save
-            </button>
           </div>
-        )}
-      </div>
-    </div>,
-    document.body
+
+          <div className={styles.content}>
+            {view === 'list' && (
+              <>
+                {draft.length === 0 ? (
+                  <div className={styles.emptyDraft}>
+                    <p>No sections configured.</p>
+                    <p>Add sections to customize your home view.</p>
+                  </div>
+                ) : (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={draft.map(sectionKey)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <ul className={styles.sectionList} data-vaul-no-drag>
+                        {draft.map((config, index) => (
+                          <SortableSectionItem
+                            key={sectionKey(config)}
+                            config={config}
+                            onRemove={() => removeSection(index)}
+                          />
+                        ))}
+                      </ul>
+                    </SortableContext>
+                  </DndContext>
+                )}
+
+                <div className={styles.addButtons}>
+                  {availableSmartTypes.length > 0 && (
+                    <button
+                      type="button"
+                      className={styles.addButton}
+                      onClick={() => setView('add-smart')}
+                    >
+                      + Add Smart Section
+                    </button>
+                  )}
+                  {availableThemesForAdd.length > 0 && (
+                    <button
+                      type="button"
+                      className={styles.addButton}
+                      onClick={() => setView('add-theme')}
+                    >
+                      + Add Theme Section
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+
+            {view === 'add-smart' && (
+              <ul className={styles.addList}>
+                {availableSmartTypes.map((type) => (
+                  <li key={type}>
+                    <button
+                      type="button"
+                      className={styles.addListItem}
+                      onClick={() => addSection({ type })}
+                    >
+                      <span className={styles.addItemName}>
+                        {getSmartSectionTitle(type)}
+                      </span>
+                      <span className={styles.addItemDescription}>
+                        {getSmartSectionDescription(type)}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+                {availableSmartTypes.length === 0 && (
+                  <li className={styles.addListEmpty}>
+                    All smart sections have been added.
+                  </li>
+                )}
+              </ul>
+            )}
+
+            {view === 'add-theme' && (
+              <ul className={styles.addList}>
+                {availableThemesForAdd.map((theme) => (
+                  <li key={theme}>
+                    <button
+                      type="button"
+                      className={styles.addListItem}
+                      onClick={() => addSection({ type: 'theme', themeName: theme })}
+                    >
+                      <span className={styles.addItemName}>{theme}</span>
+                    </button>
+                  </li>
+                ))}
+                {availableThemesForAdd.length === 0 && (
+                  <li className={styles.addListEmpty}>
+                    All themes from your collection have been added.
+                  </li>
+                )}
+              </ul>
+            )}
+          </div>
+
+          {view === 'list' && (
+            <div className={styles.footer}>
+              {!isDefaultConfig && (
+                <button type="button" onClick={handleResetToDefaults} className={styles.resetButton}>
+                  Reset
+                </button>
+              )}
+              <Drawer.Close className={styles.cancelButton}>
+                Cancel
+              </Drawer.Close>
+              <button type="button" onClick={handleSave} className={styles.saveButton}>
+                Save
+              </button>
+            </div>
+          )}
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }
