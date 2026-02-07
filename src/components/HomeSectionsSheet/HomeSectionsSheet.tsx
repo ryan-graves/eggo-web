@@ -255,7 +255,6 @@ export function HomeSectionsSheet({
   const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
-      setIsClosing(false);
       onClose();
     }, 200);
   }, [onClose]);
@@ -329,7 +328,6 @@ export function HomeSectionsSheet({
   const handleSave = (): void => {
     setIsClosing(true);
     setTimeout(() => {
-      setIsClosing(false);
       onSave(draft);
     }, 200);
   };

@@ -51,7 +51,6 @@ export function FilterSheet({
   const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
-      setIsClosing(false);
       onClose();
     }, 200);
   }, [onClose]);

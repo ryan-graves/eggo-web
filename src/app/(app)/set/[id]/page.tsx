@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Link, useTransitionRouter } from 'next-view-transitions';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
@@ -34,7 +35,8 @@ function SetDetailLoading(): React.JSX.Element {
 function SetDetailContent(): React.JSX.Element {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useTransitionRouter();
+  const router = useRouter();
+  const transitionRouter = useTransitionRouter();
   const { sets, activeCollection, isInitializing } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -70,8 +72,8 @@ function SetDetailContent(): React.JSX.Element {
   useEffect(() => {
     const lastBrowsePath =
       typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(LAST_BROWSE_PATH_KEY) : null;
-    router.prefetch(lastBrowsePath || '/home');
-  }, [router]);
+    transitionRouter.prefetch(lastBrowsePath || '/home');
+  }, [transitionRouter]);
 
   const openEditModal = () => {
     router.push(`/set/${setId}?action=edit`);

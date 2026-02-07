@@ -56,7 +56,6 @@ export function EditSetModal({
   const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
-      setIsClosing(false);
       onCancel();
     }, 200);
   }, [onCancel]);

@@ -1,6 +1,8 @@
 'use client';
 
 import { useBackNavigation } from '@/hooks/useViewTransition';
+import { useNavigationLoading } from '@/hooks/useNavigationLoading';
+import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
 import styles from './Header.module.css';
 
 interface HeaderProps {
@@ -24,16 +26,27 @@ export function Header({
   rightContent,
 }: HeaderProps): React.JSX.Element {
   const { goBack } = useBackNavigation();
+  const { pendingHref, startNavigation } = useNavigationLoading();
+
+  const handleBack = (): void => {
+    const lastBrowsePath =
+      typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(LAST_BROWSE_PATH_KEY) : null;
+    startNavigation(lastBrowsePath || backHref);
+    goBack(backHref);
+  };
 
   if (variant === 'detail') {
+    const isNavigating = pendingHref !== null;
+
     return (
       <header className={styles.header}>
         <div className={styles.leftSection}>
           <button
             type="button"
-            onClick={() => goBack(backHref)}
-            className={styles.backButton}
+            onClick={handleBack}
+            className={`${styles.backButton} ${isNavigating ? styles.backButtonLoading : ''}`}
             aria-label="Go back"
+            disabled={isNavigating}
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
