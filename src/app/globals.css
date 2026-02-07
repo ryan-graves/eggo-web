@@ -63,15 +63,18 @@ button {
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
   /* Prevent tap highlight and double-tap zoom delay on iOS */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
-/* Active state for touch feedback */
+/* Active state for touch feedback - opacity not in transition list so this is instant */
 button:active:not(:disabled) {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 img {
@@ -139,11 +142,11 @@ img {
   }
 }
 
-/* View Transitions - simple crossfade */
+/* View Transitions - quick crossfade for snappy feel */
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 150ms;
+    animation-duration: 80ms;
     animation-timing-function: ease-out;
   }
 }

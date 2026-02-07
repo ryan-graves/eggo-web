@@ -110,7 +110,7 @@ export function AddSetForm({
     }, 200);
   }, [onCancel]);
 
-  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
+  const { handleProps, sheetStyle, closingFromDrag } = useSheetDrag(handleClose);
 
   const transitionStep = (callback: () => void, direction: 'forward' | 'back'): void => {
     if ('startViewTransition' in document && typeof document.startViewTransition === 'function') {
@@ -282,7 +282,7 @@ export function AddSetForm({
       onClick={handleClose}
     >
       <div
-        className={`modal-sheet ${styles.modal} ${isClosing ? 'modal-sheet-closing' : ''}`}
+        className={`modal-sheet ${styles.modal} ${isClosing && !closingFromDrag ? 'modal-sheet-closing' : ''}`}
         style={sheetStyle}
         onClick={(e) => e.stopPropagation()}
       >

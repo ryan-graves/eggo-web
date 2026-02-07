@@ -260,7 +260,7 @@ export function HomeSectionsSheet({
     }, 200);
   }, [onClose]);
 
-  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
+  const { handleProps, sheetStyle, closingFromDrag } = useSheetDrag(handleClose);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent): void => {
@@ -351,7 +351,7 @@ export function HomeSectionsSheet({
     >
       <div
         ref={sheetRef}
-        className={`${styles.sheet} ${isClosing ? styles.sheetClosing : ''}`}
+        className={`${styles.sheet} ${isClosing && !closingFromDrag ? styles.sheetClosing : ''}`}
         style={sheetStyle}
         onClick={(e) => e.stopPropagation()}
         role="dialog"

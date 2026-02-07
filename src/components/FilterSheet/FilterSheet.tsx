@@ -56,7 +56,7 @@ export function FilterSheet({
     }, 200);
   }, [onClose]);
 
-  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
+  const { handleProps, sheetStyle, closingFromDrag } = useSheetDrag(handleClose);
 
   // Handle escape key
   useEffect(() => {
@@ -107,7 +107,7 @@ export function FilterSheet({
     >
       <div
         ref={sheetRef}
-        className={`${styles.sheet} ${isClosing ? styles.sheetClosing : ''}`}
+        className={`${styles.sheet} ${isClosing && !closingFromDrag ? styles.sheetClosing : ''}`}
         style={sheetStyle}
         onClick={(e) => e.stopPropagation()}
         role="dialog"

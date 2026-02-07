@@ -61,7 +61,7 @@ export function EditSetModal({
     }, 200);
   }, [onCancel]);
 
-  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
+  const { handleProps, sheetStyle, closingFromDrag } = useSheetDrag(handleClose);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -151,7 +151,7 @@ export function EditSetModal({
       onClick={handleClose}
     >
       <div
-        className={`modal-sheet${isClosing ? ' modal-sheet-closing' : ''}`}
+        className={`modal-sheet${isClosing && !closingFromDrag ? ' modal-sheet-closing' : ''}`}
         style={sheetStyle}
         onClick={(e) => e.stopPropagation()}
       >

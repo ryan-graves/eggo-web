@@ -33,7 +33,7 @@ export function CollectionSettingsModal({
     }, 200);
   }, [onCancel]);
 
-  const { handleProps, sheetStyle } = useSheetDrag(handleClose);
+  const { handleProps, sheetStyle, closingFromDrag } = useSheetDrag(handleClose);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +89,7 @@ export function CollectionSettingsModal({
       onClick={handleClose}
     >
       <div
-        className={`modal-sheet${isClosing ? ' modal-sheet-closing' : ''} ${styles.scrollable}`}
+        className={`modal-sheet${isClosing && !closingFromDrag ? ' modal-sheet-closing' : ''} ${styles.scrollable}`}
         style={sheetStyle}
         onClick={(e) => e.stopPropagation()}
       >
