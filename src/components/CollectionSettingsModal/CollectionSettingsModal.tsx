@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Drawer } from 'vaul';
 import { updateCollection, deleteCollection } from '@/lib/firebase';
 import type { Collection } from '@/types';
@@ -25,6 +25,22 @@ export function CollectionSettingsModal({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset all form state on the open transition (false → true).
+  // Uses prevOpen ref (same pattern as AddSetForm) so the reset body only
+  // runs once per open, not on every Firestore snapshot reference change.
+  const prevOpen = useRef(false);
+  useEffect(() => {
+    if (open && !prevOpen.current) {
+      setName(collection.name);
+      setOwnersInput(collection.owners.join(', '));
+      setIsSubmitting(false);
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      setError(null);
+    }
+    prevOpen.current = open;
+  }, [open, collection]);
 
   const handleOpenChange = useCallback(
     (isOpen: boolean) => {
