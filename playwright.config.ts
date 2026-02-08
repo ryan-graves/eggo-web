@@ -24,6 +24,16 @@ export default defineConfig({
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },
+    {
+      name: 'mobile',
+      use: { ...devices['iPhone 13 Pro'] },
+    },
+    {
+      name: 'tablet',
+      use: {
+        viewport: { width: 768, height: 1024 },
+      },
+    },
   ],
   webServer: {
     command: 'npm run dev',
