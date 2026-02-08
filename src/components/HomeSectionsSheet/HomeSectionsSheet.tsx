@@ -303,18 +303,18 @@ export function HomeSectionsSheet({
       <Drawer.Portal>
         <Drawer.Overlay />
         <Drawer.Content
-          className={styles.sheet}
+          className="modal-sheet"
           aria-describedby={undefined}
           aria-label="Customize home sections"
         >
           <Drawer.Handle />
 
-          <div className={styles.header}>
+          <div className="modal-header">
             {view === 'list' ? (
               <>
-                <Drawer.Title className={styles.title}>Customize Home</Drawer.Title>
+                <Drawer.Title className="modal-title">Customize Home</Drawer.Title>
                 <Drawer.Close
-                  className={styles.closeButton}
+                  className="modal-icon-button"
                   aria-label="Close"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -327,14 +327,14 @@ export function HomeSectionsSheet({
                 <button
                   type="button"
                   onClick={() => setView('list')}
-                  className={styles.backButton}
+                  className="modal-icon-button"
                   aria-label="Back"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </button>
-                <Drawer.Title className={styles.title}>
+                <Drawer.Title className="modal-title">
                   {view === 'add-smart' ? 'Add Smart Section' : 'Add Theme Section'}
                 </Drawer.Title>
                 <div className={styles.headerSpacer} />
@@ -342,7 +342,7 @@ export function HomeSectionsSheet({
             )}
           </div>
 
-          <div className={styles.content}>
+          <div className="modal-scroll-area">
             {view === 'list' && (
               <>
                 {draft.length === 0 ? (
@@ -445,7 +445,7 @@ export function HomeSectionsSheet({
           </div>
 
           {view === 'list' && (
-            <div className={styles.footer}>
+            <div className="modal-footer">
               {!isDefaultConfig && (
                 <button type="button" onClick={handleResetToDefaults} className={styles.resetButton}>
                   Reset

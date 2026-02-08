@@ -63,23 +63,25 @@ export function FilterSheet({
       <Drawer.Portal>
         <Drawer.Overlay />
         <Drawer.Content
-          className={styles.sheet}
+          className="modal-sheet"
           aria-describedby={undefined}
           aria-label="Filter options"
         >
           <Drawer.Handle />
 
-          <div className={styles.header}>
-            <Drawer.Title className={styles.title}>Filters</Drawer.Title>
+          <div className="modal-header">
+            <Drawer.Title className="modal-title">Filters</Drawer.Title>
             <Drawer.Close
-              className={styles.closeButton}
+              className="modal-icon-button"
               aria-label="Close filters"
             >
-              ×
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
             </Drawer.Close>
           </div>
 
-          <div className={styles.content}>
+          <div className="modal-scroll-area">
             <div className={styles.section}>
               <label className={styles.label} htmlFor="filter-status">
                 Status
@@ -169,7 +171,7 @@ export function FilterSheet({
             </div>
           </div>
 
-          <div className={styles.footer}>
+          <div className="modal-footer">
             {hasActiveFilters && (
               <button type="button" onClick={handleClearAll} className={styles.clearButton}>
                 Clear All Filters
