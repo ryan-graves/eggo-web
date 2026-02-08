@@ -5,7 +5,7 @@ import { Page, expect } from '@playwright/test';
  * Waits for modal to be fully open and animation to complete
  */
 export async function openModal(page: Page, buttonName: string | RegExp) {
-  const button = page.getByRole('button', { name: buttonName });
+  const button = page.getByRole('button', { name: buttonName }).first();
   await button.click();
   await page.waitForSelector('[data-vaul-drawer][data-state="open"]', { timeout: 1000 });
   await page.waitForTimeout(500); // Animation buffer (0.5s animation duration)
@@ -16,7 +16,7 @@ export async function openModal(page: Page, buttonName: string | RegExp) {
  * Waits for modal to be fully closed
  */
 export async function closeModal(page: Page) {
-  const closeButton = page.getByRole('button', { name: /close/i });
+  const closeButton = page.getByRole('button', { name: /close/i }).first();
   await closeButton.click();
   await page.waitForSelector('[data-vaul-drawer][data-state="closed"]', { timeout: 1000 });
 }
