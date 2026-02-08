@@ -1,12 +1,18 @@
 /* ======================================
    Modal Overrides
-   AddSetForm uses fixed height (not max-height)
-   and a wider max-width than the shared modal.
+   Mobile: fixed height for a consistent bottom-sheet feel.
+   Desktop: content-sized (height: auto via shared modal styles).
    ====================================== */
 
 .modal {
   max-width: 520px;
-  height: 85vh;
+  height: 85dvh;
+}
+
+@media (min-width: 1024px) {
+  .modal {
+    height: auto;
+  }
 }
 
 /* ======================================
@@ -15,7 +21,7 @@
    ====================================== */
 
 .stepContent {
-  animation: stepIn var(--transition-normal) ease-out;
+  animation: stepIn var(--duration-normal) ease-out;
 }
 
 @keyframes stepIn {
@@ -40,11 +46,10 @@
    View Transition: pin persistent chrome
    Only active during step transitions
    (when data-vt-direction is set on html)
+   The overlay is NOT included — capturing it as a
+   view-transition snapshot breaks position:fixed on
+   iOS Safari, causing it to not cover the safe area.
    ====================================== */
-
-:global(html[data-vt-direction] .modal-overlay) {
-  view-transition-name: add-set-overlay;
-}
 
 :global(html[data-vt-direction]) .modal {
   view-transition-name: add-set-modal;

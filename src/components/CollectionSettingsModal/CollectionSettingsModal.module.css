@@ -5,11 +5,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Local override: wider horizontal padding than shared .modal-header */
-.headerPadding {
-  padding: var(--space-6) var(--space-5) var(--space-4);
-}
-
 /* Local override: focus ring for inputs in this modal */
 .input:focus {
   outline: none;

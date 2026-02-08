@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useTransitionRouter } from 'next-view-transitions';
 import { useCallback } from 'react';
 
@@ -8,30 +9,30 @@ export const LAST_BROWSE_PATH_KEY = 'eggo_last_browse_path';
 
 /**
  * Hook for navigating with view transitions
- * Uses next-view-transitions for proper async handling with Next.js
+ * Uses next-view-transitions for forward navigation (animated)
+ * and the standard Next.js router for back navigation (instant)
  */
 export function useViewTransition() {
-  const router = useTransitionRouter();
+  const transitionRouter = useTransitionRouter();
+  const router = useRouter();
 
   /**
    * Navigate to a new page with view transition
    */
   const navigateTo = useCallback(
     (href: string) => {
-      router.push(href);
+      transitionRouter.push(href);
     },
-    [router]
+    [transitionRouter]
   );
 
   /**
-   * Navigate back with view transition
-   * Always creates a new history entry (forward navigation) to preserve
-   * the user's exploration trail. Checks sessionStorage for the last browse
-   * path, otherwise uses the fallback href.
+   * Navigate back without view transition for instant response.
+   * Checks sessionStorage for the last browse path, otherwise uses
+   * the fallback href.
    */
   const navigateBack = useCallback(
     (fallbackHref?: string) => {
-      // Check sessionStorage for the last browse path (set by collection browse layout)
       const lastBrowsePath =
         typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(LAST_BROWSE_PATH_KEY) : null;
 
@@ -40,18 +41,16 @@ export function useViewTransition() {
         return;
       }
 
-      // No stored path, use fallback
       if (fallbackHref) {
         router.push(fallbackHref);
       } else {
-        // Last resort: use browser back
         router.back();
       }
     },
     [router]
   );
 
-  return { navigateTo, navigateBack, router };
+  return { navigateTo, navigateBack, router: transitionRouter };
 }
 
 /**

@@ -13,7 +13,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .page {
-    animation: slideIn var(--transition-normal) ease-out;
+    animation: slideIn var(--duration-normal) ease-out;
   }
 }
 
