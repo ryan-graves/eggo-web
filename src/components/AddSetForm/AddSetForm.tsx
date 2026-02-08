@@ -5,10 +5,10 @@ import { flushSync } from 'react-dom';
 import Image from 'next/image';
 import { Drawer } from 'vaul';
 import { toast } from 'sonner';
-import { createSet } from '@/lib/firebase';
+import { createSet, findSetsByNumber } from '@/lib/firebase';
 import { getSetDataProvider } from '@/lib/providers';
 import { removeImageBackground } from '@/lib/image';
-import type { SetStatus, SetLookupResult } from '@/types';
+import type { SetStatus, SetLookupResult, LegoSet } from '@/types';
 import styles from './AddSetForm.module.css';
 
 interface AddSetFormProps {
@@ -30,6 +30,14 @@ const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
   { value: 'assembled', label: 'Assembled' },
   { value: 'disassembled', label: 'Disassembled' },
 ];
+
+const STATUS_LABELS: Record<SetStatus, string> = {
+  unopened: 'Unopened',
+  in_progress: 'In Progress',
+  rebuild_in_progress: 'Rebuilding',
+  assembled: 'Assembled',
+  disassembled: 'Disassembled',
+};
 
 const STAGE_LABELS: Record<ImageProcessingStage, string> = {
   idle: '',
@@ -66,6 +74,7 @@ export function AddSetForm({
   const [lookupResult, setLookupResult] = useState<SetLookupResult | null>(null);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [existingSets, setExistingSets] = useState<LegoSet[]>([]);
 
   // Image processing state
   const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
@@ -100,6 +109,7 @@ export function AddSetForm({
       setSetNumber('');
       setLookupResult(null);
       setLookupError(null);
+      setExistingSets([]);
       setProcessedImageUrl(null);
       setIsProcessingImage(false);
       setImageProcessingStage(null);
@@ -144,6 +154,7 @@ export function AddSetForm({
     setIsLookingUp(true);
     setLookupError(null);
     setLookupResult(null);
+    setExistingSets([]);
     setProcessedImageUrl(null);
     setIsProcessingImage(false);
     setImageProcessingStage(null);
@@ -154,6 +165,24 @@ export function AddSetForm({
 
       if (result) {
         setLookupResult(result);
+
+        // Check for existing copies in the collection
+        const trimmed = setNumber.trim();
+        const duplicateChecks = [findSetsByNumber(collectionId, trimmed)];
+        // Also check the normalized set number from the provider if it differs
+        if (result.setNumber !== trimmed) {
+          duplicateChecks.push(findSetsByNumber(collectionId, result.setNumber));
+        }
+        const results = await Promise.all(duplicateChecks);
+        const allMatches = results.flat();
+        // Deduplicate by set id in case both queries return the same set
+        const seen = new Set<string>();
+        const unique = allMatches.filter((s) => {
+          if (seen.has(s.id)) return false;
+          seen.add(s.id);
+          return true;
+        });
+        setExistingSets(unique);
       } else {
         setLookupError('Set not found. Please check the number and try again.');
       }
@@ -388,6 +417,48 @@ export function AddSetForm({
                       {lookupResult.subtheme && ` \u203A ${lookupResult.subtheme}`}
                     </p>
                   )}
+                </div>
+              )}
+
+              {/* Duplicate warning */}
+              {existingSets.length > 0 && !isLookingUp && (
+                <div className={styles.duplicateWarning}>
+                  <div className={styles.duplicateWarningHeader}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    <span>
+                      {existingSets.length === 1
+                        ? 'This set is already in your collection'
+                        : `You already have ${existingSets.length} copies of this set`}
+                    </span>
+                  </div>
+                  <ul className={styles.duplicateList}>
+                    {existingSets.map((existing) => (
+                      <li key={existing.id} className={styles.duplicateItem}>
+                        <span className={styles.duplicateStatus}>
+                          {STATUS_LABELS[existing.status]}
+                        </span>
+                        {existing.owners.length > 0 && (
+                          <span className={styles.duplicateDetail}>
+                            {existing.owners.join(', ')}
+                          </span>
+                        )}
+                        {existing.occasion && (
+                          <span className={styles.duplicateDetail}>
+                            {existing.occasion}
+                          </span>
+                        )}
+                        {existing.dateReceived && (
+                          <span className={styles.duplicateDetail}>
+                            {new Date(existing.dateReceived + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
