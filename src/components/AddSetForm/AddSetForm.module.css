@@ -1,12 +1,18 @@
 /* ======================================
    Modal Overrides
-   AddSetForm uses fixed height (not max-height)
-   and a wider max-width than the shared modal.
+   Mobile: fixed height for a consistent bottom-sheet feel.
+   Desktop: content-sized (height: auto via shared modal styles).
    ====================================== */
 
 .modal {
   max-width: 520px;
-  height: 85vh;
+  height: 85dvh;
+}
+
+@media (min-width: 1024px) {
+  .modal {
+    height: auto;
+  }
 }
 
 /* ======================================

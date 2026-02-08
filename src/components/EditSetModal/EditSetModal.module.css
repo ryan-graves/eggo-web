@@ -129,8 +129,14 @@
 
 .row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* Checkbox */
@@ -224,10 +230,6 @@
     font-size: var(--font-size-base);
   }
 
-  .row {
-    grid-template-columns: 1fr;
-  }
-
   .deleteIconButton {
     order: 0;
   }
@@ -239,5 +241,21 @@
   .rightActions {
     flex: 1;
     justify-content: flex-end;
+  }
+}
+
+/* Desktop: larger image, more padding, content-sized form */
+@media (min-width: 1024px) {
+  .form {
+    flex: 0 1 auto;
+  }
+
+  .imageWrapper {
+    width: 140px;
+    height: 140px;
+  }
+
+  .apiCard {
+    padding: var(--space-5);
   }
 }

@@ -169,6 +169,32 @@
   outline: none;
 }
 
+/* Desktop: center modal in viewport as a dialog.
+   Uses the CSS `translate` property (independent of `transform`)
+   so it composes with Vaul's slide animation transforms. */
+@media (min-width: 1024px) {
+  .modal-sheet {
+    bottom: 50%;
+    translate: 0 50%;
+    max-width: 600px;
+    max-height: calc(100vh - 6rem);
+    margin-inline: auto;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+
+  /* Content-size the scroll area instead of expanding to max-height */
+  .modal-scroll-area {
+    flex: 0 1 auto;
+  }
+
+  /* Hide Vaul's swipe-extension pseudo-element on desktop.
+     Must match the higher-specificity :not() selector from vaul defaults. */
+  [data-vaul-drawer]:not([data-vaul-custom-container='true'])::after {
+    display: none;
+  }
+}
+
 /* ==========================================================================
  * Header
  * ========================================================================== */
