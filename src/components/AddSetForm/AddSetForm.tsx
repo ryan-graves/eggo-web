@@ -371,6 +371,48 @@ export function AddSetForm({
                 {lookupError && <p className={styles.lookupError}>{lookupError}</p>}
               </div>
 
+              {/* Duplicate warning */}
+              {existingSets.length > 0 && !isLookingUp && (
+                <div className={styles.duplicateWarning}>
+                  <div className={styles.duplicateWarningHeader}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    <span>
+                      {existingSets.length === 1
+                        ? 'This set is already in your collection'
+                        : `You already have ${existingSets.length} copies of this set`}
+                    </span>
+                  </div>
+                  <ul className={styles.duplicateList}>
+                    {existingSets.map((existing) => (
+                      <li key={existing.id} className={styles.duplicateItem}>
+                        <span className={styles.duplicateStatus}>
+                          {STATUS_LABELS[existing.status]}
+                        </span>
+                        {existing.owners.length > 0 && (
+                          <span className={styles.duplicateDetail}>
+                            {existing.owners.join(', ')}
+                          </span>
+                        )}
+                        {existing.occasion && (
+                          <span className={styles.duplicateDetail}>
+                            {existing.occasion}
+                          </span>
+                        )}
+                        {existing.dateReceived && (
+                          <span className={styles.duplicateDetail}>
+                            {new Date(existing.dateReceived + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Skeleton loading state */}
               {isLookingUp && (
                 <div className={styles.detailPreview}>
@@ -417,48 +459,6 @@ export function AddSetForm({
                       {lookupResult.subtheme && ` \u203A ${lookupResult.subtheme}`}
                     </p>
                   )}
-                </div>
-              )}
-
-              {/* Duplicate warning */}
-              {existingSets.length > 0 && !isLookingUp && (
-                <div className={styles.duplicateWarning}>
-                  <div className={styles.duplicateWarningHeader}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                      <line x1="12" y1="9" x2="12" y2="13" />
-                      <line x1="12" y1="17" x2="12.01" y2="17" />
-                    </svg>
-                    <span>
-                      {existingSets.length === 1
-                        ? 'This set is already in your collection'
-                        : `You already have ${existingSets.length} copies of this set`}
-                    </span>
-                  </div>
-                  <ul className={styles.duplicateList}>
-                    {existingSets.map((existing) => (
-                      <li key={existing.id} className={styles.duplicateItem}>
-                        <span className={styles.duplicateStatus}>
-                          {STATUS_LABELS[existing.status]}
-                        </span>
-                        {existing.owners.length > 0 && (
-                          <span className={styles.duplicateDetail}>
-                            {existing.owners.join(', ')}
-                          </span>
-                        )}
-                        {existing.occasion && (
-                          <span className={styles.duplicateDetail}>
-                            {existing.occasion}
-                          </span>
-                        )}
-                        {existing.dateReceived && (
-                          <span className={styles.duplicateDetail}>
-                            {new Date(existing.dateReceived + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               )}
             </div>
