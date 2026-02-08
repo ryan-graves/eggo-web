@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Drawer } from 'vaul';
 import { toast } from 'sonner';
@@ -54,11 +54,28 @@ export function EditSetModal({
   const [currentSet, setCurrentSet] = useState(set);
   const imageUrl = currentSet.customImageUrl || currentSet.imageUrl;
 
-  // Reset form state when set changes (e.g. after refresh)
+  // Reset all form state on the open transition (false → true).
+  // Uses prevOpen ref (same pattern as AddSetForm) so the reset body only
+  // runs once per open, not on every Firestore snapshot reference change.
+  const prevOpen = useRef(false);
   useEffect(() => {
-    setCurrentSet(set);
-    setName(set.name);
-  }, [set]);
+    if (open && !prevOpen.current) {
+      setCurrentSet(set);
+      setName(set.name);
+      setStatus(set.status);
+      setSelectedOwners(set.owners);
+      setOccasion(set.occasion);
+      setDateReceived(set.dateReceived || '');
+      setNotes(set.notes || '');
+      setHasBeenAssembled(set.hasBeenAssembled);
+      setIsSubmitting(false);
+      setIsDeleting(false);
+      setIsRefreshing(false);
+      setShowDeleteConfirm(false);
+      setError(null);
+    }
+    prevOpen.current = open;
+  }, [open, set]);
 
   const handleOpenChange = useCallback(
     (isOpen: boolean) => {
