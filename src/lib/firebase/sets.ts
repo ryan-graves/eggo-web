@@ -233,6 +233,27 @@ export async function findSetByNumber(
 }
 
 /**
+ * Find all sets matching a set number within a collection.
+ * Returns all copies (a user may own multiples of the same set).
+ */
+export async function findSetsByNumber(
+  collectionId: string,
+  setNumber: string
+): Promise<LegoSet[]> {
+  const q = query(
+    getSetsRef(),
+    where('collectionId', '==', collectionId),
+    where('setNumber', '==', setNumber),
+    orderBy('createdAt', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => {
+    const data = normalizeSetData(doc.data());
+    return { id: doc.id, ...data } as LegoSet;
+  });
+}
+
+/**
  * Refresh a set's metadata from the external data provider.
  * Updates name, pieceCount, year, theme, subtheme, and imageUrl.
  * Optionally processes images to remove background (if enabled via ENABLE_BACKGROUND_REMOVAL).
