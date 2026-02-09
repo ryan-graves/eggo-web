@@ -15,12 +15,14 @@
 
 html {
   font-size: 100%;
+  /* Honor iOS Dynamic Type: in Safari, -apple-system-body sets the root
+     font-size to the user's preferred text size, making all rem units scale.
+     Ignored by non-Safari browsers, so font-size: 100% persists as fallback. */
+  font: -apple-system-body;
   -webkit-text-size-adjust: 100%;
 }
 
 body {
-  /* Honor iOS Dynamic Type text size setting in Safari */
-  font: -apple-system-body;
   min-height: 100vh;
   min-height: 100dvh;
   color: var(--text-primary);
@@ -33,7 +35,8 @@ body {
     'Segoe UI',
     Roboto,
     sans-serif;
-  font-size: var(--font-size-base);
+  /* Use % instead of rem so Chrome's text-scale meta tag can adjust sizing */
+  font-size: 87.5%;
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-normal);
   -webkit-font-smoothing: antialiased;
@@ -43,8 +46,8 @@ body {
   overscroll-behavior: none;
 }
 
-/* On non-touch Safari (macOS), reset the root font-size so -apple-system-body
-   doesn't affect desktop where Dynamic Type doesn't apply */
+/* On non-touch Safari (macOS), reset the root font-size so Dynamic Type
+   doesn't apply where the OS setting isn't relevant */
 @supports (font: -apple-system-body) and (not (-webkit-touch-callout: default)) {
   :root {
     font-size: 100%;
