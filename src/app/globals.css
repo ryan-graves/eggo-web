@@ -14,11 +14,13 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 100%;
   -webkit-text-size-adjust: 100%;
 }
 
 body {
+  /* Honor iOS Dynamic Type text size setting in Safari */
+  font: -apple-system-body;
   min-height: 100vh;
   min-height: 100dvh;
   color: var(--text-primary);
@@ -39,6 +41,14 @@ body {
   font-feature-settings: 'cv11', 'ss01';
   /* Prevent pull-to-refresh and scroll bleed on iOS */
   overscroll-behavior: none;
+}
+
+/* On non-touch Safari (macOS), reset the root font-size so -apple-system-body
+   doesn't affect desktop where Dynamic Type doesn't apply */
+@supports (font: -apple-system-body) and (not (-webkit-touch-callout: default)) {
+  :root {
+    font-size: 100%;
+  }
 }
 
 /* Headings */
