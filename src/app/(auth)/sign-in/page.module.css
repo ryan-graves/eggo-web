@@ -59,6 +59,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
+  min-height: 2.75rem;
   padding: var(--space-3) var(--space-6);
   background-color: var(--surface-primary);
   border: 1px solid var(--border-secondary);
