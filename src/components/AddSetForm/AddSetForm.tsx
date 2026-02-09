@@ -171,26 +171,30 @@ export function AddSetForm({
       if (result) {
         setLookupResult(result);
 
-        // Check for existing copies in the collection
-        const trimmed = setNumber.trim();
-        const duplicateChecks = [findSetsByNumber(collectionId, trimmed)];
-        // Also check the normalized set number from the provider if it differs
-        if (result.setNumber !== trimmed) {
-          duplicateChecks.push(findSetsByNumber(collectionId, result.setNumber));
+        // Check for existing copies in the collection (non-fatal)
+        try {
+          const trimmed = setNumber.trim();
+          const duplicateChecks = [findSetsByNumber(collectionId, trimmed)];
+          // Also check the normalized set number from the provider if it differs
+          if (result.setNumber !== trimmed) {
+            duplicateChecks.push(findSetsByNumber(collectionId, result.setNumber));
+          }
+          const results = await Promise.all(duplicateChecks);
+
+          if (currentLookupId !== lookupIdRef.current) return;
+
+          // Deduplicate by set id in case both queries return the same set
+          const allMatches = results.flat();
+          const seen = new Set<string>();
+          const unique = allMatches.filter((s) => {
+            if (seen.has(s.id)) return false;
+            seen.add(s.id);
+            return true;
+          });
+          setExistingSets(unique);
+        } catch {
+          // Duplicate check is best-effort; don't block the add flow
         }
-        const results = await Promise.all(duplicateChecks);
-
-        if (currentLookupId !== lookupIdRef.current) return;
-
-        // Deduplicate by set id in case both queries return the same set
-        const allMatches = results.flat();
-        const seen = new Set<string>();
-        const unique = allMatches.filter((s) => {
-          if (seen.has(s.id)) return false;
-          seen.add(s.id);
-          return true;
-        });
-        setExistingSets(unique);
       } else {
         setLookupError('Set not found. Please check the number and try again.');
       }
@@ -384,9 +388,9 @@ export function AddSetForm({
 
               {/* Duplicate warning */}
               {existingSets.length > 0 && !isLookingUp && (
-                <div className={styles.duplicateWarning}>
+                <div className={styles.duplicateWarning} role="status" aria-live="polite">
                   <div className={styles.duplicateWarningHeader}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                       <line x1="12" y1="9" x2="12" y2="13" />
                       <line x1="12" y1="17" x2="12.01" y2="17" />
