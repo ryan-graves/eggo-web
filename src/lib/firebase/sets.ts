@@ -243,7 +243,8 @@ export async function findSetsByNumber(
   const q = query(
     getSetsRef(),
     where('collectionId', '==', collectionId),
-    where('setNumber', '==', setNumber)
+    where('setNumber', '==', setNumber),
+    orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => {

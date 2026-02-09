@@ -75,6 +75,7 @@ export function AddSetForm({
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [existingSets, setExistingSets] = useState<LegoSet[]>([]);
+  const lookupIdRef = useRef(0);
 
   // Image processing state
   const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
@@ -151,6 +152,8 @@ export function AddSetForm({
       return;
     }
 
+    const currentLookupId = ++lookupIdRef.current;
+
     setIsLookingUp(true);
     setLookupError(null);
     setLookupResult(null);
@@ -163,6 +166,8 @@ export function AddSetForm({
       const provider = getSetDataProvider();
       const result = await provider.lookupSet(setNumber.trim());
 
+      if (currentLookupId !== lookupIdRef.current) return;
+
       if (result) {
         setLookupResult(result);
 
@@ -174,8 +179,11 @@ export function AddSetForm({
           duplicateChecks.push(findSetsByNumber(collectionId, result.setNumber));
         }
         const results = await Promise.all(duplicateChecks);
-        const allMatches = results.flat();
+
+        if (currentLookupId !== lookupIdRef.current) return;
+
         // Deduplicate by set id in case both queries return the same set
+        const allMatches = results.flat();
         const seen = new Set<string>();
         const unique = allMatches.filter((s) => {
           if (seen.has(s.id)) return false;
@@ -187,11 +195,14 @@ export function AddSetForm({
         setLookupError('Set not found. Please check the number and try again.');
       }
     } catch (err) {
+      if (currentLookupId !== lookupIdRef.current) return;
       const message = err instanceof Error ? err.message : 'Failed to lookup set';
       setLookupError('Failed to lookup set. Please try again.');
       toast.error('Set lookup failed', { description: message });
     } finally {
-      setIsLookingUp(false);
+      if (currentLookupId === lookupIdRef.current) {
+        setIsLookingUp(false);
+      }
     }
   };
 
