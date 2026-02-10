@@ -45,6 +45,8 @@ export default function LoginPage(): React.JSX.Element {
                 <GoogleIcon />
                 Sign in with Google
               </>
+            ) : user ? (
+              'Redirecting\u2026'
             ) : (
               'Loading\u2026'
             )}

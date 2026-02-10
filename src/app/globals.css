@@ -122,12 +122,12 @@ img {
   letter-spacing: -0.01em;
 }
 
-/* Prevent iOS zoom on input focus - inputs must be 16px minimum */
+/* Prevent iOS zoom on input focus — floor at 16px but scale with user preference */
 @media screen and (max-width: 640px) {
   input,
   textarea,
   select {
-    font-size: 16px !important;
+    font-size: max(1rem, 16px) !important;
   }
 }
 
