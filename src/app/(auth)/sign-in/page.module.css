@@ -87,4 +87,5 @@
 .googleButton:disabled {
   color: var(--text-tertiary);
   cursor: default;
+  pointer-events: none;
 }
