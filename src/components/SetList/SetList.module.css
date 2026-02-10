@@ -89,9 +89,15 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-left: auto;
-  padding-left: var(--space-3);
-  border-left: 1px solid var(--border-secondary);
+}
+
+/* At wide viewports where filters won't wrap, push sort right with a divider */
+@media (min-width: 1024px) {
+  .sortGroup {
+    margin-left: auto;
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--border-secondary);
+  }
 }
 
 .sortLabel {
