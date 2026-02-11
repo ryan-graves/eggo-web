@@ -15,7 +15,7 @@
 
 .sectionItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-3);
@@ -48,15 +48,14 @@
   flex: 1;
 }
 
-.sectionTitle {
+.sectionIcon {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  justify-content: center;
   color: var(--text-secondary);
-}
-
-.sectionTitle svg {
   flex-shrink: 0;
+  /* Match the title line height so icon centers with the first text line */
+  height: calc(var(--font-size-sm) * var(--line-height-normal));
 }
 
 .sectionName {

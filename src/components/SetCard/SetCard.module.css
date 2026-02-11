@@ -116,8 +116,8 @@
 /* Status badges use global .status-badge-sm / .status-* classes from status.css */
 
 .owner {
-  font-size: 10px;
-  padding: 2px var(--space-1);
+  font-size: 0.625rem;
+  padding: 0.125rem var(--space-1);
   background-color: transparent;
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-sm);

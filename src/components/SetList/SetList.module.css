@@ -87,7 +87,26 @@
 
 .sortGroup {
   display: flex;
-  gap: var(--space-1);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* At wide viewports where filters won't wrap, push sort right with a divider */
+@media (min-width: 1024px) {
+  .sortGroup {
+    margin-left: auto;
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--border-secondary);
+  }
+}
+
+.sortLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  white-space: nowrap;
 }
 
 .sortButton {

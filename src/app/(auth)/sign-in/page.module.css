@@ -32,21 +32,16 @@
 
 .loginBox {
   margin-top: var(--space-8);
-  padding: var(--space-8);
+  padding: var(--space-6);
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-6);
+  gap: var(--space-4);
   min-width: 320px;
   view-transition-name: auth-box;
-}
-
-.description {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
 }
 
 .error {
@@ -64,6 +59,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
+  min-height: 2.75rem;
   padding: var(--space-3) var(--space-6);
   background-color: var(--surface-primary);
   border: 1px solid var(--border-secondary);
@@ -88,7 +84,8 @@
   outline-offset: 2px;
 }
 
-.loading {
-  color: var(--text-secondary);
-  font-size: var(--font-size-lg);
+.googleButton:disabled {
+  color: var(--text-tertiary);
+  cursor: default;
+  pointer-events: none;
 }

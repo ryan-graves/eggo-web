@@ -23,14 +23,7 @@ export default function LoginPage(): React.JSX.Element {
     }
   };
 
-  // Show loading while checking auth or redirecting logged-in users
-  if (loading || user) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.loading}>Loading...</div>
-      </div>
-    );
-  }
+  const isReady = !loading && !user;
 
   return (
     <div className={styles.page}>
@@ -39,13 +32,24 @@ export default function LoginPage(): React.JSX.Element {
         <p className={styles.subtitle}>Lego Collection Manager</p>
 
         <div className={styles.loginBox}>
-          <p className={styles.description}>Sign in to manage your collection</p>
-
           {error && <p className={styles.error}>{error}</p>}
 
-          <button onClick={handleSignIn} className={styles.googleButton} type="button">
-            <GoogleIcon />
-            Sign in with Google
+          <button
+            onClick={handleSignIn}
+            className={styles.googleButton}
+            type="button"
+            disabled={!isReady}
+          >
+            {isReady ? (
+              <>
+                <GoogleIcon />
+                Sign in with Google
+              </>
+            ) : user ? (
+              'Redirecting\u2026'
+            ) : (
+              'Loading\u2026'
+            )}
           </button>
         </div>
       </main>

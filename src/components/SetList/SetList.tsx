@@ -256,7 +256,9 @@ export function SetList({
         </select>
 
         <div className={styles.sortGroup}>
+          <label className={styles.sortLabel} htmlFor="sort-field-select">Sort</label>
           <select
+            id="sort-field-select"
             value={sortField}
             onChange={(e) => handleSortChange(e.target.value as SortField)}
             className={styles.select}

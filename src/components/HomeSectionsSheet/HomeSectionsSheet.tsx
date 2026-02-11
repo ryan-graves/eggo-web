@@ -188,12 +188,12 @@ function SortableSectionItem({
           <circle cx="10.5" cy="13" r="1.5" />
         </svg>
       </div>
+      <span className={styles.sectionIcon}>
+        <SectionIcon type={config.type} />
+      </span>
       <div className={styles.sectionInfo}>
-        <span className={styles.sectionTitle}>
-          <SectionIcon type={config.type} />
-          <span className={styles.sectionName}>
-            {getSectionLabel(config)}
-          </span>
+        <span className={styles.sectionName}>
+          {getSectionLabel(config)}
         </span>
         <span className={styles.sectionDescription}>
           {config.type === 'theme'
