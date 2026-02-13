@@ -14,11 +14,7 @@
 }
 
 html {
-  font-size: 100%;
-  /* Honor iOS Dynamic Type: in Safari, -apple-system-body sets the root
-     font-size to the user's preferred text size, making all rem units scale.
-     Ignored by non-Safari browsers, so font-size: 100% persists as fallback. */
-  font: -apple-system-body;
+  font-size: 16px;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -35,8 +31,7 @@ body {
     'Segoe UI',
     Roboto,
     sans-serif;
-  /* Use % instead of rem so Chrome's text-scale meta tag can adjust sizing */
-  font-size: 87.5%;
+  font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-normal);
   -webkit-font-smoothing: antialiased;
@@ -44,14 +39,6 @@ body {
   font-feature-settings: 'cv11', 'ss01';
   /* Prevent pull-to-refresh and scroll bleed on iOS */
   overscroll-behavior: none;
-}
-
-/* On non-touch Safari (macOS), reset the root font-size so Dynamic Type
-   doesn't apply where the OS setting isn't relevant */
-@supports (font: -apple-system-body) and (not (-webkit-touch-callout: default)) {
-  :root {
-    font-size: 100%;
-  }
 }
 
 /* Headings */
@@ -122,8 +109,7 @@ img {
   letter-spacing: -0.01em;
 }
 
-/* Prevent iOS zoom on input focus — use fixed 16px so inputs stay consistent
-   regardless of Dynamic Type scaling on the root element */
+/* Prevent iOS zoom on input focus - inputs must be 16px minimum */
 @media screen and (max-width: 640px) {
   input,
   textarea,
