@@ -104,6 +104,42 @@
   .form-date-occasion-row {
     flex-direction: column;
   }
+
+  /* Pin form elements to fixed px sizing on mobile so Dynamic Type
+     (font: -apple-system-body on html) doesn't scale rem-based padding
+     inside fixed-height inputs, preventing layout reflow on iOS. */
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px;
+    padding: 8px 12px;
+    height: 40px;
+  }
+
+  .form-textarea {
+    height: auto;
+    min-height: 60px;
+  }
+
+  .form-date-input {
+    font-size: 16px;
+    padding: 8px 12px;
+    height: 40px;
+  }
+
+  .form-label {
+    font-size: 13px;
+  }
+
+  .form-chip {
+    font-size: 13px;
+    padding: 4px 12px;
+  }
+
+  .form-error {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
 }
 
 /* ==========================================================================
