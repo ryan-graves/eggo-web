@@ -324,7 +324,7 @@ export function AddSetForm({
             : 0;
 
   return (
-    <Drawer.Root open={open} onOpenChange={handleOpenChange}>
+    <Drawer.Root open={open} onOpenChange={handleOpenChange} repositionInputs={false}>
       <Drawer.Portal>
         <Drawer.Overlay />
         <Drawer.Content className={`modal-sheet ${styles.modal}`} aria-describedby={undefined}>

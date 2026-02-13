@@ -156,7 +156,7 @@ export function EditSetModal({
   const isBusy = isSubmitting || isDeleting || isRefreshing;
 
   return (
-    <Drawer.Root open={open} onOpenChange={handleOpenChange}>
+    <Drawer.Root open={open} onOpenChange={handleOpenChange} repositionInputs={false}>
       <Drawer.Portal>
         <Drawer.Overlay />
         <Drawer.Content className="modal-sheet" aria-describedby={undefined}>

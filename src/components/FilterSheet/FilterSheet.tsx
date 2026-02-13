@@ -59,7 +59,7 @@ export function FilterSheet({
     statusFilter !== 'all' || ownerFilter !== 'all' || themeFilter !== 'all';
 
   return (
-    <Drawer.Root open={isOpen} onOpenChange={handleOpenChange}>
+    <Drawer.Root open={isOpen} onOpenChange={handleOpenChange} repositionInputs={false}>
       <Drawer.Portal>
         <Drawer.Overlay />
         <Drawer.Content
