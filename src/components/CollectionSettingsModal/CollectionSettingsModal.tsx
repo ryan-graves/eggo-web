@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Drawer } from 'vaul';
+import { Sheet } from '@/components/Sheet/Sheet';
 import { updateCollection, deleteCollection } from '@/lib/firebase';
 import type { Collection } from '@/types';
 import styles from './CollectionSettingsModal.module.css';
@@ -98,14 +98,14 @@ export function CollectionSettingsModal({
   };
 
   return (
-    <Drawer.Root open={open} onOpenChange={handleOpenChange} repositionInputs={false}>
-      <Drawer.Portal>
-        <Drawer.Overlay />
-        <Drawer.Content className={`modal-sheet ${styles.scrollable}`} aria-describedby={undefined}>
-          <Drawer.Handle />
+    <Sheet.Root open={open} onOpenChange={handleOpenChange}>
+      <Sheet.Portal>
+        <Sheet.Overlay />
+        <Sheet.Content className={`modal-sheet ${styles.scrollable}`} aria-describedby={undefined}>
+          <Sheet.Handle />
           <div className="modal-header">
-            <Drawer.Title className="modal-title">Collection Settings</Drawer.Title>
-            <Drawer.Close className="modal-icon-button" aria-label="Close">
+            <Sheet.Title className="modal-title">Collection Settings</Sheet.Title>
+            <Sheet.Close className="modal-icon-button" aria-label="Close">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <path
                   d="M15 5L5 15M5 5L15 15"
@@ -114,7 +114,7 @@ export function CollectionSettingsModal({
                   strokeLinecap="round"
                 />
               </svg>
-            </Drawer.Close>
+            </Sheet.Close>
           </div>
 
           {showDeleteConfirm ? (
@@ -181,9 +181,9 @@ export function CollectionSettingsModal({
               {error && <p className="form-error">{error}</p>}
 
               <div className={styles.actions}>
-                <Drawer.Close className="btn-default btn-secondary" disabled={isSubmitting}>
+                <Sheet.Close className="btn-default btn-secondary" disabled={isSubmitting}>
                   Cancel
-                </Drawer.Close>
+                </Sheet.Close>
                 <button type="submit" className="btn-default btn-primary" disabled={isSubmitting}>
                   {isSubmitting ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -205,8 +205,8 @@ export function CollectionSettingsModal({
               </div>
             </form>
           )}
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        </Sheet.Content>
+      </Sheet.Portal>
+    </Sheet.Root>
   );
 }

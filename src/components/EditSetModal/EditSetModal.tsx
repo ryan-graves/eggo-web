@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { Drawer } from 'vaul';
+import { Sheet } from '@/components/Sheet/Sheet';
 import { toast } from 'sonner';
 import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
 import type { LegoSet, SetStatus } from '@/types';
@@ -156,14 +156,14 @@ export function EditSetModal({
   const isBusy = isSubmitting || isDeleting || isRefreshing;
 
   return (
-    <Drawer.Root open={open} onOpenChange={handleOpenChange} repositionInputs={false}>
-      <Drawer.Portal>
-        <Drawer.Overlay />
-        <Drawer.Content className="modal-sheet" aria-describedby={undefined}>
-          <Drawer.Handle />
+    <Sheet.Root open={open} onOpenChange={handleOpenChange}>
+      <Sheet.Portal>
+        <Sheet.Overlay />
+        <Sheet.Content className="modal-sheet" aria-describedby={undefined}>
+          <Sheet.Handle />
           <div className="modal-header">
-            <Drawer.Title className="modal-title">Edit Set</Drawer.Title>
-            <Drawer.Close
+            <Sheet.Title className="modal-title">Edit Set</Sheet.Title>
+            <Sheet.Close
               className="modal-icon-button"
               disabled={isBusy}
               aria-label="Close"
@@ -171,7 +171,7 @@ export function EditSetModal({
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
-            </Drawer.Close>
+            </Sheet.Close>
           </div>
 
           <form onSubmit={handleSubmit} className={styles.form}>
@@ -373,9 +373,9 @@ export function EditSetModal({
                     </svg>
                   </button>
                   <div className={styles.rightActions}>
-                    <Drawer.Close className="btn-default btn-secondary">
+                    <Sheet.Close className="btn-default btn-secondary">
                       Cancel
-                    </Drawer.Close>
+                    </Sheet.Close>
                     <button type="submit" className="btn-default btn-primary" disabled={isSubmitting}>
                       {isSubmitting ? 'Saving...' : 'Save'}
                     </button>
@@ -384,8 +384,8 @@ export function EditSetModal({
               )}
             </div>
           </form>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        </Sheet.Content>
+      </Sheet.Portal>
+    </Sheet.Root>
   );
 }

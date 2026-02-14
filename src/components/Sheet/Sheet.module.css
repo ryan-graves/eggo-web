@@ -1,0 +1,121 @@
+/* ==========================================================================
+ * Overlay
+ * ========================================================================== */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 0.4);
+  z-index: 100;
+  animation-duration: 500ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.overlay[data-state='open'] {
+  animation-name: fadeIn;
+}
+
+.overlay[data-state='closed'] {
+  animation-name: fadeOut;
+}
+
+/* ==========================================================================
+ * Content
+ * ========================================================================== */
+
+.content {
+  will-change: transform;
+  animation-duration: 500ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  outline: none;
+}
+
+.content[data-state='open'] {
+  animation-name: slideFromBottom;
+}
+
+.content[data-state='closed'] {
+  animation-name: slideToBottom;
+}
+
+/* Swipe-extension background: fills the gap below the sheet during
+   the slide-up animation so you never see through to the page. */
+.content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 200%;
+  background: inherit;
+  background-color: inherit;
+}
+
+@media (min-width: 1024px) {
+  .content::after {
+    display: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .content {
+    user-select: none;
+  }
+}
+
+/* ==========================================================================
+ * Handle (drag-to-dismiss)
+ * ========================================================================== */
+
+.handle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0 0.25rem;
+  touch-action: none;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.handle:active {
+  cursor: grabbing;
+}
+
+.handleBar {
+  width: 48px;
+  height: 6px;
+  border-radius: 1rem;
+  background: #e2e2e4;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.handle:hover .handleBar,
+.handle:active .handleBar {
+  opacity: 1;
+}
+
+/* ==========================================================================
+ * Animations
+ * ========================================================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideFromBottom {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideToBottom {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
