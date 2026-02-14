@@ -4,11 +4,26 @@
 
 .overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: rgb(0 0 0 / 0.4);
   z-index: 100;
   animation-duration: 500ms;
   animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Extend overlay behind iOS keyboard's transparent toolbar area.
+   With interactiveWidget: resizes-content the viewport shrinks above
+   the keyboard, but the toolbar can be translucent — letting the page
+   show through if the overlay doesn't reach far enough. */
+@supports (bottom: -1px) {
+  @media (max-width: 1023px) {
+    .overlay {
+      bottom: -50vh;
+    }
+  }
 }
 
 .overlay[data-state='open'] {
@@ -38,24 +53,8 @@
   animation-name: slideToBottom;
 }
 
-/* Swipe-extension background: fills the gap below the sheet during
-   the slide-up animation so you never see through to the page. */
-.content::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  height: 200%;
-  background: inherit;
-  background-color: inherit;
-}
-
-@media (min-width: 1024px) {
-  .content::after {
-    display: none;
-  }
-}
+/* Background extension (::after) lives in modal.css on .modal-sheet
+   so it can reference var(--surface-primary) directly. */
 
 @media (hover: hover) and (pointer: fine) {
   .content {

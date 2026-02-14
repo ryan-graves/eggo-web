@@ -26,6 +26,20 @@
   outline: none;
 }
 
+/* Extend the modal background below the viewport to cover the iOS
+   keyboard's transparent toolbar area (iOS 26+). With
+   interactiveWidget: resizes-content the viewport stops at the top
+   of the keyboard, but the toolbar can be translucent. */
+.modal-sheet::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 50vh;
+  background-color: var(--surface-primary);
+}
+
 /* Desktop: center modal in viewport as a dialog.
    Uses the CSS `translate` property (independent of `transform`)
    so it composes with Sheet's slide animation transforms. */
@@ -38,6 +52,10 @@
     margin-inline: auto;
     border-radius: var(--radius-xl);
     overflow: hidden;
+  }
+
+  .modal-sheet::after {
+    display: none;
   }
 
   /* Content-size the scroll area instead of expanding to max-height */
