@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { Sheet } from '@/components/Sheet/Sheet';
+import { Drawer } from 'vaul';
 import type { SetStatus } from '@/types';
 import styles from './FilterSheet.module.css';
 
@@ -59,26 +59,26 @@ export function FilterSheet({
     statusFilter !== 'all' || ownerFilter !== 'all' || themeFilter !== 'all';
 
   return (
-    <Sheet.Root open={isOpen} onOpenChange={handleOpenChange}>
-      <Sheet.Portal>
-        <Sheet.Overlay />
-        <Sheet.Content
+    <Drawer.Root open={isOpen} onOpenChange={handleOpenChange} repositionInputs={false}>
+      <Drawer.Portal>
+        <Drawer.Overlay />
+        <Drawer.Content
           className="modal-sheet"
           aria-describedby={undefined}
           aria-label="Filter options"
         >
-          <Sheet.Handle />
+          <Drawer.Handle />
 
           <div className="modal-header">
-            <Sheet.Title className="modal-title">Filters</Sheet.Title>
-            <Sheet.Close
+            <Drawer.Title className="modal-title">Filters</Drawer.Title>
+            <Drawer.Close
               className="modal-icon-button"
               aria-label="Close filters"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
-            </Sheet.Close>
+            </Drawer.Close>
           </div>
 
           <div className="modal-scroll-area">
@@ -177,12 +177,12 @@ export function FilterSheet({
                 Clear All Filters
               </button>
             )}
-            <Sheet.Close className={styles.applyButton}>
+            <Drawer.Close className={styles.applyButton}>
               Apply
-            </Sheet.Close>
+            </Drawer.Close>
           </div>
-        </Sheet.Content>
-      </Sheet.Portal>
-    </Sheet.Root>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }

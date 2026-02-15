@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Sheet } from '@/components/Sheet/Sheet';
+import { Drawer } from 'vaul';
 import {
   DndContext,
   closestCenter,
@@ -174,7 +174,7 @@ function SortableSectionItem({
     >
       <div
         className={styles.dragHandle}
-
+        data-vaul-no-drag
         {...attributes}
         {...listeners}
         aria-label={`Reorder ${getSectionLabel(config)}`}
@@ -299,28 +299,28 @@ export function HomeSectionsSheet({
     draft.every((config, i) => sectionKey(config) === sectionKey(DEFAULT_HOME_SECTIONS[i]));
 
   return (
-    <Sheet.Root open={isOpen} onOpenChange={handleOpenChange}>
-      <Sheet.Portal>
-        <Sheet.Overlay />
-        <Sheet.Content
+    <Drawer.Root open={isOpen} onOpenChange={handleOpenChange} repositionInputs={false}>
+      <Drawer.Portal>
+        <Drawer.Overlay />
+        <Drawer.Content
           className="modal-sheet"
           aria-describedby={undefined}
           aria-label="Customize home sections"
         >
-          <Sheet.Handle />
+          <Drawer.Handle />
 
           <div className="modal-header">
             {view === 'list' ? (
               <>
-                <Sheet.Title className="modal-title">Customize Home</Sheet.Title>
-                <Sheet.Close
+                <Drawer.Title className="modal-title">Customize Home</Drawer.Title>
+                <Drawer.Close
                   className="modal-icon-button"
                   aria-label="Close"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M18 6L6 18M6 6l12 12" />
                   </svg>
-                </Sheet.Close>
+                </Drawer.Close>
               </>
             ) : (
               <>
@@ -334,9 +334,9 @@ export function HomeSectionsSheet({
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </button>
-                <Sheet.Title className="modal-title">
+                <Drawer.Title className="modal-title">
                   {view === 'add-smart' ? 'Add Smart Section' : 'Add Theme Section'}
-                </Sheet.Title>
+                </Drawer.Title>
                 <div className={styles.headerSpacer} />
               </>
             )}
@@ -360,7 +360,7 @@ export function HomeSectionsSheet({
                       items={draft.map(sectionKey)}
                       strategy={verticalListSortingStrategy}
                     >
-                      <ul className={styles.sectionList}>
+                      <ul className={styles.sectionList} data-vaul-no-drag>
                         {draft.map((config, index) => (
                           <SortableSectionItem
                             key={sectionKey(config)}
@@ -451,16 +451,16 @@ export function HomeSectionsSheet({
                   Reset
                 </button>
               )}
-              <Sheet.Close className={styles.cancelButton}>
+              <Drawer.Close className={styles.cancelButton}>
                 Cancel
-              </Sheet.Close>
+              </Drawer.Close>
               <button type="button" onClick={handleSave} className={styles.saveButton}>
                 Save
               </button>
             </div>
           )}
-        </Sheet.Content>
-      </Sheet.Portal>
-    </Sheet.Root>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }
