@@ -313,51 +313,50 @@ function EditSetContent(): React.JSX.Element {
           </div>
 
           {error && <p className="form-error">{error}</p>}
-
-          {/* Danger zone */}
-          <div className={styles.dangerZone}>
-            <h3 className={styles.dangerTitle}>Danger Zone</h3>
-            {showDeleteConfirm ? (
-              <div className={styles.deleteConfirm}>
-                <span>Delete this set permanently?</span>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  className={styles.confirmDeleteButton}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? '...' : 'Yes, delete'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className={styles.cancelDeleteButton}
-                >
-                  No
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(true)}
-                className={styles.deleteButton}
-                disabled={isBusy}
-              >
-                Delete Set
-              </button>
-            )}
-          </div>
         </form>
       </main>
 
       {/* Footer actions */}
       <footer className={styles.footer}>
-        <button type="button" onClick={() => router.back()} className="btn-default btn-secondary" disabled={isBusy}>
-          Cancel
-        </button>
-        <button type="submit" form="edit-set-form" className="btn-default btn-primary" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : 'Save'}
-        </button>
+        <div className={styles.footerLeft}>
+          {showDeleteConfirm ? (
+            <div className={styles.deleteConfirm}>
+              <span>Delete?</span>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className={styles.confirmDeleteButton}
+                disabled={isDeleting}
+              >
+                {isDeleting ? '...' : 'Yes'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className={styles.cancelDeleteButton}
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className={styles.deleteButton}
+              disabled={isBusy}
+            >
+              Delete
+            </button>
+          )}
+        </div>
+        <div className={styles.footerRight}>
+          <button type="button" onClick={() => router.back()} className="btn-default btn-secondary" disabled={isBusy}>
+            Cancel
+          </button>
+          <button type="submit" form="edit-set-form" className="btn-default btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save'}
+          </button>
+        </div>
       </footer>
     </div>
   );
