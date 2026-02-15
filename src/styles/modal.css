@@ -162,7 +162,7 @@
   right: 0;
   background-color: var(--surface-primary);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  max-height: calc(100vh - 3rem);
+  max-height: calc(100dvh - 3rem);
   display: flex;
   flex-direction: column;
   z-index: 101;
@@ -177,7 +177,7 @@
     bottom: 50%;
     translate: 0 50%;
     max-width: 600px;
-    max-height: calc(100vh - 6rem);
+    max-height: calc(100dvh - 6rem);
     margin-inline: auto;
     border-radius: var(--radius-xl);
     overflow: hidden;
