@@ -71,10 +71,8 @@
   font-family: inherit;
   color: var(--text-primary);
   background-color: var(--surface-primary);
-  width: auto;
   height: 40px;
   box-sizing: border-box;
-  text-align: left;
   -webkit-appearance: none;
   appearance: none;
   transition: border-color var(--transition-fast);
