@@ -78,6 +78,10 @@
   transition: border-color var(--transition-fast);
 }
 
+.form-date-input::-webkit-date-and-time-value {
+  text-align: left;
+}
+
 .form-date-input:focus {
   outline: none;
   border-color: var(--interactive-primary);
