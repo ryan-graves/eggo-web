@@ -3,14 +3,12 @@
 import { useState, useEffect, Suspense, useTransition } from 'react';
 import Image from 'next/image';
 import { Link, useTransitionRouter } from 'next-view-transitions';
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
-import { CollectionSettingsModal } from '@/components/CollectionSettingsModal';
-import { AddSetForm } from '@/components/AddSetForm';
 import { SetCardSkeleton } from '@/components/SetCardSkeleton';
 import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
 import styles from './page.module.css';
@@ -119,20 +117,16 @@ function SuspenseFallback(): React.JSX.Element {
 
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const transitionRouter = useTransitionRouter();
   const standardRouter = useRouter();
   const { user } = useAuth();
   const { collections, activeCollection, setActiveCollection, sets, isInitializing } = useCollection();
-  const [showCollectionSettings, setShowCollectionSettings] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [pendingView, setPendingView] = useState<'home' | 'all' | null>(null);
 
   const actualIsAllSets = pathname === '/all';
   // Use pending view during transition, fall back to actual path
   const isAllSetsView = isPending && pendingView !== null ? pendingView === 'all' : actualIsAllSets;
-  const action = searchParams.get('action');
-  const showAddForm = action === 'add-set';
 
   // Store the current browse path so set detail pages know where to return to
   useEffect(() => {
@@ -185,20 +179,8 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     });
   };
 
-  // Use the standard router for modal open/close — these are query param
-  // changes, not page navigations, so a view transition crossfade would
-  // fight the modal's own CSS animation and break the overlay's fixed
-  // positioning on iOS Safari (safe area clipping).
   const openAddForm = () => {
-    standardRouter.push(`${pathname}?action=add-set`);
-  };
-
-  const closeAddForm = () => {
-    standardRouter.push(pathname);
-  };
-
-  const handleAddSuccess = () => {
-    closeAddForm();
+    standardRouter.push('/add-set');
   };
 
   const avatarLink = user?.photoURL ? (
@@ -236,7 +218,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
             collections={collections}
             activeCollection={activeCollection}
             onSelect={setActiveCollection}
-            onSettingsClick={activeCollection ? () => setShowCollectionSettings(true) : undefined}
+            onSettingsClick={activeCollection ? () => standardRouter.push('/collection-settings') : undefined}
           />
         }
         rightContent={avatarLink}
@@ -286,24 +268,6 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
         )}
       </main>
 
-      {activeCollection && (
-        <AddSetForm
-          open={showAddForm}
-          onClose={closeAddForm}
-          collectionId={activeCollection.id}
-          availableOwners={activeCollection.owners}
-          onSuccess={handleAddSuccess}
-        />
-      )}
-
-      {activeCollection && (
-        <CollectionSettingsModal
-          open={showCollectionSettings}
-          onClose={() => setShowCollectionSettings(false)}
-          collection={activeCollection}
-          onSuccess={() => setShowCollectionSettings(false)}
-        />
-      )}
     </div>
   );
 }

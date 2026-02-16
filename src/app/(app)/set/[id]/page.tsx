@@ -1,14 +1,13 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Link, useTransitionRouter } from 'next-view-transitions';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
-import { EditSetModal } from '@/components/EditSetModal';
 import { formatDateForDisplay } from '@/lib/date';
 import { removeImageBackground } from '@/lib/image';
 import { updateSet } from '@/lib/firebase';
@@ -34,19 +33,15 @@ function SetDetailLoading(): React.JSX.Element {
 
 function SetDetailContent(): React.JSX.Element {
   const params = useParams();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const transitionRouter = useTransitionRouter();
-  const { sets, activeCollection, isInitializing } = useCollection();
+  const { sets, isInitializing } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const [isRetryingImage, setIsRetryingImage] = useState(false);
 
   const setId = params.id as string;
   const set = sets.find((s) => s.id === setId);
-
-  const action = searchParams.get('action');
-  const showEditModal = action === 'edit';
 
   const handleRetryBackgroundRemoval = async () => {
     if (!set?.imageUrl) return;
@@ -75,16 +70,8 @@ function SetDetailContent(): React.JSX.Element {
     transitionRouter.prefetch(lastBrowsePath || '/home');
   }, [transitionRouter]);
 
-  const openEditModal = () => {
-    router.push(`/set/${setId}?action=edit`);
-  };
-
-  const closeEditModal = () => {
-    router.push(`/set/${setId}`);
-  };
-
-  const handleEditSuccess = () => {
-    closeEditModal();
+  const openEdit = () => {
+    router.push(`/set/${setId}/edit`);
   };
 
   if (isInitializing) {
@@ -112,7 +99,7 @@ function SetDetailContent(): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
 
   const editButton = (
-    <button type="button" onClick={openEditModal} className={styles.editButton} aria-label="Edit set">
+    <button type="button" onClick={openEdit} className={styles.editButton} aria-label="Edit set">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path
           d="M11.5 2.5L13.5 4.5M10 14H14M2 10L10.5 1.5C11.3284 0.671573 12.6716 0.671573 13.5 1.5C14.3284 2.32843 14.3284 3.67157 13.5 4.5L5 13L1 14L2 10Z"
@@ -233,16 +220,6 @@ function SetDetailContent(): React.JSX.Element {
           </div>
         </div>
       </main>
-
-      {activeCollection && (
-        <EditSetModal
-          open={showEditModal}
-          onClose={closeEditModal}
-          set={set}
-          availableOwners={activeCollection.owners}
-          onSuccess={handleEditSuccess}
-        />
-      )}
     </div>
   );
 }

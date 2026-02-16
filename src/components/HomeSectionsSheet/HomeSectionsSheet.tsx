@@ -299,7 +299,7 @@ export function HomeSectionsSheet({
     draft.every((config, i) => sectionKey(config) === sectionKey(DEFAULT_HOME_SECTIONS[i]));
 
   return (
-    <Drawer.Root open={isOpen} onOpenChange={handleOpenChange}>
+    <Drawer.Root open={isOpen} onOpenChange={handleOpenChange} repositionInputs={false}>
       <Drawer.Portal>
         <Drawer.Overlay />
         <Drawer.Content

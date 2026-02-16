@@ -1,19 +1,37 @@
-/* Local override: modal needs scrolling (shared .modal-sheet uses overflow: hidden) */
-.scrollable {
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--space-3) + env(safe-area-inset-top))
+    calc(var(--space-3) + env(safe-area-inset-right))
+    0
+    calc(var(--space-3) + env(safe-area-inset-left));
+  gap: var(--space-3);
+  background-color: var(--surface-background);
+}
+
+.main {
+  flex: 1;
   overflow-y: auto;
-  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Local override: focus ring for inputs in this modal */
-.input:focus {
-  outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--interactive-primary-bg);
+.container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.form {
-  padding: var(--space-5);
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  color: var(--text-secondary);
 }
 
 .hint {
@@ -22,13 +40,20 @@
   margin-top: var(--space-1);
 }
 
-.actions {
+/* Footer */
+.footer {
   display: flex;
   gap: var(--space-3);
   justify-content: flex-end;
-  margin-bottom: var(--space-6);
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
 }
 
+/* Danger Zone */
 .dangerZone {
   padding-top: var(--space-5);
   border-top: 1px solid var(--border-primary);
@@ -69,24 +94,41 @@
 }
 
 /* Delete confirmation */
-.deleteConfirm {
-  padding: var(--space-5);
+.deleteConfirmSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .deleteWarning {
   font-size: var(--font-size-base);
   color: var(--text-primary);
-  margin: 0 0 var(--space-3) 0;
+  margin: 0;
 }
 
 .deleteNote {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  margin: 0 0 var(--space-4) 0;
+  margin: 0;
 }
 
 .deleteActions {
   display: flex;
   gap: var(--space-3);
   justify-content: flex-end;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .page {
+    padding: calc(var(--space-2) + env(safe-area-inset-top))
+      calc(var(--space-2) + env(safe-area-inset-right))
+      0
+      calc(var(--space-2) + env(safe-area-inset-left));
+    gap: var(--space-2);
+  }
+
+  .container {
+    padding: var(--space-3);
+  }
 }

@@ -20,9 +20,6 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: 'Eggo - Lego Collection Manager',
   description: 'Track and manage your Lego set collection',
-  other: {
-    'text-scale': 'scale',
-  },
 };
 
 export const viewport: Viewport = {
@@ -31,6 +28,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#fafafa' },
     { media: '(prefers-color-scheme: dark)', color: '#09090b' },

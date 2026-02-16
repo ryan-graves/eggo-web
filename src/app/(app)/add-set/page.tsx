@@ -1,23 +1,17 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, Suspense } from 'react';
 import { flushSync } from 'react-dom';
 import Image from 'next/image';
-import { Drawer } from 'vaul';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useCollection } from '@/hooks/useCollection';
+import { Header } from '@/components/Header';
 import { createSet, findSetsByNumber } from '@/lib/firebase';
 import { getSetDataProvider } from '@/lib/providers';
 import { removeImageBackground } from '@/lib/image';
 import type { SetStatus, SetLookupResult, LegoSet } from '@/types';
-import styles from './AddSetForm.module.css';
-
-interface AddSetFormProps {
-  open: boolean;
-  onClose: () => void;
-  collectionId: string;
-  availableOwners: string[];
-  onSuccess: () => void;
-}
+import styles from './page.module.css';
 
 type Step = 'lookup' | 'details';
 
@@ -47,7 +41,6 @@ const STAGE_LABELS: Record<ImageProcessingStage, string> = {
   error: 'Background removal failed',
 };
 
-// Minimum time (ms) each stage should be visible so user can read the caption
 const STAGE_MIN_DURATION: Record<ImageProcessingStage, number> = {
   idle: 100,
   fetching: 1500,
@@ -56,16 +49,13 @@ const STAGE_MIN_DURATION: Record<ImageProcessingStage, number> = {
   error: 0,
 };
 
-// Modal max-width (keep in sync with .modal in CSS)
-const MODAL_MAX_WIDTH = 520;
+function AddSetContent(): React.JSX.Element {
+  const router = useRouter();
+  const { activeCollection, isInitializing } = useCollection();
 
-export function AddSetForm({
-  open,
-  onClose,
-  collectionId,
-  availableOwners,
-  onSuccess,
-}: AddSetFormProps): React.JSX.Element {
+  const collectionId = activeCollection?.id ?? '';
+  const availableOwners = useMemo(() => activeCollection?.owners ?? [], [activeCollection?.owners]);
+
   // Step state
   const [step, setStep] = useState<Step>('lookup');
 
@@ -96,41 +86,22 @@ export function AddSetForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Initialize default owners when collection loads
+  useEffect(() => {
+    if (availableOwners.length > 0) {
+      setSelectedOwners((prev) => (prev.length === 0 ? [availableOwners[0]] : prev));
+    }
+  }, [availableOwners]);
+
   const toggleOwner = (ownerName: string) => {
     setSelectedOwners((prev) =>
       prev.includes(ownerName) ? prev.filter((o) => o !== ownerName) : [...prev, ownerName]
     );
   };
 
-  // Reset form when drawer opens
-  const prevOpen = useRef(false);
-  useEffect(() => {
-    if (open && !prevOpen.current) {
-      setStep('lookup');
-      setSetNumber('');
-      setLookupResult(null);
-      setLookupError(null);
-      setExistingSets([]);
-      setProcessedImageUrl(null);
-      setIsProcessingImage(false);
-      setImageProcessingStage(null);
-      setStatus('unopened');
-      setSelectedOwners(availableOwners.length > 0 ? [availableOwners[0]] : []);
-      setOccasion('');
-      setDateReceived('');
-      setNotes('');
-      setIsSubmitting(false);
-      setSubmitError(null);
-    }
-    prevOpen.current = open;
-  }, [open, availableOwners]);
-
-  const handleOpenChange = useCallback(
-    (isOpen: boolean) => {
-      if (!isOpen) onClose();
-    },
-    [onClose]
-  );
+  const handleClose = () => {
+    router.back();
+  };
 
   const transitionStep = (callback: () => void, direction: 'forward' | 'back'): void => {
     if ('startViewTransition' in document && typeof document.startViewTransition === 'function') {
@@ -171,11 +142,9 @@ export function AddSetForm({
       if (result) {
         setLookupResult(result);
 
-        // Check for existing copies in the collection (non-fatal)
         try {
           const trimmed = setNumber.trim();
           const duplicateChecks = [findSetsByNumber(collectionId, trimmed)];
-          // Also check the normalized set number from the provider if it differs
           if (result.setNumber !== trimmed) {
             duplicateChecks.push(findSetsByNumber(collectionId, result.setNumber));
           }
@@ -183,7 +152,6 @@ export function AddSetForm({
 
           if (currentLookupId !== lookupIdRef.current) return;
 
-          // Deduplicate by set id in case both queries return the same set
           const allMatches = results.flat();
           const seen = new Set<string>();
           const unique = allMatches.filter((s) => {
@@ -193,7 +161,7 @@ export function AddSetForm({
           });
           setExistingSets(unique);
         } catch {
-          // Duplicate check is best-effort; don't block the add flow
+          // Duplicate check is best-effort
         }
       } else {
         setLookupError('Set not found. Please check the number and try again.');
@@ -250,7 +218,7 @@ export function AddSetForm({
           setProcessedImageUrl(bgResult.processedImageUrl);
         }
       } catch (err) {
-        console.error('[AddSetForm] Background removal error:', err);
+        console.error('[AddSet] Background removal error:', err);
         await advanceStage('error', 'removing', stageStart);
       } finally {
         setIsProcessingImage(false);
@@ -304,7 +272,7 @@ export function AddSetForm({
         dataSourceId: lookupResult.sourceId,
       });
 
-      onSuccess();
+      router.back();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to add set');
     } finally {
@@ -323,36 +291,52 @@ export function AddSetForm({
             ? 100
             : 0;
 
-  return (
-    <Drawer.Root open={open} onOpenChange={handleOpenChange}>
-      <Drawer.Portal>
-        <Drawer.Overlay />
-        <Drawer.Content className={`modal-sheet ${styles.modal}`} aria-describedby={undefined}>
-          <Drawer.Handle />
-          <div className="modal-header">
-            {step === 'details' && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="modal-icon-button"
-                aria-label="Go back"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-            )}
-            <Drawer.Title className="modal-title">Add Set</Drawer.Title>
-            <Drawer.Close className="modal-icon-button" aria-label="Close">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </Drawer.Close>
-          </div>
+  if (isInitializing) {
+    return (
+      <div className={styles.page}>
+        <Header variant="detail" title="Add Set" backHref="/home" />
+        <main className={styles.main}>
+          <div className={styles.loading}>Loading...</div>
+        </main>
+      </div>
+    );
+  }
 
-          {/* Step 1: Lookup + Preview (combined) */}
+  if (!activeCollection) {
+    return (
+      <div className={styles.page}>
+        <Header variant="detail" title="Add Set" backHref="/home" />
+        <main className={styles.main}>
+          <div className={styles.loading}>No collection selected</div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.page}>
+      <Header
+        variant="detail"
+        title="Add Set"
+        backHref="/home"
+        rightContent={
+          step === 'details' ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              className={styles.stepBackButton}
+            >
+              Back
+            </button>
+          ) : undefined
+        }
+      />
+
+      <main className={styles.main}>
+        <div className={styles.container}>
+          {/* Step 1: Lookup + Preview */}
           {step === 'lookup' && (
-            <div className={`modal-scroll-area ${styles.stepContent}`} key="lookup">
+            <div className={styles.stepContent} key="lookup">
               <div className={styles.lookupSection}>
                 <label htmlFor="setNumber" className="form-label">
                   Set Number
@@ -449,7 +433,7 @@ export function AddSetForm({
                         src={lookupResult.imageUrl}
                         alt={lookupResult.name}
                         fill
-                        sizes={`(max-width: ${MODAL_MAX_WIDTH}px) 60vw, 240px`}
+                        sizes="(max-width: 520px) 60vw, 240px"
                         style={{ objectFit: 'contain' }}
                       />
                     </div>
@@ -481,194 +465,200 @@ export function AddSetForm({
 
           {/* Step 2: Details form */}
           {step === 'details' && lookupResult && (
-            <form id="add-set-form" onSubmit={handleSubmit} className={`modal-scroll-area ${styles.stepContent}`} key="details">
-              <div className={styles.scrollArea}>
-                {/* Compact preview with image processing progress */}
-                <div className={styles.compactPreview}>
-                  <div
-                    className={styles.compactImageWrapper}
-                    style={lookupResult.imageUrl ? { viewTransitionName: 'add-set-image' } : undefined}
-                  >
-                    {lookupResult.imageUrl ? (
-                      <Image
-                        src={processedImageUrl || lookupResult.imageUrl}
-                        alt={lookupResult.name}
-                        fill
-                        sizes="80px"
-                        style={{ objectFit: 'contain' }}
-                      />
-                    ) : (
-                      <div className={styles.compactPlaceholder}>No Image</div>
-                    )}
-                  </div>
-                  <div className={styles.compactInfo}>
-                    <span className={styles.compactSetNumber}>#{lookupResult.setNumber}</span>
-                    <h3 className={styles.compactName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h3>
-                    <div className={styles.compactMeta}>
-                      {lookupResult.pieceCount && (
-                        <span>
-                          <strong>{lookupResult.pieceCount.toLocaleString()}</strong> pcs
-                        </span>
-                      )}
-                      {lookupResult.year && <span>{lookupResult.year}</span>}
-                      {lookupResult.theme && (
-                        <span>
-                          {lookupResult.theme}
-                          {lookupResult.subtheme && ` \u203A ${lookupResult.subtheme}`}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+            <form id="add-set-form" onSubmit={handleSubmit} className={styles.stepContent} key="details">
+              {/* Compact preview with image processing progress */}
+              <div className={styles.compactPreview}>
+                <div
+                  className={styles.compactImageWrapper}
+                  style={lookupResult.imageUrl ? { viewTransitionName: 'add-set-image' } : undefined}
+                >
+                  {lookupResult.imageUrl ? (
+                    <Image
+                      src={processedImageUrl || lookupResult.imageUrl}
+                      alt={lookupResult.name}
+                      fill
+                      sizes="80px"
+                      style={{ objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <div className={styles.compactPlaceholder}>No Image</div>
+                  )}
                 </div>
-
-                {/* Image processing progress bar */}
-                {imageProcessingStage && (
-                  <div className={styles.progressSection}>
-                    <div className={styles.progressTrack}>
-                      <div
-                        className={`${styles.progressBar} ${imageProcessingStage === 'error' ? styles.progressError : ''} ${imageProcessingStage === 'done' ? styles.progressDone : ''}`}
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                    {imageProcessingStage !== 'idle' && (
-                      <span
-                        className={`${styles.progressLabel} ${imageProcessingStage === 'error' ? styles.progressLabelError : ''} ${imageProcessingStage === 'done' ? styles.progressLabelDone : ''}`}
-                      >
-                        {imageProcessingStage === 'done' && (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                        {STAGE_LABELS[imageProcessingStage]}
+                <div className={styles.compactInfo}>
+                  <span className={styles.compactSetNumber}>#{lookupResult.setNumber}</span>
+                  <h3 className={styles.compactName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h3>
+                  <div className={styles.compactMeta}>
+                    {lookupResult.pieceCount && (
+                      <span>
+                        <strong>{lookupResult.pieceCount.toLocaleString()}</strong> pcs
+                      </span>
+                    )}
+                    {lookupResult.year && <span>{lookupResult.year}</span>}
+                    {lookupResult.theme && (
+                      <span>
+                        {lookupResult.theme}
+                        {lookupResult.subtheme && ` \u203A ${lookupResult.subtheme}`}
                       </span>
                     )}
                   </div>
-                )}
+                </div>
+              </div>
 
-                {/* Form fields */}
-                <div className={styles.fields}>
+              {/* Image processing progress bar */}
+              {imageProcessingStage && (
+                <div className={styles.progressSection}>
+                  <div className={styles.progressTrack}>
+                    <div
+                      className={`${styles.progressBar} ${imageProcessingStage === 'error' ? styles.progressError : ''} ${imageProcessingStage === 'done' ? styles.progressDone : ''}`}
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                  {imageProcessingStage !== 'idle' && (
+                    <span
+                      className={`${styles.progressLabel} ${imageProcessingStage === 'error' ? styles.progressLabelError : ''} ${imageProcessingStage === 'done' ? styles.progressLabelDone : ''}`}
+                    >
+                      {imageProcessingStage === 'done' && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                      {STAGE_LABELS[imageProcessingStage]}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Form fields */}
+              <div className={styles.fields}>
+                <div className="form-field">
+                  <label className="form-label">Status</label>
+                  <div className="form-chip-row">
+                    {STATUS_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`form-chip ${status === opt.value ? 'form-chip-selected' : ''}`}
+                        onClick={() => setStatus(opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {availableOwners.length > 1 && (
                   <div className="form-field">
-                    <label className="form-label">Status</label>
+                    <label className="form-label">Owner</label>
                     <div className="form-chip-row">
-                      {STATUS_OPTIONS.map((opt) => (
+                      {availableOwners.map((ownerName) => (
                         <button
-                          key={opt.value}
+                          key={ownerName}
                           type="button"
-                          className={`form-chip ${status === opt.value ? 'form-chip-selected' : ''}`}
-                          onClick={() => setStatus(opt.value)}
+                          className={`form-chip ${selectedOwners.includes(ownerName) ? 'form-chip-selected' : ''}`}
+                          onClick={() => toggleOwner(ownerName)}
                         >
-                          {opt.label}
+                          {selectedOwners.includes(ownerName) && (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                          {ownerName}
                         </button>
                       ))}
                     </div>
                   </div>
+                )}
 
-                  {availableOwners.length > 1 && (
-                    <div className="form-field">
-                      <label className="form-label">Owner</label>
-                      <div className="form-chip-row">
-                        {availableOwners.map((ownerName) => (
-                          <button
-                            key={ownerName}
-                            type="button"
-                            className={`form-chip ${selectedOwners.includes(ownerName) ? 'form-chip-selected' : ''}`}
-                            onClick={() => toggleOwner(ownerName)}
-                          >
-                            {selectedOwners.includes(ownerName) && (
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            )}
-                            {ownerName}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="form-date-occasion-row">
-                    <div className="form-date-field">
-                      <label htmlFor="dateReceived" className="form-label">Date Received</label>
-                      <input
-                        id="dateReceived"
-                        type="date"
-                        value={dateReceived}
-                        onChange={(e) => setDateReceived(e.target.value)}
-                        className="form-date-input"
-                      />
-                    </div>
-                    <div className="form-field">
-                      <label htmlFor="occasion" className="form-label">Occasion</label>
-                      <input
-                        id="occasion"
-                        type="text"
-                        value={occasion}
-                        onChange={(e) => setOccasion(e.target.value)}
-                        placeholder="Birthday, Christmas..."
-                        className="form-input"
-                      />
-                    </div>
+                <div className="form-date-occasion-row">
+                  <div className="form-date-field">
+                    <label htmlFor="dateReceived" className="form-label">Date Received</label>
+                    <input
+                      id="dateReceived"
+                      type="date"
+                      value={dateReceived}
+                      onChange={(e) => setDateReceived(e.target.value)}
+                      className="form-date-input"
+                    />
                   </div>
-
                   <div className="form-field">
-                    <label htmlFor="notes" className="form-label">Notes</label>
-                    <textarea
-                      id="notes"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      className="form-textarea"
-                      rows={2}
-                      placeholder="Optional notes..."
+                    <label htmlFor="occasion" className="form-label">Occasion</label>
+                    <input
+                      id="occasion"
+                      type="text"
+                      value={occasion}
+                      onChange={(e) => setOccasion(e.target.value)}
+                      placeholder="Birthday, Christmas..."
+                      className="form-input"
                     />
                   </div>
                 </div>
 
-                {submitError && <p className="form-error">{submitError}</p>}
+                <div className="form-field">
+                  <label htmlFor="notes" className="form-label">Notes</label>
+                  <textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="form-textarea"
+                    rows={2}
+                    placeholder="Optional notes..."
+                  />
+                </div>
               </div>
+
+              {submitError && <p className="form-error">{submitError}</p>}
             </form>
           )}
+        </div>
+      </main>
 
-          {/* Footer actions */}
-          <div className={`modal-footer ${styles.actions}`}>
-            {step === 'lookup' && (
-              <>
-                <Drawer.Close className="btn-default btn-secondary">
-                  Cancel
-                </Drawer.Close>
-                {lookupResult && (
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    className="btn-default btn-primary"
-                  >
-                    Next
-                  </button>
-                )}
-              </>
+      {/* Footer actions */}
+      <footer className={styles.footer}>
+        {step === 'lookup' && (
+          <>
+            <button type="button" onClick={handleClose} className="btn-default btn-secondary">
+              Cancel
+            </button>
+            {lookupResult && (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="btn-default btn-primary"
+              >
+                Next
+              </button>
             )}
+          </>
+        )}
 
-            {step === 'details' && (
-              <>
-                <Drawer.Close className="btn-default btn-secondary">
-                  Cancel
-                </Drawer.Close>
-                <button
-                  type="submit"
-                  form="add-set-form"
-                  className="btn-default btn-primary"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting && isProcessingImage
-                    ? 'Processing image\u2026'
-                    : isSubmitting
-                      ? 'Adding\u2026'
-                      : 'Add Set'}
-                </button>
-              </>
-            )}
-          </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        {step === 'details' && (
+          <>
+            <button type="button" onClick={handleClose} className="btn-default btn-secondary">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="add-set-form"
+              className="btn-default btn-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting && isProcessingImage
+                ? 'Processing image\u2026'
+                : isSubmitting
+                  ? 'Adding\u2026'
+                  : 'Add Set'}
+            </button>
+          </>
+        )}
+      </footer>
+    </div>
+  );
+}
+
+export default function AddSetPage(): React.JSX.Element {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+      <AddSetContent />
+    </Suspense>
   );
 }

@@ -1,26 +1,53 @@
-/* ======================================
-   Modal Overrides
-   Mobile: fixed height for a consistent bottom-sheet feel.
-   Desktop: content-sized (height: auto via shared modal styles).
-   ====================================== */
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--space-3) + env(safe-area-inset-top))
+    calc(var(--space-3) + env(safe-area-inset-right))
+    0
+    calc(var(--space-3) + env(safe-area-inset-left));
+  gap: var(--space-3);
+  background-color: var(--surface-background);
+}
 
-.modal {
+.main {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.container {
   max-width: 520px;
-  height: 85dvh;
+  margin: 0 auto;
+  padding: 0 var(--space-4) var(--space-4);
 }
 
-@media (min-width: 1024px) {
-  .modal {
-    height: auto;
-  }
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  color: var(--text-secondary);
 }
 
-/* ======================================
-   Step Content (animation + view transition)
-   Base scroll-area styles come from .modal-scroll-area
-   ====================================== */
+/* Step back button in header */
+.stepBackButton {
+  padding: var(--space-1) var(--space-3);
+  background: none;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
 
+/* Step Content */
 .stepContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   animation: stepIn var(--duration-normal) ease-out;
 }
 
@@ -35,57 +62,26 @@
   }
 }
 
-/* Suppress CSS animation when view transitions handle the step change */
 @supports (view-transition-name: none) {
   .stepContent {
     animation: none;
   }
 }
 
-/* ======================================
-   View Transition: pin persistent chrome
-   Only active during step transitions
-   (when data-vt-direction is set on html)
-   The overlay is NOT included — capturing it as a
-   view-transition snapshot breaks position:fixed on
-   iOS Safari, causing it to not cover the safe area.
-   ====================================== */
-
-:global(html[data-vt-direction]) .modal {
-  view-transition-name: add-set-modal;
-}
-
-:global(html[data-vt-direction] .modal-header) {
-  view-transition-name: add-set-header;
-}
-
-:global(html[data-vt-direction]) .stepContent {
-  view-transition-name: add-set-content;
-}
-
-:global(html[data-vt-direction]) .actions {
-  view-transition-name: add-set-actions;
-}
-
-/* ======================================
-   Footer Override
-   AddSetForm uses right-aligned actions
-   ====================================== */
-
-.actions {
-  justify-content: flex-end;
-}
-
-.scrollArea {
+/* Footer */
+.footer {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
+  justify-content: flex-end;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
 }
 
-/* ======================================
-   Step 1: Lookup
-   ====================================== */
-
+/* Lookup */
 .lookupSection {
   display: flex;
   flex-direction: column;
@@ -107,7 +103,6 @@
 }
 
 /* Duplicate warning */
-
 .duplicateWarning {
   display: flex;
   flex-direction: column;
@@ -159,15 +154,6 @@
 }
 
 /* Skeleton loading */
-
-.skeletonPreview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6) var(--space-4);
-}
-
 .skeletonImage {
   width: 200px;
   aspect-ratio: 1 / 1;
@@ -199,10 +185,7 @@
   width: 35%;
 }
 
-/* ======================================
-   Step 2: Detail Preview
-   ====================================== */
-
+/* Detail Preview */
 .detailPreview {
   display: flex;
   flex-direction: column;
@@ -253,10 +236,7 @@
   margin: 0;
 }
 
-/* ======================================
-   Step 3: Compact Preview + Fields
-   ====================================== */
-
+/* Compact Preview */
 .compactPreview {
   display: flex;
   gap: var(--space-4);
@@ -320,10 +300,7 @@
   font-weight: var(--font-weight-semibold);
 }
 
-/* ======================================
-   Progress Bar
-   ====================================== */
-
+/* Progress Bar */
 .progressSection {
   display: flex;
   flex-direction: column;
@@ -369,21 +346,27 @@
   color: var(--status-error);
 }
 
-/* ======================================
-   Form Fields Container
-   ====================================== */
-
+/* Form Fields */
 .fields {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
 
-/* ======================================
-   Mobile
-   ====================================== */
-
+/* Mobile */
 @media (max-width: 640px) {
+  .page {
+    padding: calc(var(--space-2) + env(safe-area-inset-top))
+      calc(var(--space-2) + env(safe-area-inset-right))
+      0
+      calc(var(--space-2) + env(safe-area-inset-left));
+    gap: var(--space-2);
+  }
+
+  .container {
+    padding: 0 var(--space-3) var(--space-3);
+  }
+
   .compactPreview {
     gap: var(--space-3);
     padding: var(--space-3);

@@ -1,8 +1,61 @@
-.form {
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  padding: calc(var(--space-3) + env(safe-area-inset-top))
+    calc(var(--space-3) + env(safe-area-inset-right))
+    0
+    calc(var(--space-3) + env(safe-area-inset-left));
+  gap: var(--space-3);
+  background-color: var(--surface-background);
+}
+
+.main {
   flex: 1;
-  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 0 var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  color: var(--text-secondary);
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 /* API Data Card */
@@ -127,18 +180,6 @@
   animation: spin 1s linear infinite;
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-3);
-}
-
-@media (min-width: 640px) {
-  .row {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 /* Checkbox */
 .checkboxLabel {
   display: flex;
@@ -155,35 +196,26 @@
   accent-color: var(--interactive-primary);
 }
 
-/* Footer override — shared .modal-footer handles base layout */
-.footer {
-  justify-content: space-between;
-  align-items: center;
-}
-
-.rightActions {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.deleteIconButton {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.deleteIconButton:hover {
-  background-color: var(--status-error-bg);
-  border-color: var(--status-error);
+/* Delete (in footer) */
+.deleteButton {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--status-error);
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.deleteButton:hover:not(:disabled) {
+  background-color: var(--status-error-bg);
+}
+
+.deleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .deleteConfirm {
@@ -216,6 +248,18 @@
 
 /* Mobile */
 @media (max-width: 640px) {
+  .page {
+    padding: calc(var(--space-2) + env(safe-area-inset-top))
+      calc(var(--space-2) + env(safe-area-inset-right))
+      0
+      calc(var(--space-2) + env(safe-area-inset-left));
+    gap: var(--space-2);
+  }
+
+  .container {
+    padding: 0 var(--space-3) var(--space-3);
+  }
+
   .apiCard {
     gap: var(--space-3);
     padding: var(--space-3);
@@ -228,34 +272,5 @@
 
   .apiName {
     font-size: var(--font-size-base);
-  }
-
-  .deleteIconButton {
-    order: 0;
-  }
-
-  .deleteConfirm {
-    flex: 1;
-  }
-
-  .rightActions {
-    flex: 1;
-    justify-content: flex-end;
-  }
-}
-
-/* Desktop: larger image, more padding, content-sized form */
-@media (min-width: 1024px) {
-  .form {
-    flex: 0 1 auto;
-  }
-
-  .imageWrapper {
-    width: 140px;
-    height: 140px;
-  }
-
-  .apiCard {
-    padding: var(--space-5);
   }
 }
