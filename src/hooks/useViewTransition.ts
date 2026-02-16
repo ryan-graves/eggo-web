@@ -6,8 +6,9 @@ import { useCallback, useEffect } from 'react';
 /** SessionStorage key for tracking the last browse path */
 export const LAST_BROWSE_PATH_KEY = 'eggo_last_browse_path';
 
-/** Duration to keep direction attribute before cleanup (ms) */
-const DIRECTION_CLEANUP_DELAY = 400;
+/** Duration to keep direction attribute before cleanup (ms).
+ *  Must exceed the CSS animation duration (300ms) plus a buffer. */
+const DIRECTION_CLEANUP_DELAY = 600;
 
 /**
  * Set the navigation direction on the root element so CSS view-transition

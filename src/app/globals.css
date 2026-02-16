@@ -144,45 +144,46 @@ img {
 
 /* ======================================
    Page view transitions - iOS-style push/pop
+   Full spatial slides, no opacity changes.
    ====================================== */
 
-@keyframes vt-slide-out-to-left {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(-10%); opacity: 0; }
+/* Forward push: old page recedes left, new page slides in from right */
+@keyframes vt-push-to-left {
+  to { transform: translateX(-33%); }
 }
 
-@keyframes vt-slide-in-from-right {
-  from { transform: translateX(12%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+@keyframes vt-push-from-right {
+  from { transform: translateX(100%); }
 }
 
-@keyframes vt-slide-out-to-right {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(12%); opacity: 0; }
+/* Back pop: old page slides away to right, new page returns from left */
+@keyframes vt-push-to-right {
+  to { transform: translateX(100%); }
 }
 
-@keyframes vt-slide-in-from-left {
-  from { transform: translateX(-10%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+@keyframes vt-push-from-left {
+  from { transform: translateX(-33%); }
 }
 
-/* Default: forward push (new page slides in from right) */
 @media (prefers-reduced-motion: no-preference) {
+  /* Forward push (default) - new page slides over from right */
   ::view-transition-old(root) {
-    animation: vt-slide-out-to-left 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    animation: vt-push-to-left 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
   ::view-transition-new(root) {
-    animation: vt-slide-in-from-right 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    animation: vt-push-from-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
-  /* Back: reverse pop (old page slides out to right) */
+  /* Back pop - old page (on top) slides away to right */
   html[data-nav-direction="back"]::view-transition-old(root) {
-    animation: vt-slide-out-to-right 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    animation: vt-push-to-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    z-index: 1;
   }
 
   html[data-nav-direction="back"]::view-transition-new(root) {
-    animation: vt-slide-in-from-left 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    animation: vt-push-from-left 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    z-index: 0;
   }
 }
 
