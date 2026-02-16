@@ -1,35 +1,29 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTransitionRouter } from 'next-view-transitions';
 import { useCallback } from 'react';
 
 /** SessionStorage key for tracking the last browse path */
 export const LAST_BROWSE_PATH_KEY = 'eggo_last_browse_path';
 
 /**
- * Hook for navigating with view transitions
- * Uses next-view-transitions for forward navigation (animated)
- * and the standard Next.js router for back navigation (instant)
+ * Hook for navigating with view transitions.
+ * With Next.js native viewTransition enabled, all router.push() calls
+ * automatically trigger view transitions.
  */
 export function useViewTransition() {
-  const transitionRouter = useTransitionRouter();
   const router = useRouter();
 
-  /**
-   * Navigate to a new page with view transition
-   */
   const navigateTo = useCallback(
     (href: string) => {
-      transitionRouter.push(href);
+      router.push(href);
     },
-    [transitionRouter]
+    [router]
   );
 
   /**
-   * Navigate back without view transition for instant response.
-   * Checks sessionStorage for the last browse path, otherwise uses
-   * the fallback href.
+   * Navigate back. Checks sessionStorage for the last browse path,
+   * otherwise uses the fallback href.
    */
   const navigateBack = useCallback(
     (fallbackHref?: string) => {
@@ -50,7 +44,7 @@ export function useViewTransition() {
     [router]
   );
 
-  return { navigateTo, navigateBack, router: transitionRouter };
+  return { navigateTo, navigateBack, router };
 }
 
 /**

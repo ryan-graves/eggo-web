@@ -1,10 +1,9 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { Link, useTransitionRouter } from 'next-view-transitions';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
@@ -34,7 +33,6 @@ function SetDetailLoading(): React.JSX.Element {
 function SetDetailContent(): React.JSX.Element {
   const params = useParams();
   const router = useRouter();
-  const transitionRouter = useTransitionRouter();
   const { sets, isInitializing } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -67,8 +65,8 @@ function SetDetailContent(): React.JSX.Element {
   useEffect(() => {
     const lastBrowsePath =
       typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(LAST_BROWSE_PATH_KEY) : null;
-    transitionRouter.prefetch(lastBrowsePath || '/home');
-  }, [transitionRouter]);
+    router.prefetch(lastBrowsePath || '/home');
+  }, [router]);
 
   const openEdit = () => {
     router.push(`/set/${setId}/edit`);

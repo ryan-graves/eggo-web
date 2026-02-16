@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Link } from 'next-view-transitions';
+import Link from 'next/link';
 import type { LegoSet } from '@/types';
 import { useNavigationLoading } from '@/hooks/useNavigationLoading';
 import styles from './SetCard.module.css';
@@ -13,6 +13,7 @@ interface SetCardProps {
   detail?: string;
   linkPrefix?: string; // e.g., '/share/abc123/set' for public links
   hideOwner?: boolean; // Hide owner in public view
+  hideStatus?: boolean; // Hide status badge in public view
 }
 
 const STATUS_LABELS: Record<LegoSet['status'], string> = {
@@ -23,7 +24,7 @@ const STATUS_LABELS: Record<LegoSet['status'], string> = {
   disassembled: 'Disassembled',
 };
 
-export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = false }: SetCardProps): React.JSX.Element {
+export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = false, hideStatus = false }: SetCardProps): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
   const href = linkPrefix ? `${linkPrefix}/${set.id}` : `/set/${set.id}`;
   const { pendingHref } = useNavigationLoading();
@@ -58,9 +59,11 @@ export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = 
         {!compact && (
           <>
             <div className={styles.meta}>
-              <span className={`status-badge-sm status-${set.status}`}>
-                {STATUS_LABELS[set.status]}
-              </span>
+              {!hideStatus && (
+                <span className={`status-badge-sm status-${set.status}`}>
+                  {STATUS_LABELS[set.status]}
+                </span>
+              )}
               {!hideOwner && set.owners.length > 0 && (
                 <span className={styles.owner}>{set.owners.join(', ')}</span>
               )}
@@ -76,9 +79,11 @@ export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = 
         {compact && (
           <div className={styles.compactFooter}>
             {detail && <span className={styles.detail}>{detail}</span>}
-            <span className={`status-badge-sm status-${set.status} ${styles.statusCompact}`}>
-              {STATUS_LABELS[set.status]}
-            </span>
+            {!hideStatus && (
+              <span className={`status-badge-sm status-${set.status} ${styles.statusCompact}`}>
+                {STATUS_LABELS[set.status]}
+              </span>
+            )}
           </div>
         )}
       </div>

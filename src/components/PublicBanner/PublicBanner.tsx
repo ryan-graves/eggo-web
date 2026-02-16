@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Link } from 'next-view-transitions';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import styles from './PublicBanner.module.css';
 

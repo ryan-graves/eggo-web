@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense, useTransition } from 'react';
 import Image from 'next/image';
-import { Link, useTransitionRouter } from 'next-view-transitions';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
@@ -117,8 +117,7 @@ function SuspenseFallback(): React.JSX.Element {
 
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
-  const transitionRouter = useTransitionRouter();
-  const standardRouter = useRouter();
+  const router = useRouter();
   const { user } = useAuth();
   const { collections, activeCollection, setActiveCollection, sets, isInitializing } = useCollection();
   const [isPending, startTransition] = useTransition();
@@ -135,10 +134,10 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
   // Prefetch sibling routes for instant navigation
   useEffect(() => {
-    transitionRouter.prefetch('/home');
-    transitionRouter.prefetch('/all');
-    transitionRouter.prefetch('/settings');
-  }, [transitionRouter]);
+    router.prefetch('/home');
+    router.prefetch('/all');
+    router.prefetch('/settings');
+  }, [router]);
 
   // Prefetch all set detail routes and preload images for instant navigation
   useEffect(() => {
@@ -146,7 +145,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
     const prefetchSets = () => {
       for (const set of sets) {
-        transitionRouter.prefetch(`/set/${set.id}`);
+        router.prefetch(`/set/${set.id}`);
 
         // Preload the set image into the browser cache
         const imageUrl = set.customImageUrl || set.imageUrl;
@@ -164,7 +163,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     }
     const id = setTimeout(prefetchSets, 200);
     return () => clearTimeout(id);
-  }, [sets, transitionRouter]);
+  }, [sets, router]);
 
   const handleViewChange = (view: 'home' | 'all') => {
     const targetPath = view === 'all' ? '/all' : '/home';
@@ -175,12 +174,12 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
     // Navigate in a transition so it doesn't block the UI
     startTransition(() => {
-      transitionRouter.push(targetPath);
+      router.push(targetPath);
     });
   };
 
   const openAddForm = () => {
-    standardRouter.push('/add-set');
+    router.push('/add-set');
   };
 
   const avatarLink = user?.photoURL ? (
@@ -218,7 +217,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
             collections={collections}
             activeCollection={activeCollection}
             onSelect={setActiveCollection}
-            onSettingsClick={activeCollection ? () => standardRouter.push('/collection-settings') : undefined}
+            onSettingsClick={activeCollection ? () => router.push('/collection-settings') : undefined}
           />
         }
         rightContent={avatarLink}
