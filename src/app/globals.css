@@ -142,12 +142,47 @@ img {
   }
 }
 
-/* View Transitions - quick crossfade for snappy feel */
+/* ======================================
+   Page view transitions - iOS-style push/pop
+   ====================================== */
+
+@keyframes vt-slide-out-to-left {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-10%); opacity: 0; }
+}
+
+@keyframes vt-slide-in-from-right {
+  from { transform: translateX(12%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes vt-slide-out-to-right {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(12%); opacity: 0; }
+}
+
+@keyframes vt-slide-in-from-left {
+  from { transform: translateX(-10%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Default: forward push (new page slides in from right) */
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root),
+  ::view-transition-old(root) {
+    animation: vt-slide-out-to-left 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   ::view-transition-new(root) {
-    animation-duration: 80ms;
-    animation-timing-function: ease-out;
+    animation: vt-slide-in-from-right 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Back: reverse pop (old page slides out to right) */
+  html[data-nav-direction="back"]::view-transition-old(root) {
+    animation: vt-slide-out-to-right 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html[data-nav-direction="back"]::view-transition-new(root) {
+    animation: vt-slide-in-from-left 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 

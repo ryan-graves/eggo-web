@@ -7,12 +7,15 @@ import { UserPreferencesProvider } from './UserPreferencesProvider';
 import { CollectionProvider } from '@/hooks/useCollection';
 import { NavigationLoadingProvider } from '@/hooks/useNavigationLoading';
 import { NavigationProgress } from '@/components/NavigationProgress';
+import { usePopStateDirection } from '@/hooks/useViewTransition';
 
 interface ProvidersProps {
   children: ReactNode;
 }
 
 export function Providers({ children }: ProvidersProps): React.JSX.Element {
+  usePopStateDirection();
+
   return (
     <AuthProvider>
       <NavigationLoadingProvider>
