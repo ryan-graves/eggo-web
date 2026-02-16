@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -41,6 +41,23 @@ function EditSetContent(): React.JSX.Element {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Sync form state when set data first becomes available (e.g. deep-link
+  // before Firestore has loaded). Only runs once to avoid overwriting edits.
+  const hasInitializedForm = useRef(!!set);
+  useEffect(() => {
+    if (set && !hasInitializedForm.current) {
+      hasInitializedForm.current = true;
+      setCurrentSet(set);
+      setName(set.name);
+      setStatus(set.status);
+      setSelectedOwners(set.owners ?? []);
+      setOccasion(set.occasion ?? '');
+      setDateReceived(set.dateReceived ?? '');
+      setNotes(set.notes ?? '');
+      setHasBeenAssembled(set.hasBeenAssembled ?? false);
+    }
+  }, [set]);
 
   const displaySet = currentSet ?? set;
   const imageUrl = displaySet ? (displaySet.customImageUrl || displaySet.imageUrl) : null;

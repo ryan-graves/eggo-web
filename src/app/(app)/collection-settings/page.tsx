@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
@@ -14,6 +14,18 @@ function CollectionSettingsContent(): React.JSX.Element {
   const [name, setName] = useState(activeCollection?.name ?? '');
   const [ownersInput, setOwnersInput] = useState(activeCollection?.owners.join(', ') ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync form state when collection data first becomes available (e.g.
+  // deep-link before Firestore has loaded). Only runs once to avoid
+  // overwriting edits.
+  const hasInitializedForm = useRef(!!activeCollection);
+  useEffect(() => {
+    if (activeCollection && !hasInitializedForm.current) {
+      hasInitializedForm.current = true;
+      setName(activeCollection.name);
+      setOwnersInput(activeCollection.owners.join(', '));
+    }
+  }, [activeCollection]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
