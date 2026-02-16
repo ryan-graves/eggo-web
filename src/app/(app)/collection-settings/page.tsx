@@ -209,7 +209,7 @@ function CollectionSettingsContent(): React.JSX.Element {
 
 export default function CollectionSettingsPage(): React.JSX.Element {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100dvh' }} />}>
       <CollectionSettingsContent />
     </Suspense>
   );

@@ -381,7 +381,7 @@ function EditSetContent(): React.JSX.Element {
 
 export default function EditSetPage(): React.JSX.Element {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100dvh' }} />}>
       <EditSetContent />
     </Suspense>
   );
