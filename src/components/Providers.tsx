@@ -21,7 +21,7 @@ export function Providers({ children }: ProvidersProps): React.JSX.Element {
       <NavigationLoadingProvider>
         <UserPreferencesProvider>
           <CollectionProvider>
-            <ViewTransition>{children}</ViewTransition>
+            <ViewTransition name="page">{children}</ViewTransition>
             <NavigationProgress />
             <Toaster
               position="bottom-center"

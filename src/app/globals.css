@@ -147,6 +147,13 @@ img {
    Full spatial slides, no opacity changes.
    ====================================== */
 
+/* Disable root capture so only the React <ViewTransition name="page">
+   participates. This avoids double-animation (root + named element)
+   and prevents the progress bar from being captured in snapshots. */
+:root {
+  view-transition-name: none;
+}
+
 /* Forward push: old page recedes left, new page slides in from right */
 @keyframes vt-push-to-left {
   to { transform: translateX(-33%); }
@@ -167,29 +174,29 @@ img {
 
 @media (prefers-reduced-motion: no-preference) {
   /* Forward push (default) - new page slides over from right */
-  ::view-transition-old(root) {
+  ::view-transition-old(page) {
     animation: vt-push-to-left 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
-  ::view-transition-new(root) {
+  ::view-transition-new(page) {
     animation: vt-push-from-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
   /* Back pop - old page (on top) slides away to right */
-  html[data-nav-direction="back"]::view-transition-old(root) {
+  html[data-nav-direction="back"]::view-transition-old(page) {
     animation: vt-push-to-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
     z-index: 1;
   }
 
-  html[data-nav-direction="back"]::view-transition-new(root) {
+  html[data-nav-direction="back"]::view-transition-new(page) {
     animation: vt-push-from-left 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
     z-index: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
     animation-duration: 0ms;
   }
 }
