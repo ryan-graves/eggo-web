@@ -144,7 +144,9 @@ img {
 
 /* ======================================
    Page view transitions - iOS-style push/pop
-   Full spatial slides, no opacity changes.
+   Slides are opt-in via data-nav-direction. Default is a quick
+   crossfade so non-navigation changes (data loading, skeleton swap)
+   are invisible.
    ====================================== */
 
 /* Disable root capture so only the React <ViewTransition name="page">
@@ -173,16 +175,22 @@ img {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* Forward push (default) - new page slides over from right */
-  ::view-transition-old(page) {
+  /* Default: instant crossfade (for non-navigation changes like data loading) */
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
+    animation-duration: 0ms;
+  }
+
+  /* Forward push - explicitly triggered by link clicks / navigateTo */
+  html[data-nav-direction="forward"]::view-transition-old(page) {
     animation: vt-push-to-left 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
-  ::view-transition-new(page) {
+  html[data-nav-direction="forward"]::view-transition-new(page) {
     animation: vt-push-from-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
-  /* Back pop - old page (on top) slides away to right */
+  /* Back pop - explicitly triggered by back button / navigateBack */
   html[data-nav-direction="back"]::view-transition-old(page) {
     animation: vt-push-to-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
     z-index: 1;

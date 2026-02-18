@@ -13,8 +13,10 @@ const DIRECTION_CLEANUP_DELAY = 600;
 /**
  * Set the navigation direction on the root element so CSS view-transition
  * rules can apply the correct slide animation (forward push vs back pop).
+ * Non-navigation changes (data loading, skeleton swaps) won't have a
+ * direction attribute and get the default instant crossfade.
  */
-function setNavDirection(direction: 'back'): void {
+function setNavDirection(direction: 'forward' | 'back'): void {
   document.documentElement.dataset.navDirection = direction;
   setTimeout(() => {
     delete document.documentElement.dataset.navDirection;
@@ -23,15 +25,14 @@ function setNavDirection(direction: 'back'): void {
 
 /**
  * Hook for navigating with view transitions.
- * With Next.js native viewTransition enabled, all router.push() calls
- * automatically trigger view transitions. This hook adds direction
- * tracking so back navigation gets a reverse "pop" animation.
+ * Sets direction before pushing so the CSS slide animation fires.
  */
 export function useViewTransition() {
   const router = useRouter();
 
   const navigateTo = useCallback(
     (href: string) => {
+      setNavDirection('forward');
       router.push(href);
     },
     [router]
@@ -75,16 +76,40 @@ export function useBackNavigation() {
 }
 
 /**
- * Hook that listens for browser back/forward navigation (popstate)
- * and sets the "back" direction so the view transition animates correctly.
- * Mount this once near the root of the app.
+ * Hook that sets navigation direction for:
+ * 1. Internal <a> / <Link> clicks → "forward"
+ * 2. Browser back/forward button (popstate) → "back"
+ *
+ * Mount once near the root of the app. Non-navigation changes
+ * (data loading, skeleton swaps) don't set a direction and get
+ * the default instant crossfade from CSS.
  */
-export function usePopStateDirection(): void {
+export function useNavigationDirection(): void {
   useEffect(() => {
+    // Set "forward" for any internal link click (capture phase runs before Next.js)
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest('a');
+      if (!anchor) return;
+
+      const href = anchor.getAttribute('href');
+      if (!href || !href.startsWith('/')) return;
+
+      // Don't set direction for modifier clicks (new tab, etc.)
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      setNavDirection('forward');
+    };
+
+    // Set "back" for browser back/forward button
     const handlePopState = () => {
       setNavDirection('back');
     };
+
+    document.addEventListener('click', handleClick, { capture: true });
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => {
+      document.removeEventListener('click', handleClick, { capture: true });
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 }
