@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -10,7 +10,7 @@ import { Header } from '@/components/Header';
 import { formatDateForDisplay } from '@/lib/date';
 import { removeImageBackground } from '@/lib/image';
 import { updateSet } from '@/lib/firebase';
-import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
+import { LAST_BROWSE_PATH_KEY, useViewTransition } from '@/hooks/useViewTransition';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';
 
@@ -32,7 +32,7 @@ function SetDetailLoading(): React.JSX.Element {
 
 function SetDetailContent(): React.JSX.Element {
   const params = useParams();
-  const router = useRouter();
+  const { navigateTo, router } = useViewTransition();
   const { sets, isInitializing } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -69,7 +69,7 @@ function SetDetailContent(): React.JSX.Element {
   }, [router]);
 
   const openEdit = () => {
-    router.push(`/set/${setId}/edit`);
+    navigateTo(`/set/${setId}/edit`);
   };
 
   if (isInitializing) {

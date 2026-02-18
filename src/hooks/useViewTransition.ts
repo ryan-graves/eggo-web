@@ -87,7 +87,17 @@ export function useViewTransition() {
     [router]
   );
 
-  return { navigateTo, navigateBack, router };
+  /**
+   * Go back in browser history with a back slide animation.
+   * Used by form cancel/save actions where we want to return to
+   * the previous page in history (not the browse view).
+   */
+  const goBack = useCallback(() => {
+    setNavDirection('back');
+    router.back();
+  }, [router]);
+
+  return { navigateTo, navigateBack, goBack, router };
 }
 
 /**

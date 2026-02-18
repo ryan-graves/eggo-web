@@ -10,7 +10,7 @@ import { Header } from '@/components/Header';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
 import { SetCardSkeleton } from '@/components/SetCardSkeleton';
-import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
+import { LAST_BROWSE_PATH_KEY, useViewTransition } from '@/hooks/useViewTransition';
 import styles from './page.module.css';
 
 interface CollectionLayoutProps {
@@ -118,6 +118,7 @@ function SuspenseFallback(): React.JSX.Element {
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
   const router = useRouter();
+  const { navigateTo } = useViewTransition();
   const { user } = useAuth();
   const { collections, activeCollection, setActiveCollection, sets, isInitializing } = useCollection();
   const [isPending, startTransition] = useTransition();
@@ -179,7 +180,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
   };
 
   const openAddForm = () => {
-    router.push('/add-set');
+    navigateTo('/add-set');
   };
 
   const avatarLink = user?.photoURL ? (
@@ -217,7 +218,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
             collections={collections}
             activeCollection={activeCollection}
             onSelect={setActiveCollection}
-            onSettingsClick={activeCollection ? () => router.push('/collection-settings') : undefined}
+            onSettingsClick={activeCollection ? () => navigateTo('/collection-settings') : undefined}
           />
         }
         rightContent={avatarLink}

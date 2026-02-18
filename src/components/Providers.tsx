@@ -6,7 +6,6 @@ import { AuthProvider } from './AuthProvider';
 import { UserPreferencesProvider } from './UserPreferencesProvider';
 import { CollectionProvider } from '@/hooks/useCollection';
 import { NavigationLoadingProvider } from '@/hooks/useNavigationLoading';
-import { NavigationProgress } from '@/components/NavigationProgress';
 import { useNavigationDirection } from '@/hooks/useViewTransition';
 
 interface ProvidersProps {
@@ -22,7 +21,6 @@ export function Providers({ children }: ProvidersProps): React.JSX.Element {
         <UserPreferencesProvider>
           <CollectionProvider>
             <ViewTransition name="page">{children}</ViewTransition>
-            <NavigationProgress />
             <Toaster
               position="bottom-center"
               toastOptions={{

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, Suspense } from 'react';
 import { flushSync } from 'react-dom';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useViewTransition } from '@/hooks/useViewTransition';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
@@ -50,7 +50,7 @@ const STAGE_MIN_DURATION: Record<ImageProcessingStage, number> = {
 };
 
 function AddSetContent(): React.JSX.Element {
-  const router = useRouter();
+  const { goBack } = useViewTransition();
   const { activeCollection, isInitializing } = useCollection();
 
   const collectionId = activeCollection?.id ?? '';
@@ -100,7 +100,7 @@ function AddSetContent(): React.JSX.Element {
   };
 
   const handleClose = () => {
-    router.back();
+    goBack();
   };
 
   const transitionStep = (callback: () => void, direction: 'forward' | 'back'): void => {
@@ -272,7 +272,7 @@ function AddSetContent(): React.JSX.Element {
         dataSourceId: lookupResult.sourceId,
       });
 
-      router.back();
+      goBack();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to add set');
     } finally {
