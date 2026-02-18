@@ -181,23 +181,25 @@ img {
     animation-duration: 0ms;
   }
 
+  /* DEBUG: Slowed to 2s for visual debugging — revert to 300ms when done */
+
   /* Forward push - explicitly triggered by link clicks / navigateTo */
   html[data-nav-direction="forward"]::view-transition-old(page) {
-    animation: vt-push-to-left 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation: vt-push-to-left 2000ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
   html[data-nav-direction="forward"]::view-transition-new(page) {
-    animation: vt-push-from-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation: vt-push-from-right 2000ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
   /* Back pop - explicitly triggered by back button / navigateBack */
   html[data-nav-direction="back"]::view-transition-old(page) {
-    animation: vt-push-to-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation: vt-push-to-right 2000ms cubic-bezier(0.4, 0, 0.2, 1) both;
     z-index: 1;
   }
 
   html[data-nav-direction="back"]::view-transition-new(page) {
-    animation: vt-push-from-left 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation: vt-push-from-left 2000ms cubic-bezier(0.4, 0, 0.2, 1) both;
     z-index: 0;
   }
 }
