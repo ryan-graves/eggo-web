@@ -6,21 +6,38 @@ import { useCallback, useEffect } from 'react';
 /** SessionStorage key for tracking the last browse path */
 export const LAST_BROWSE_PATH_KEY = 'eggo_last_browse_path';
 
-/** Duration to keep direction attribute before cleanup (ms).
- *  Must exceed the CSS animation duration (300ms) plus a buffer. */
-const DIRECTION_CLEANUP_DELAY = 600;
+/** Failsafe: clear direction after 10s if no view transition fires
+ *  (e.g., navigation was cancelled). */
+const FAILSAFE_CLEANUP_DELAY = 10_000;
+
+let failsafeTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
  * Set the navigation direction on the root element so CSS view-transition
  * rules can apply the correct slide animation (forward push vs back pop).
- * Non-navigation changes (data loading, skeleton swaps) won't have a
- * direction attribute and get the default instant crossfade.
+ *
+ * The attribute persists until the view transition finishes (cleaned up by
+ * the patched startViewTransition in useNavigationDirection). A failsafe
+ * timer clears it after 10s in case no transition fires.
  */
 function setNavDirection(direction: 'forward' | 'back'): void {
+  if (failsafeTimer) {
+    clearTimeout(failsafeTimer);
+  }
   document.documentElement.dataset.navDirection = direction;
-  setTimeout(() => {
+  failsafeTimer = setTimeout(() => {
     delete document.documentElement.dataset.navDirection;
-  }, DIRECTION_CLEANUP_DELAY);
+    failsafeTimer = null;
+  }, FAILSAFE_CLEANUP_DELAY);
+}
+
+/** Clear the nav direction attribute and any pending failsafe timer. */
+function clearNavDirection(): void {
+  if (failsafeTimer) {
+    clearTimeout(failsafeTimer);
+    failsafeTimer = null;
+  }
+  delete document.documentElement.dataset.navDirection;
 }
 
 /**
@@ -80,12 +97,31 @@ export function useBackNavigation() {
  * 1. Internal <a> / <Link> clicks → "forward"
  * 2. Browser back/forward button (popstate) → "back"
  *
- * Mount once near the root of the app. Non-navigation changes
- * (data loading, skeleton swaps) don't set a direction and get
- * the default instant crossfade from CSS.
+ * Also patches document.startViewTransition so that the direction
+ * attribute is automatically cleared after each transition finishes.
+ * This is necessary because page fetching can take longer than a
+ * fixed timer, but we still need the attribute gone before subsequent
+ * non-navigation transitions (data loading, skeleton swaps).
+ *
+ * Mount once near the root of the app.
  */
 export function useNavigationDirection(): void {
   useEffect(() => {
+    // Patch startViewTransition to clean up direction after each transition.
+    // The direction attribute must survive until the transition starts (which
+    // can be delayed by page fetching), so we can't use a fixed timer.
+    let originalSVT: typeof document.startViewTransition | undefined;
+    if (typeof document.startViewTransition === 'function') {
+      originalSVT = document.startViewTransition.bind(document);
+      document.startViewTransition = function (
+        callbackOptions?: ViewTransitionUpdateCallback | StartViewTransitionOptions
+      ) {
+        const transition = originalSVT!(callbackOptions);
+        transition.finished.finally(clearNavDirection);
+        return transition;
+      };
+    }
+
     // Set "forward" for any internal link click (capture phase runs before Next.js)
     const handleClick = (e: MouseEvent) => {
       const anchor = (e.target as HTMLElement).closest('a');
@@ -110,6 +146,9 @@ export function useNavigationDirection(): void {
     return () => {
       document.removeEventListener('click', handleClick, { capture: true });
       window.removeEventListener('popstate', handlePopState);
+      if (originalSVT) {
+        document.startViewTransition = originalSVT;
+      }
     };
   }, []);
 }
