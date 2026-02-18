@@ -6,9 +6,15 @@ import { useCallback, useEffect } from 'react';
 /** SessionStorage key for tracking the last browse path */
 export const LAST_BROWSE_PATH_KEY = 'eggo_last_browse_path';
 
-/** Failsafe: clear direction after 10s if no view transition fires
- *  (e.g., navigation was cancelled). */
-const FAILSAFE_CLEANUP_DELAY = 10_000;
+/**
+ * Failsafe: clear direction after 3s if no view transition animation
+ * fires (e.g., navigation was cancelled or browser doesn't fire
+ * animationend on view transition pseudo-elements).
+ *
+ * 3s is long enough for most page fetches + the 300ms animation,
+ * but short enough to clear before most data-loading transitions.
+ */
+const FAILSAFE_CLEANUP_DELAY = 3_000;
 
 let failsafeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -16,9 +22,9 @@ let failsafeTimer: ReturnType<typeof setTimeout> | null = null;
  * Set the navigation direction on the root element so CSS view-transition
  * rules can apply the correct slide animation (forward push vs back pop).
  *
- * The attribute persists until the view transition finishes (cleaned up by
- * the patched startViewTransition in useNavigationDirection). A failsafe
- * timer clears it after 10s in case no transition fires.
+ * Cleanup happens in two ways:
+ * 1. Primary: animationend event on the vt-push-* animation (precise)
+ * 2. Failsafe: timer clears after 3s (handles edge cases)
  */
 function setNavDirection(direction: 'forward' | 'back'): void {
   if (failsafeTimer) {
@@ -97,30 +103,25 @@ export function useBackNavigation() {
  * 1. Internal <a> / <Link> clicks → "forward"
  * 2. Browser back/forward button (popstate) → "back"
  *
- * Also patches document.startViewTransition so that the direction
- * attribute is automatically cleared after each transition finishes.
- * This is necessary because page fetching can take longer than a
- * fixed timer, but we still need the attribute gone before subsequent
- * non-navigation transitions (data loading, skeleton swaps).
+ * Direction cleanup uses two strategies:
+ * - Primary: listens for animationend events from the vt-push-*
+ *   keyframes on view-transition pseudo-elements (precise timing).
+ * - Failsafe: a 3s timer clears the attribute if no animation event
+ *   fires (e.g., browser doesn't bubble pseudo-element events, or
+ *   the navigation was cancelled).
  *
  * Mount once near the root of the app.
  */
 export function useNavigationDirection(): void {
   useEffect(() => {
-    // Patch startViewTransition to clean up direction after each transition.
-    // The direction attribute must survive until the transition starts (which
-    // can be delayed by page fetching), so we can't use a fixed timer.
-    let originalSVT: typeof document.startViewTransition | undefined;
-    if (typeof document.startViewTransition === 'function') {
-      originalSVT = document.startViewTransition.bind(document);
-      document.startViewTransition = function (
-        callbackOptions?: ViewTransitionUpdateCallback | StartViewTransitionOptions
-      ) {
-        const transition = originalSVT!(callbackOptions);
-        transition.finished.finally(clearNavDirection);
-        return transition;
-      };
-    }
+    // When a vt-push-* slide animation finishes, clear the direction
+    // immediately so subsequent transitions (data loading) get the
+    // default instant crossfade instead of another slide.
+    const handleAnimationEnd = (e: AnimationEvent) => {
+      if (e.animationName.startsWith('vt-push-')) {
+        clearNavDirection();
+      }
+    };
 
     // Set "forward" for any internal link click (capture phase runs before Next.js)
     const handleClick = (e: MouseEvent) => {
@@ -141,14 +142,13 @@ export function useNavigationDirection(): void {
       setNavDirection('back');
     };
 
+    document.documentElement.addEventListener('animationend', handleAnimationEnd);
     document.addEventListener('click', handleClick, { capture: true });
     window.addEventListener('popstate', handlePopState);
     return () => {
+      document.documentElement.removeEventListener('animationend', handleAnimationEnd);
       document.removeEventListener('click', handleClick, { capture: true });
       window.removeEventListener('popstate', handlePopState);
-      if (originalSVT) {
-        document.startViewTransition = originalSVT;
-      }
     };
   }, []);
 }
