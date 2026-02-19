@@ -10,7 +10,7 @@ import { Header } from '@/components/Header';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
 import { SetCardSkeleton } from '@/components/SetCardSkeleton';
-import { LAST_BROWSE_PATH_KEY, useViewTransition } from '@/hooks/useViewTransition';
+import { LAST_BROWSE_PATH_KEY, SCROLL_POSITION_PREFIX, useViewTransition } from '@/hooks/useViewTransition';
 import styles from './page.module.css';
 
 interface CollectionLayoutProps {
@@ -132,6 +132,20 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
   useEffect(() => {
     sessionStorage.setItem(LAST_BROWSE_PATH_KEY, pathname);
   }, [pathname]);
+
+  // Restore scroll position when returning to this browse view
+  useEffect(() => {
+    if (isInitializing) return;
+
+    const key = `${SCROLL_POSITION_PREFIX}${pathname}`;
+    const savedScroll = sessionStorage.getItem(key);
+    if (savedScroll) {
+      const scrollY = parseInt(savedScroll, 10);
+      sessionStorage.removeItem(key);
+      // Scroll while view transition pseudo-elements still cover the DOM
+      window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior });
+    }
+  }, [pathname, isInitializing]);
 
   // Prefetch sibling routes for instant navigation
   useEffect(() => {

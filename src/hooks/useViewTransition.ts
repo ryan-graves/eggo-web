@@ -6,6 +6,9 @@ import { useCallback, useEffect } from 'react';
 /** SessionStorage key for tracking the last browse path */
 export const LAST_BROWSE_PATH_KEY = 'eggo_last_browse_path';
 
+/** SessionStorage key prefix for saving scroll positions per path */
+export const SCROLL_POSITION_PREFIX = 'eggo_scroll_';
+
 /**
  * Failsafe: clear direction after 3s if no view transition animation
  * fires (e.g., navigation was cancelled or browser doesn't fire
@@ -31,19 +34,34 @@ function setNavDirection(direction: 'forward' | 'back'): void {
     clearTimeout(failsafeTimer);
   }
   document.documentElement.dataset.navDirection = direction;
+
+  // Capture current scroll offset so CSS can clip the old-page snapshot
+  // to the viewport-visible portion (prevents "scroll up" artifact).
+  document.documentElement.style.setProperty('--vt-scroll-y', `-${window.scrollY}px`);
+
+  // Save scroll position when navigating away so we can restore it later
+  if (direction === 'forward') {
+    sessionStorage.setItem(
+      `${SCROLL_POSITION_PREFIX}${window.location.pathname}`,
+      String(window.scrollY)
+    );
+  }
+
   failsafeTimer = setTimeout(() => {
     delete document.documentElement.dataset.navDirection;
+    document.documentElement.style.removeProperty('--vt-scroll-y');
     failsafeTimer = null;
   }, FAILSAFE_CLEANUP_DELAY);
 }
 
-/** Clear the nav direction attribute and any pending failsafe timer. */
+/** Clear the nav direction attribute, scroll offset, and any pending failsafe timer. */
 function clearNavDirection(): void {
   if (failsafeTimer) {
     clearTimeout(failsafeTimer);
     failsafeTimer = null;
   }
   delete document.documentElement.dataset.navDirection;
+  document.documentElement.style.removeProperty('--vt-scroll-y');
 }
 
 /**
