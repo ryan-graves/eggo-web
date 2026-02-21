@@ -35,33 +35,30 @@ function setNavDirection(direction: 'forward' | 'back'): void {
   }
   document.documentElement.dataset.navDirection = direction;
 
-  // Capture current scroll offset so CSS can clip the old-page snapshot
-  // to the viewport-visible portion (prevents "scroll up" artifact).
-  document.documentElement.style.setProperty('--vt-scroll-y', `-${window.scrollY}px`);
-
-  // Save scroll position when navigating away so we can restore it later
+  // Save scroll position and scroll to top before the view transition
+  // captures the old state. This prevents the full-height page snapshot
+  // from appearing to "scroll up" during the slide animation.
   if (direction === 'forward') {
     sessionStorage.setItem(
       `${SCROLL_POSITION_PREFIX}${window.location.pathname}`,
       String(window.scrollY)
     );
+    window.scrollTo(0, 0);
   }
 
   failsafeTimer = setTimeout(() => {
     delete document.documentElement.dataset.navDirection;
-    document.documentElement.style.removeProperty('--vt-scroll-y');
     failsafeTimer = null;
   }, FAILSAFE_CLEANUP_DELAY);
 }
 
-/** Clear the nav direction attribute, scroll offset, and any pending failsafe timer. */
+/** Clear the nav direction attribute and any pending failsafe timer. */
 function clearNavDirection(): void {
   if (failsafeTimer) {
     clearTimeout(failsafeTimer);
     failsafeTimer = null;
   }
   delete document.documentElement.dataset.navDirection;
-  document.documentElement.style.removeProperty('--vt-scroll-y');
 }
 
 /**
