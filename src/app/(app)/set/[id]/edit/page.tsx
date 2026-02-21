@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useViewTransition } from '@/hooks/useViewTransition';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
@@ -20,7 +21,7 @@ const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
 
 function EditSetContent(): React.JSX.Element {
   const params = useParams();
-  const router = useRouter();
+  const { goBack, navigateBack } = useViewTransition();
   const { sets, activeCollection, isInitializing } = useCollection();
 
   const setId = params.id as string;
@@ -116,7 +117,7 @@ function EditSetContent(): React.JSX.Element {
         notes: notes.trim() || undefined,
       });
 
-      router.back();
+      goBack();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update set');
     } finally {
@@ -130,8 +131,8 @@ function EditSetContent(): React.JSX.Element {
 
     try {
       await deleteSet(setId);
-      // After delete, go back two levels (past set detail to collection)
-      router.push('/home');
+      // After delete, go back to browse view (skip deleted set detail)
+      navigateBack('/home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete set');
       setIsDeleting(false);
@@ -367,7 +368,7 @@ function EditSetContent(): React.JSX.Element {
           )}
         </div>
         <div className={styles.footerRight}>
-          <button type="button" onClick={() => router.back()} className="btn-default btn-secondary" disabled={isBusy}>
+          <button type="button" onClick={goBack} className="btn-default btn-secondary" disabled={isBusy}>
             Cancel
           </button>
           <button type="submit" form="edit-set-form" className="btn-default btn-primary" disabled={isSubmitting}>

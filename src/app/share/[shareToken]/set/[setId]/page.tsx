@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Link } from 'next-view-transitions';
+import Link from 'next/link';
 import { PublicCollectionProvider, usePublicCollection } from '@/hooks/usePublicCollection';
 import { PublicBanner } from '@/components/PublicBanner';
 import { formatDateForDisplay } from '@/lib/date';

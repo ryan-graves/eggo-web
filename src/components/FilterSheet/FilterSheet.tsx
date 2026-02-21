@@ -22,6 +22,7 @@ interface FilterSheetProps {
   availableThemes: string[];
   statusOptions: { value: SetStatus | 'all'; label: string }[];
   sortOptions: { value: string; label: string }[];
+  hideStatus?: boolean;
 }
 
 export function FilterSheet({
@@ -41,6 +42,7 @@ export function FilterSheet({
   availableThemes,
   statusOptions,
   sortOptions,
+  hideStatus = false,
 }: FilterSheetProps): React.JSX.Element {
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -82,23 +84,25 @@ export function FilterSheet({
           </div>
 
           <div className="modal-scroll-area">
-            <div className={styles.section}>
-              <label className={styles.label} htmlFor="filter-status">
-                Status
-              </label>
-              <select
-                id="filter-status"
-                value={statusFilter}
-                onChange={(e) => onStatusChange(e.target.value as SetStatus | 'all')}
-                className={styles.select}
-              >
-                {statusOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!hideStatus && (
+              <div className={styles.section}>
+                <label className={styles.label} htmlFor="filter-status">
+                  Status
+                </label>
+                <select
+                  id="filter-status"
+                  value={statusFilter}
+                  onChange={(e) => onStatusChange(e.target.value as SetStatus | 'all')}
+                  className={styles.select}
+                >
+                  {statusOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {availableOwners.length > 0 && (
               <div className={styles.section}>

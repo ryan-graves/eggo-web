@@ -142,18 +142,88 @@ img {
   }
 }
 
-/* View Transitions - quick crossfade for snappy feel */
+/* ======================================
+   Page view transitions - iOS-style push/pop
+   Slides are opt-in via data-nav-direction. Default is a quick
+   crossfade so non-navigation changes (data loading, skeleton swap)
+   are invisible.
+   ====================================== */
+
+/* Disable root capture so only the React <ViewTransition name="page">
+   participates. This avoids double-animation (root + named element)
+   and prevents the progress bar from being captured in snapshots. */
+:root {
+  view-transition-name: none;
+}
+
+/* Forward push: old page recedes left, new page slides in from right */
+@keyframes vt-push-to-left {
+  to { transform: translateX(-33%); }
+}
+
+@keyframes vt-push-from-right {
+  from { transform: translateX(100%); }
+}
+
+/* Back pop: old page slides away to right, new page returns from left */
+@keyframes vt-push-to-right {
+  to { transform: translateX(100%); }
+}
+
+@keyframes vt-push-from-left {
+  from { transform: translateX(-33%); }
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 80ms;
-    animation-timing-function: ease-out;
+  /* Default: instant crossfade (for non-navigation changes like data loading) */
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
+    animation-duration: 0ms;
+  }
+
+  /* Clip snapshots to viewport height during slide transitions.
+     Without this, the full-height page snapshot is visible and appears
+     to "scroll up" as it slides out. object-position shifts the snapshot
+     so the viewport-visible portion is shown. */
+  html[data-nav-direction]::view-transition-old(page),
+  html[data-nav-direction]::view-transition-new(page) {
+    height: 100dvh;
+    overflow: clip;
+    object-fit: none;
+  }
+
+  html[data-nav-direction]::view-transition-old(page) {
+    object-position: 0 var(--vt-scroll-y, 0px);
+  }
+
+  html[data-nav-direction]::view-transition-new(page) {
+    object-position: 0 0;
+  }
+
+  /* Forward push - explicitly triggered by link clicks / navigateTo */
+  html[data-nav-direction="forward"]::view-transition-old(page) {
+    animation: vt-push-to-left 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  html[data-nav-direction="forward"]::view-transition-new(page) {
+    animation: vt-push-from-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  /* Back pop - explicitly triggered by back button / navigateBack */
+  html[data-nav-direction="back"]::view-transition-old(page) {
+    animation: vt-push-to-right 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    z-index: 1;
+  }
+
+  html[data-nav-direction="back"]::view-transition-new(page) {
+    animation: vt-push-from-left 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    z-index: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
     animation-duration: 0ms;
   }
 }

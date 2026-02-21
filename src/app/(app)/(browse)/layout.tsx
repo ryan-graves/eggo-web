@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense, useTransition } from 'react';
 import Image from 'next/image';
-import { Link, useTransitionRouter } from 'next-view-transitions';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
@@ -10,7 +10,7 @@ import { Header } from '@/components/Header';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
 import { SetCardSkeleton } from '@/components/SetCardSkeleton';
-import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
+import { LAST_BROWSE_PATH_KEY, SCROLL_POSITION_PREFIX, useViewTransition } from '@/hooks/useViewTransition';
 import styles from './page.module.css';
 
 interface CollectionLayoutProps {
@@ -117,8 +117,8 @@ function SuspenseFallback(): React.JSX.Element {
 
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
-  const transitionRouter = useTransitionRouter();
-  const standardRouter = useRouter();
+  const router = useRouter();
+  const { navigateTo } = useViewTransition();
   const { user } = useAuth();
   const { collections, activeCollection, setActiveCollection, sets, isInitializing } = useCollection();
   const [isPending, startTransition] = useTransition();
@@ -133,12 +133,26 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     sessionStorage.setItem(LAST_BROWSE_PATH_KEY, pathname);
   }, [pathname]);
 
+  // Restore scroll position when returning to this browse view
+  useEffect(() => {
+    if (isInitializing) return;
+
+    const key = `${SCROLL_POSITION_PREFIX}${pathname}`;
+    const savedScroll = sessionStorage.getItem(key);
+    if (savedScroll) {
+      const scrollY = parseInt(savedScroll, 10);
+      sessionStorage.removeItem(key);
+      // Scroll while view transition pseudo-elements still cover the DOM
+      window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior });
+    }
+  }, [pathname, isInitializing]);
+
   // Prefetch sibling routes for instant navigation
   useEffect(() => {
-    transitionRouter.prefetch('/home');
-    transitionRouter.prefetch('/all');
-    transitionRouter.prefetch('/settings');
-  }, [transitionRouter]);
+    router.prefetch('/home');
+    router.prefetch('/all');
+    router.prefetch('/settings');
+  }, [router]);
 
   // Prefetch all set detail routes and preload images for instant navigation
   useEffect(() => {
@@ -146,7 +160,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
     const prefetchSets = () => {
       for (const set of sets) {
-        transitionRouter.prefetch(`/set/${set.id}`);
+        router.prefetch(`/set/${set.id}`);
 
         // Preload the set image into the browser cache
         const imageUrl = set.customImageUrl || set.imageUrl;
@@ -164,7 +178,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     }
     const id = setTimeout(prefetchSets, 200);
     return () => clearTimeout(id);
-  }, [sets, transitionRouter]);
+  }, [sets, router]);
 
   const handleViewChange = (view: 'home' | 'all') => {
     const targetPath = view === 'all' ? '/all' : '/home';
@@ -175,12 +189,12 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
     // Navigate in a transition so it doesn't block the UI
     startTransition(() => {
-      transitionRouter.push(targetPath);
+      router.push(targetPath);
     });
   };
 
   const openAddForm = () => {
-    standardRouter.push('/add-set');
+    navigateTo('/add-set');
   };
 
   const avatarLink = user?.photoURL ? (
@@ -218,7 +232,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
             collections={collections}
             activeCollection={activeCollection}
             onSelect={setActiveCollection}
-            onSettingsClick={activeCollection ? () => standardRouter.push('/collection-settings') : undefined}
+            onSettingsClick={activeCollection ? () => navigateTo('/collection-settings') : undefined}
           />
         }
         rightContent={avatarLink}

@@ -54,6 +54,7 @@ export function SetList({
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   const hideOwner = viewSettings ? !viewSettings.showOwner : false;
+  const hideStatus = viewSettings ? !viewSettings.showStatus : false;
 
   // Get unique themes from sets
   const themes = useMemo(() => {
@@ -79,8 +80,8 @@ export function SetList({
       );
     }
 
-    // Apply status filter
-    if (statusFilter !== 'all') {
+    // Apply status filter (only if status is visible)
+    if (!hideStatus && statusFilter !== 'all') {
       result = result.filter((set) => set.status === statusFilter);
     }
 
@@ -117,7 +118,7 @@ export function SetList({
     });
 
     return result;
-  }, [sets, searchQuery, statusFilter, ownerFilter, themeFilter, sortField, sortDirection, hideOwner]);
+  }, [sets, searchQuery, statusFilter, ownerFilter, themeFilter, sortField, sortDirection, hideOwner, hideStatus]);
 
   const handleSortChange = (field: SortField) => {
     if (field === sortField) {
@@ -132,7 +133,7 @@ export function SetList({
   const filterTags = useMemo(() => {
     const tags = [];
 
-    if (statusFilter !== 'all') {
+    if (!hideStatus && statusFilter !== 'all') {
       const statusLabel = STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label || statusFilter;
       tags.push({
         key: 'status',
@@ -161,7 +162,7 @@ export function SetList({
     }
 
     return tags;
-  }, [statusFilter, ownerFilter, themeFilter, hideOwner]);
+  }, [statusFilter, ownerFilter, themeFilter, hideOwner, hideStatus]);
 
   const activeFilterCount = filterTags.length;
 
@@ -215,17 +216,19 @@ export function SetList({
           className={styles.searchInput}
         />
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as SetStatus | 'all')}
-          className={styles.select}
-        >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        {!hideStatus && (
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as SetStatus | 'all')}
+            className={styles.select}
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        )}
 
         {!hideOwner && (
           <select
@@ -303,7 +306,7 @@ export function SetList({
       ) : (
         <div className={styles.grid}>
           {filteredSets.map((set) => (
-            <SetCard key={set.id} set={set} linkPrefix={linkPrefix} hideOwner={hideOwner} />
+            <SetCard key={set.id} set={set} linkPrefix={linkPrefix} hideOwner={hideOwner} hideStatus={hideStatus} />
           ))}
         </div>
       )}
@@ -326,6 +329,7 @@ export function SetList({
         availableThemes={themes}
         statusOptions={STATUS_OPTIONS}
         sortOptions={SORT_OPTIONS}
+        hideStatus={hideStatus}
       />
     </div>
   );
