@@ -10,7 +10,7 @@ import { Header } from '@/components/Header';
 import { formatDateForDisplay } from '@/lib/date';
 import { removeImageBackground } from '@/lib/image';
 import { updateSet } from '@/lib/firebase';
-import { LAST_BROWSE_PATH_KEY, useViewTransition } from '@/hooks/useViewTransition';
+import { LAST_BROWSE_PATH_KEY, useNavigation } from '@/hooks/useNavigation';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';
 
@@ -32,7 +32,7 @@ function SetDetailLoading(): React.JSX.Element {
 
 function SetDetailContent(): React.JSX.Element {
   const params = useParams();
-  const { navigateTo, router } = useViewTransition();
+  const { navigateTo, router } = useNavigation();
   const { sets, isInitializing } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 

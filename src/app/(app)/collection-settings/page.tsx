@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useViewTransition } from '@/hooks/useViewTransition';
+import { useNavigation } from '@/hooks/useNavigation';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { updateCollection, deleteCollection } from '@/lib/firebase';
 import styles from './page.module.css';
 
 function CollectionSettingsContent(): React.JSX.Element {
-  const { goBack, navigateBack } = useViewTransition();
+  const { navigateBack, router } = useNavigation();
   const { activeCollection, isInitializing } = useCollection();
 
   const [name, setName] = useState(activeCollection?.name ?? '');
@@ -58,7 +58,7 @@ function CollectionSettingsContent(): React.JSX.Element {
         name: name.trim(),
         owners,
       });
-      goBack();
+      router.back();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update collection');
     } finally {
@@ -195,7 +195,7 @@ function CollectionSettingsContent(): React.JSX.Element {
 
       {!showDeleteConfirm && (
         <footer className={styles.footer}>
-          <button type="button" onClick={goBack} className="btn-default btn-secondary" disabled={isSubmitting}>
+          <button type="button" onClick={() => router.back()} className="btn-default btn-secondary" disabled={isSubmitting}>
             Cancel
           </button>
           <button type="submit" form="collection-settings-form" className="btn-default btn-primary" disabled={isSubmitting}>

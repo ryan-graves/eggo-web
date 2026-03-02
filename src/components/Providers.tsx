@@ -6,6 +6,7 @@ import { AuthProvider } from './AuthProvider';
 import { UserPreferencesProvider } from './UserPreferencesProvider';
 import { CollectionProvider } from '@/hooks/useCollection';
 import { NavigationLoadingProvider } from '@/hooks/useNavigationLoading';
+import { NavigationProgress } from '@/components/NavigationProgress';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -17,6 +18,7 @@ export function Providers({ children }: ProvidersProps): React.JSX.Element {
       <NavigationLoadingProvider>
         <UserPreferencesProvider>
           <CollectionProvider>
+            <NavigationProgress />
             {children}
             <Toaster
               position="bottom-center"

@@ -14,7 +14,7 @@ export const SCROLL_POSITION_PREFIX = 'eggo_scroll_';
  * Saves scroll position on forward navigation so browse views can
  * restore it when the user returns.
  */
-export function useViewTransition() {
+export function useNavigation() {
   const router = useRouter();
 
   const navigateTo = useCallback(
@@ -51,21 +51,13 @@ export function useViewTransition() {
     [router]
   );
 
-  /**
-   * Pop browser history. Used by form cancel/save actions where we want
-   * to return to the previous page in history (not the browse view).
-   */
-  const goBack = useCallback(() => {
-    router.back();
-  }, [router]);
-
-  return { navigateTo, navigateBack, goBack, router };
+  return { navigateTo, navigateBack, router };
 }
 
 /**
  * Hook for back navigation only (used by Header component).
  */
 export function useBackNavigation() {
-  const { navigateBack } = useViewTransition();
+  const { navigateBack } = useNavigation();
   return { goBack: navigateBack };
 }
