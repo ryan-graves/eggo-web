@@ -142,22 +142,6 @@ img {
   }
 }
 
-/* View Transitions - quick crossfade for snappy feel */
-@media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 80ms;
-    animation-timing-function: ease-out;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 0ms;
-  }
-}
-
 /* ======================================
    Add Set form: step view transitions
    ====================================== */

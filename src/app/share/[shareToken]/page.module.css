@@ -58,6 +58,52 @@
   flex: 1;
 }
 
+/* View toggle - mirrors authenticated browse layout */
+.toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.viewToggle {
+  display: flex;
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--space-1);
+}
+
+.viewToggleButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.viewToggleButton:hover {
+  color: var(--text-primary);
+}
+
+.viewToggleButton.active {
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.viewToggleButton svg {
+  flex-shrink: 0;
+}
+
 .loading {
   display: flex;
   align-items: center;
@@ -109,5 +155,14 @@
 
   .collectionName {
     font-size: var(--font-size-xs);
+  }
+
+  .viewToggleButton {
+    font-size: var(--font-size-xs);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .viewToggleButton svg {
+    display: none;
   }
 }

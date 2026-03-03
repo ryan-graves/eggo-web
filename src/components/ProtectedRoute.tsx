@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
-import { useTransitionRouter } from 'next-view-transitions';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps): React.JSX.Element {
   const { user, loading } = useAuth();
-  const router = useTransitionRouter();
+  const router = useRouter();
 
   useEffect(() => {
     if (!loading && !user) {

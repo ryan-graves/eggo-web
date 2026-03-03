@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useNavigation } from '@/hooks/useNavigation';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
@@ -20,7 +21,7 @@ const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
 
 function EditSetContent(): React.JSX.Element {
   const params = useParams();
-  const router = useRouter();
+  const { navigateBack, router } = useNavigation();
   const { sets, activeCollection, isInitializing } = useCollection();
 
   const setId = params.id as string;
@@ -130,8 +131,8 @@ function EditSetContent(): React.JSX.Element {
 
     try {
       await deleteSet(setId);
-      // After delete, go back two levels (past set detail to collection)
-      router.push('/home');
+      // After delete, go back to browse view (skip deleted set detail)
+      navigateBack('/home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete set');
       setIsDeleting(false);

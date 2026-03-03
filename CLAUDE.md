@@ -10,7 +10,7 @@ Eggo is a web application for tracking Lego set collections. Built with Next.js 
 - **Language**: TypeScript (strict mode)
 - **UI Library**: React 19
 - **Styling**: CSS Modules + CSS Custom Properties (no Tailwind)
-- **Animations**: View Transitions API (via next-view-transitions)
+- **Animations**: View Transitions API (native, used in add-set form)
 - **Notifications**: Sonner (toast notifications)
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Auth (Google Sign-In)

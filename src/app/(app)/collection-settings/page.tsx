@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigation } from '@/hooks/useNavigation';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { updateCollection, deleteCollection } from '@/lib/firebase';
 import styles from './page.module.css';
 
 function CollectionSettingsContent(): React.JSX.Element {
-  const router = useRouter();
+  const { navigateBack, router } = useNavigation();
   const { activeCollection, isInitializing } = useCollection();
 
   const [name, setName] = useState(activeCollection?.name ?? '');
@@ -74,7 +74,7 @@ function CollectionSettingsContent(): React.JSX.Element {
 
     try {
       await deleteCollection(activeCollection.id);
-      router.push('/home');
+      navigateBack('/home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete collection');
       setIsDeleting(false);

@@ -105,6 +105,8 @@ export interface PublicViewSettings {
   showDateReceived: boolean;
   showOccasion: boolean;
   showNotes: boolean;
+  showStatus: boolean;
+  showHomeView: boolean;
 }
 
 /**

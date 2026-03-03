@@ -1,6 +1,6 @@
 'use client';
 
-import { Link } from 'next-view-transitions';
+import Link from 'next/link';
 import { SetCard } from '@/components/SetCard';
 import type { LegoSet } from '@/types';
 import styles from './SetCarousel.module.css';
@@ -13,6 +13,8 @@ interface SetCarouselProps {
   maxItems?: number;
   /** Extract a detail string from a set for display on each card. */
   getDetail?: (set: LegoSet) => string | undefined;
+  linkPrefix?: string;
+  hideStatus?: boolean;
 }
 
 export function SetCarousel({
@@ -22,6 +24,8 @@ export function SetCarousel({
   emptyMessage = 'No sets to display',
   maxItems,
   getDetail,
+  linkPrefix,
+  hideStatus,
 }: SetCarouselProps): React.JSX.Element {
   const displaySets = maxItems !== undefined ? sets.slice(0, maxItems) : sets;
 
@@ -57,7 +61,7 @@ export function SetCarousel({
           <div className={styles.track}>
             {displaySets.map((set) => (
               <div key={set.id} className={styles.item}>
-                <SetCard set={set} compact detail={getDetail?.(set)} />
+                <SetCard set={set} compact detail={getDetail?.(set)} linkPrefix={linkPrefix} hideStatus={hideStatus} />
               </div>
             ))}
           </div>

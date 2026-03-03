@@ -1,8 +1,7 @@
 'use client';
 
-import { useBackNavigation } from '@/hooks/useViewTransition';
+import { useBackNavigation } from '@/hooks/useNavigation';
 import { useNavigationLoading } from '@/hooks/useNavigationLoading';
-import { LAST_BROWSE_PATH_KEY } from '@/hooks/useViewTransition';
 import styles from './Header.module.css';
 
 interface HeaderProps {
@@ -29,9 +28,7 @@ export function Header({
   const { pendingHref, startNavigation } = useNavigationLoading();
 
   const handleBack = (): void => {
-    const lastBrowsePath =
-      typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(LAST_BROWSE_PATH_KEY) : null;
-    startNavigation(lastBrowsePath || backHref);
+    startNavigation(backHref);
     goBack(backHref);
   };
 

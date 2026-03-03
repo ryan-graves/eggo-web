@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Instrument_Serif } from 'next/font/google';
-import { ViewTransitions } from 'next-view-transitions';
 import { Providers } from '@/components/Providers';
 import './globals.css';
 
@@ -41,12 +40,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>): React.JSX.Element {
   return (
-    <ViewTransitions>
-      <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
-        <body>
-          <Providers>{children}</Providers>
-        </body>
-      </html>
-    </ViewTransitions>
+    <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }

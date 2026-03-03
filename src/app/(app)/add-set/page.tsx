@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, Suspense } from 'react';
 import { flushSync } from 'react-dom';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useNavigation } from '@/hooks/useNavigation';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
@@ -50,7 +50,7 @@ const STAGE_MIN_DURATION: Record<ImageProcessingStage, number> = {
 };
 
 function AddSetContent(): React.JSX.Element {
-  const router = useRouter();
+  const { router } = useNavigation();
   const { activeCollection, isInitializing } = useCollection();
 
   const collectionId = activeCollection?.id ?? '';

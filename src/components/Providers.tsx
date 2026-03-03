@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './AuthProvider';
 import { UserPreferencesProvider } from './UserPreferencesProvider';
@@ -18,8 +18,8 @@ export function Providers({ children }: ProvidersProps): React.JSX.Element {
       <NavigationLoadingProvider>
         <UserPreferencesProvider>
           <CollectionProvider>
-            {children}
             <NavigationProgress />
+            {children}
             <Toaster
               position="bottom-center"
               toastOptions={{

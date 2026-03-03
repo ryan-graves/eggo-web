@@ -30,6 +30,8 @@ const DEFAULT_VIEW_SETTINGS: PublicViewSettings = {
   showDateReceived: true,
   showOccasion: true,
   showNotes: true,
+  showStatus: true,
+  showHomeView: false,
 };
 
 function SettingsContent(): React.JSX.Element {
@@ -287,6 +289,34 @@ function SettingsContent(): React.JSX.Element {
                           className={styles.checkbox}
                         />
                         <span>Notes</span>
+                      </label>
+                      <label className={styles.checkboxLabel}>
+                        <input
+                          type="checkbox"
+                          checked={viewSettings.showStatus}
+                          onChange={(e) => handleViewSettingChange('showStatus', e.target.checked)}
+                          className={styles.checkbox}
+                        />
+                        <span>Set status</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className={styles.viewSettingsSection}>
+                    <p className={styles.viewSettingsTitle}>Views</p>
+                    <p className={styles.viewSettingsDescription}>
+                      Choose which views are available on your public collection.
+                    </p>
+
+                    <div className={styles.viewSettingsOptions}>
+                      <label className={styles.checkboxLabel}>
+                        <input
+                          type="checkbox"
+                          checked={viewSettings.showHomeView}
+                          onChange={(e) => handleViewSettingChange('showHomeView', e.target.checked)}
+                          className={styles.checkbox}
+                        />
+                        <span>Home view (curated sections)</span>
                       </label>
                     </div>
                   </div>

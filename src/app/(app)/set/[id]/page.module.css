@@ -11,23 +11,6 @@
   background-color: var(--surface-background);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .page {
-    animation: slideIn var(--duration-normal) ease-out;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
 .editButton {
   display: flex;
   align-items: center;

@@ -1,35 +1,36 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTransitionRouter } from 'next-view-transitions';
 import { useCallback } from 'react';
 
 /** SessionStorage key for tracking the last browse path */
 export const LAST_BROWSE_PATH_KEY = 'eggo_last_browse_path';
 
+/** SessionStorage key prefix for saving scroll positions per path */
+export const SCROLL_POSITION_PREFIX = 'eggo_scroll_';
+
 /**
- * Hook for navigating with view transitions
- * Uses next-view-transitions for forward navigation (animated)
- * and the standard Next.js router for back navigation (instant)
+ * Hook providing navigation helpers with scroll position tracking.
+ * Saves scroll position on forward navigation so browse views can
+ * restore it when the user returns.
  */
-export function useViewTransition() {
-  const transitionRouter = useTransitionRouter();
+export function useNavigation() {
   const router = useRouter();
 
-  /**
-   * Navigate to a new page with view transition
-   */
   const navigateTo = useCallback(
     (href: string) => {
-      transitionRouter.push(href);
+      sessionStorage.setItem(
+        `${SCROLL_POSITION_PREFIX}${window.location.pathname}`,
+        String(window.scrollY)
+      );
+      router.push(href);
     },
-    [transitionRouter]
+    [router]
   );
 
   /**
-   * Navigate back without view transition for instant response.
-   * Checks sessionStorage for the last browse path, otherwise uses
-   * the fallback href.
+   * Navigate back to the last browse view, or fall back to a given href.
+   * Used by header back buttons and post-delete redirects.
    */
   const navigateBack = useCallback(
     (fallbackHref?: string) => {
@@ -50,13 +51,13 @@ export function useViewTransition() {
     [router]
   );
 
-  return { navigateTo, navigateBack, router: transitionRouter };
+  return { navigateTo, navigateBack, router };
 }
 
 /**
- * Hook for back navigation only (backward compatibility)
+ * Hook for back navigation only (used by Header component).
  */
 export function useBackNavigation() {
-  const { navigateBack } = useViewTransition();
+  const { navigateBack } = useNavigation();
   return { goBack: navigateBack };
 }
