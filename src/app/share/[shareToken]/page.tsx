@@ -37,7 +37,7 @@ function PublicCollectionContent(): React.JSX.Element {
 
   const viewSettings = collection.publicViewSettings;
   const showHomeView = viewSettings?.showHomeView ?? false;
-  const hideStatus = viewSettings ? !viewSettings.showStatus : false;
+  const hideStatus = viewSettings ? !(viewSettings.showStatus ?? true) : false;
   const linkPrefix = `/share/${shareToken}/set`;
 
   return (

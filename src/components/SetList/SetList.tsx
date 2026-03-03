@@ -54,7 +54,7 @@ export function SetList({
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   const hideOwner = viewSettings ? !viewSettings.showOwner : false;
-  const hideStatus = viewSettings ? !viewSettings.showStatus : false;
+  const hideStatus = viewSettings ? !(viewSettings.showStatus ?? true) : false;
 
   // Get unique themes from sets
   const themes = useMemo(() => {
