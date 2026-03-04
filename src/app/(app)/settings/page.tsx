@@ -334,7 +334,7 @@ function SettingsContent(): React.JSX.Element {
             <p className={styles.aboutText}>
               <strong>Eggo</strong> - Lego Collection Manager
             </p>
-            <p className={styles.versionText}>Version 0.1.0</p>
+            <p className={styles.versionText}>Version {process.env.NEXT_PUBLIC_APP_VERSION}</p>
           </div>
         </section>
       </main>
