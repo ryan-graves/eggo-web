@@ -90,12 +90,39 @@ npm run storybook    # Start Storybook
 - Write tests for business logic and user interactions
 - Don't test implementation details
 
+## Versioning
+
+Version is managed automatically. A GitHub Action bumps `package.json` version on every merge to `main` based on commit message prefixes:
+
+- `feat:` → **minor** bump (0.11.2 → 0.12.0)
+- `fix:` → **patch** bump (0.11.2 → 0.11.3)
+- any `<type>!:` (e.g., `feat!:`, `fix!:`, `refactor!:`) or `BREAKING CHANGE` → **major** bump (0.11.2 → 1.0.0)
+- Anything else (`chore:`, `docs:`, `refactor:`, `deps:`) → no bump
+
+Major version bumps should only happen for changes that break backwards compatibility — e.g., a completely new data model, removing/renaming public API routes, or changes that would break the iOS companion app. Most work on this project will be `feat:` or `fix:`.
+
+The version is injected at build time via `next.config.ts` and displayed in Settings > About. Never update the version in `package.json` manually.
+
+### Commit message format
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) prefixes:
+
+```
+feat: add new lego set search        # new feature → minor bump
+fix: correct sort order for themes   # bug fix → patch bump
+feat!: redesign data model           # breaking change → major bump
+chore: update dependencies           # maintenance → no bump
+docs: update API documentation       # documentation → no bump
+refactor: simplify auth flow         # refactoring → no bump
+```
+
 ## AI Development Guidelines
 
 ### DO
 
 - Always run `npm run typecheck` after making changes
 - Run `npm run lint` before committing
+- Use conventional commit prefixes (`feat:`, `fix:`, `chore:`, etc.) — version bumps depend on this
 - Write tests for new functionality
 - Use existing patterns from the codebase
 - Keep changes focused and minimal
