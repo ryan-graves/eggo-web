@@ -1,6 +1,26 @@
 import type { NextConfig } from 'next';
+import packageJson from './package.json';
+
+function getAppVersion(): string {
+  const base = packageJson.version;
+  const context = process.env.CONTEXT; // Netlify: 'production', 'deploy-preview', 'branch-deploy'
+
+  if (context === 'production') {
+    return base;
+  }
+
+  const sha = process.env.COMMIT_REF?.slice(0, 7);
+  if (sha) {
+    return `${base}-dev.${sha}`;
+  }
+
+  return `${base}-local`;
+}
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_VERSION: getAppVersion(),
+  },
   images: {
     remotePatterns: [
       {
