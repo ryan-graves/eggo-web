@@ -8,7 +8,12 @@
 .customizeRow {
   display: flex;
   justify-content: flex-end;
-  padding: 0 var(--layout-content-padding);
+}
+
+@media (max-width: 767px) {
+  .customizeRow {
+    padding: 0 var(--layout-content-padding);
+  }
 }
 
 .customizeButton {
