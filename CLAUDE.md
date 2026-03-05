@@ -41,9 +41,15 @@ src/
 │   ├── image/             # Image processing (background removal)
 │   └── providers/         # External data providers (Brickset/Rebrickable)
 ├── styles/
-│   ├── tokens.css         # Design tokens (colors, spacing, etc.)
-│   └── theme.css          # Semantic theme variables
+│   ├── tokens.css         # Design tokens — Layer 1 primitives + Layer 2 aliases
+│   └── theme.css          # Themed semantic variables (Layer 2)
 └── types/                 # TypeScript type definitions
+specs/                         # Design system specifications (LLM-readable)
+├── foundations/               # Color, spacing, typography, radius, elevation, motion
+├── tokens/                    # Master token reference
+└── components/                # Per-component specs
+scripts/
+└── token-audit.js             # CI-ready audit script for hardcoded values
 ```
 
 ## Development Commands
@@ -69,12 +75,29 @@ npm run storybook    # Start Storybook
 - Export types from dedicated type files, not inline
 - Use explicit return types for functions
 
-### CSS
+### CSS & Design System
 
 - Use CSS Modules for component styles
 - Use semantic CSS variables from `theme.css` (e.g., `var(--text-primary)`)
 - Never use hard-coded colors - always reference tokens or semantic variables
 - Keep specificity low - prefer class selectors
+- **Before writing or modifying any UI code, read the relevant spec file in `specs/`.** Use only tokens from `tokens.css`. Run the token audit script (`node scripts/token-audit.js`) before committing. Zero errors required.
+- **Three-layer token architecture:**
+  - Layer 1 (primitives): Raw values in `tokens.css` (e.g., `--color-gray-500`, `--space-4`)
+  - Layer 2 (semantic aliases): Project-level references in `tokens.css` and `theme.css` (e.g., `--text-primary`, `--surface-background`)
+  - Layer 3 (components): CSS Modules that consume **only Layer 2 aliases**, never raw values
+- **Token rules — no raw values allowed in components:**
+  - Colors: use `--text-*`, `--surface-*`, `--border-*`, `--interactive-*`, `--status-*` tokens
+  - Spacing: use `--space-*` tokens for padding, margin, gap
+  - Typography: use `--font-size-*`, `--font-weight-*`, `--line-height-*`, `--letter-spacing-*`
+  - Border radius: use `--radius-*` tokens
+  - Shadows: use `--shadow-*` tokens
+  - Z-index: use `--z-*` tokens
+  - Opacity: use `--opacity-*` tokens
+  - Motion: use `--duration-*`, `--transition-*`, `--ease-*` tokens
+  - Sizing: use `--size-*`, `--layout-*`, `--max-width-*`, `--min-width-*` tokens
+- **Spec files** live in `specs/` — foundations, tokens, and per-component specs
+- **Audit script**: `node scripts/token-audit.js` scans all CSS for violations (CI-ready, exit code 1 on errors)
 
 ### Components
 

@@ -30,24 +30,24 @@
 }
 
 .tagLabel {
-  opacity: 0.8;
+  opacity: var(--opacity-hover);
 }
 
 .tagValue {
-  max-width: 120px;
+  max-width: var(--max-width-tag);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .removeButton {
-  width: 18px;
-  height: 18px;
+  width: var(--size-icon-sm);
+  height: var(--size-icon-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
-  background-color: rgb(255 255 255 / 0.2);
+  background-color: var(--overlay-light-20);
   color: var(--text-inverse);
   border-radius: var(--radius-full);
   font-size: var(--font-size-sm);
@@ -58,9 +58,9 @@
 }
 
 .removeButton:hover {
-  background-color: rgb(255 255 255 / 0.3);
+  background-color: var(--overlay-light-30);
 }
 
 .removeButton:active {
-  background-color: rgb(255 255 255 / 0.4);
+  background-color: var(--overlay-light-40);
 }

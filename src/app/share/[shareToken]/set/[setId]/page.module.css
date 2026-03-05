@@ -5,7 +5,7 @@
   flex-direction: column;
   padding: calc(var(--space-3) + env(safe-area-inset-top))
     calc(var(--space-3) + env(safe-area-inset-right))
-    calc(56px + env(safe-area-inset-bottom))
+    calc(var(--layout-banner-height) + env(safe-area-inset-bottom))
     calc(var(--space-3) + env(safe-area-inset-left));
   gap: var(--space-3);
   background-color: var(--surface-background);
@@ -31,7 +31,7 @@
 .header {
   position: sticky;
   top: calc(var(--space-3) + env(safe-area-inset-top));
-  z-index: 100;
+  z-index: var(--z-header);
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -68,7 +68,7 @@
 }
 
 .backButton:active {
-  opacity: 0.7;
+  opacity: var(--opacity-active);
 }
 
 .title {
@@ -82,7 +82,7 @@
 }
 
 .main {
-  max-width: 1000px;
+  max-width: var(--max-width-detail);
   margin: 0 auto;
   padding: var(--space-6);
 }
@@ -96,7 +96,7 @@
 
 .imageSection {
   position: sticky;
-  top: calc(var(--space-6) + 60px + env(safe-area-inset-top));
+  top: calc(var(--space-6) + var(--layout-header-height) + env(safe-area-inset-top));
 }
 
 .imageContainer {
@@ -262,7 +262,7 @@
   .page {
     padding: calc(var(--space-2) + env(safe-area-inset-top))
       calc(var(--space-2) + env(safe-area-inset-right))
-      calc(56px + env(safe-area-inset-bottom))
+      calc(var(--layout-banner-height) + env(safe-area-inset-bottom))
       calc(var(--space-2) + env(safe-area-inset-left));
     gap: var(--space-2);
   }
@@ -286,7 +286,7 @@
   }
 
   .imageContainer {
-    max-width: 400px;
+    max-width: var(--max-width-image-mobile);
     margin: 0 auto;
   }
 

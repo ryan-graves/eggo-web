@@ -40,13 +40,13 @@
 
 .btn-default:disabled,
 .btn-small:disabled {
-  opacity: 0.6;
+  opacity: var(--opacity-muted);
   cursor: not-allowed;
 }
 
 .btn-default:active:not(:disabled),
 .btn-small:active:not(:disabled) {
-  opacity: 0.8;
+  opacity: var(--opacity-hover);
 }
 
 /* ==========================================================================

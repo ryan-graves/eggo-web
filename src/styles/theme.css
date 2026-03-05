@@ -1,5 +1,5 @@
 /*
- * Semantic Theme Variables
+ * Semantic Theme Variables (Layer 2 — themed aliases)
  *
  * These variables use semantic names (e.g., "surface", "text-primary")
  * and map to primitive tokens. This allows easy theme switching.
@@ -63,7 +63,7 @@
 
   /* Backgrounds */
   --surface-background: var(--color-gray-50);
-  --surface-primary: #ffffff;
+  --surface-primary: var(--color-white);
   --surface-secondary: var(--color-gray-100);
   --surface-tertiary: var(--color-gray-200);
   --surface-inverse: var(--color-gray-900);
@@ -72,7 +72,7 @@
   --text-primary: var(--color-gray-900);
   --text-secondary: var(--color-gray-600);
   --text-tertiary: var(--color-gray-500);
-  --text-inverse: #ffffff;
+  --text-inverse: var(--color-white);
   --text-link: var(--color-orange-600);
   --text-link-hover: var(--color-orange-500);
 
@@ -111,7 +111,7 @@
     color-scheme: light;
 
     --surface-background: var(--color-gray-50);
-    --surface-primary: #ffffff;
+    --surface-primary: var(--color-white);
     --surface-secondary: var(--color-gray-100);
     --surface-tertiary: var(--color-gray-200);
     --surface-inverse: var(--color-gray-900);
@@ -119,7 +119,7 @@
     --text-primary: var(--color-gray-900);
     --text-secondary: var(--color-gray-600);
     --text-tertiary: var(--color-gray-500);
-    --text-inverse: #ffffff;
+    --text-inverse: var(--color-white);
     --text-link: var(--color-orange-600);
     --text-link-hover: var(--color-orange-500);
 
@@ -162,7 +162,7 @@
 :root[data-ui-theme='mono']:not([data-theme='light']) {
   /* Light buttons with dark text for dark backgrounds */
   --interactive-primary: var(--color-gray-100);
-  --interactive-primary-hover: #ffffff;
+  --interactive-primary-hover: var(--color-white);
   --interactive-primary-bg: rgba(255, 255, 255, 0.1);
   --text-inverse: var(--color-gray-900);
   --text-link: var(--color-gray-300);
@@ -174,9 +174,9 @@
 [data-theme='light'][data-ui-theme='mono'] {
   /* Dark buttons with light text for light backgrounds */
   --interactive-primary: var(--color-gray-900);
-  --interactive-primary-hover: #000000;
+  --interactive-primary-hover: var(--color-black);
   --interactive-primary-bg: rgba(0, 0, 0, 0.05);
-  --text-inverse: #ffffff;
+  --text-inverse: var(--color-white);
   --text-link: var(--color-gray-700);
   --text-link-hover: var(--color-gray-900);
   --border-focus: var(--color-gray-600);
@@ -186,9 +186,9 @@
 @media (prefers-color-scheme: light) {
   :root[data-ui-theme='mono']:not([data-theme='dark']):not([data-theme='light']) {
     --interactive-primary: var(--color-gray-900);
-    --interactive-primary-hover: #000000;
+    --interactive-primary-hover: var(--color-black);
     --interactive-primary-bg: rgba(0, 0, 0, 0.05);
-    --text-inverse: #ffffff;
+    --text-inverse: var(--color-white);
     --text-link: var(--color-gray-700);
     --text-link-hover: var(--color-gray-900);
     --border-focus: var(--color-gray-600);
@@ -203,24 +203,24 @@
 [data-ui-theme='mono'] h5,
 [data-ui-theme='mono'] h6 {
   font-family: var(--font-heading);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: var(--font-weight-normal);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 /* Slightly larger heading sizes with preserved line heights */
 [data-ui-theme='mono'] h1 {
-  font-size: 1.75rem;
-  line-height: 1.2;
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-tight);
 }
 
 [data-ui-theme='mono'] h2 {
-  font-size: 1.25rem;
-  line-height: 1.3;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-snug);
 }
 
 [data-ui-theme='mono'] h3 {
-  font-size: 1.125rem;
-  line-height: 1.4;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-snug);
 }
 
 /* Capsule-shaped buttons in mono theme */
@@ -230,5 +230,5 @@
 [data-ui-theme='mono'] a[class*='Button' i],
 [data-ui-theme='mono'] .btn-default,
 [data-ui-theme='mono'] .btn-small {
-  border-radius: 9999px !important;
+  border-radius: var(--radius-full) !important;
 }

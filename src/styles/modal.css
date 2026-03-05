@@ -17,16 +17,16 @@
 [data-vaul-overlay] {
   position: fixed;
   inset: 0;
-  background-color: rgb(0 0 0 / 0.4);
-  z-index: 100;
+  background-color: var(--overlay-dark);
+  z-index: var(--z-overlay);
 }
 
 [data-vaul-drawer] {
   touch-action: none;
   will-change: transform;
-  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-  animation-duration: 0.5s;
-  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform var(--duration-slower) var(--ease-vaul);
+  animation-duration: var(--duration-slower);
+  animation-timing-function: var(--ease-vaul);
 }
 
 [data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='open'] {
@@ -45,8 +45,8 @@
 }
 
 [data-vaul-overlay][data-vaul-snap-points='false'] {
-  animation-duration: 0.5s;
-  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  animation-duration: var(--duration-slower);
+  animation-timing-function: var(--ease-vaul);
 }
 [data-vaul-overlay][data-vaul-snap-points='false'][data-state='open'] {
   animation-name: fadeIn;
@@ -61,7 +61,7 @@
 
 [data-vaul-overlay][data-vaul-snap-points='true'] {
   opacity: 0;
-  transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: opacity var(--duration-slower) var(--ease-vaul);
 }
 
 [data-vaul-overlay][data-vaul-snap-points='true'] {
@@ -96,12 +96,12 @@
 [data-vaul-handle] {
   display: block;
   position: relative;
-  opacity: 0.7;
-  background: #e2e2e4;
-  margin: 1rem auto 0.25rem;
+  opacity: var(--opacity-active);
+  background: var(--color-gray-300);
+  margin: var(--space-4) auto var(--space-1);
   height: 6px;
-  width: 48px;
-  border-radius: 1rem;
+  width: var(--size-avatar-lg);
+  border-radius: var(--radius-xl);
   touch-action: pan-y;
 }
 
@@ -165,7 +165,7 @@
   max-height: calc(100dvh - 3rem);
   display: flex;
   flex-direction: column;
-  z-index: 101;
+  z-index: var(--z-modal);
   outline: none;
 }
 
@@ -176,7 +176,7 @@
   .modal-sheet {
     bottom: 50%;
     translate: 0 50%;
-    max-width: 600px;
+    max-width: var(--max-width-modal);
     max-height: calc(100dvh - 6rem);
     margin-inline: auto;
     border-radius: var(--radius-xl);
@@ -220,8 +220,8 @@
  * ========================================================================== */
 
 .modal-icon-button {
-  width: 40px;
-  height: 40px;
+  width: var(--size-button-icon);
+  height: var(--size-button-icon);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -244,7 +244,7 @@
 }
 
 .modal-icon-button:active {
-  opacity: 0.7;
+  opacity: var(--opacity-active);
 }
 
 /* ==========================================================================
