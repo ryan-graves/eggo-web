@@ -99,6 +99,8 @@ Version is managed automatically. A GitHub Action bumps `package.json` version o
 - `feat!:` or `BREAKING CHANGE` → **major** bump (0.11.2 → 1.0.0)
 - Anything else (`chore:`, `docs:`, `refactor:`, `deps:`) → no bump
 
+Major version bumps should only happen for changes that break backwards compatibility — e.g., a completely new data model, removing/renaming public API routes, or changes that would break the iOS companion app. Most work on this project will be `feat:` or `fix:`.
+
 The version is injected at build time via `next.config.ts` and displayed in Settings > About. Never update the version in `package.json` manually.
 
 ### Commit message format
@@ -108,6 +110,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) prefixes:
 ```
 feat: add new lego set search        # new feature → minor bump
 fix: correct sort order for themes   # bug fix → patch bump
+feat!: redesign data model           # breaking change → major bump
 chore: update dependencies           # maintenance → no bump
 docs: update API documentation       # documentation → no bump
 refactor: simplify auth flow         # refactoring → no bump

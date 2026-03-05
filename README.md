@@ -76,6 +76,24 @@ npm run storybook    # Start Storybook
 npm run review       # Run code quality checks
 ```
 
+## Versioning
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) and automated version bumping. A GitHub Action runs on every merge to `main` and bumps the version in `package.json` based on the commit message prefix:
+
+| Prefix | Bump | Example |
+|--------|------|---------|
+| `feat:` | Minor (0.11.2 → 0.12.0) | `feat: add set search` |
+| `fix:` | Patch (0.11.2 → 0.11.3) | `fix: correct sort order` |
+| `feat!:` | Major (0.11.2 → 1.0.0) | `feat!: redesign data model` |
+| `chore:`, `docs:`, `refactor:` | None | `chore: update dependencies` |
+
+The version is displayed in Settings > About and varies by environment:
+- **Production** (Netlify): `0.12.0`
+- **Branch deploy** (Netlify): `0.12.0-dev.abc1234`
+- **Local dev**: `0.12.0-local`
+
+No manual version management is needed — just use the right commit prefix.
+
 ## Deployment
 
 This app is configured for deployment on Netlify. See the Netlify dashboard for configuration.
