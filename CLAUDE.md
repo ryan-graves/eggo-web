@@ -96,7 +96,7 @@ Version is managed automatically. A GitHub Action bumps `package.json` version o
 
 - `feat:` → **minor** bump (0.11.2 → 0.12.0)
 - `fix:` → **patch** bump (0.11.2 → 0.11.3)
-- `feat!:` or `BREAKING CHANGE` → **major** bump (0.11.2 → 1.0.0)
+- any `<type>!:` (e.g., `feat!:`, `fix!:`, `refactor!:`) or `BREAKING CHANGE` → **major** bump (0.11.2 → 1.0.0)
 - Anything else (`chore:`, `docs:`, `refactor:`, `deps:`) → no bump
 
 Major version bumps should only happen for changes that break backwards compatibility — e.g., a completely new data model, removing/renaming public API routes, or changes that would break the iOS companion app. Most work on this project will be `feat:` or `fix:`.

@@ -52,5 +52,4 @@ jobs:
           git add package.json package-lock.json
           git commit -m "chore: bump version to ${VERSION}"
           git tag "v${VERSION}"
-          git push
-          git push --tags
+          git push --atomic origin main "v${VERSION}"

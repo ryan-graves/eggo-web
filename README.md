@@ -84,8 +84,8 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) a
 |--------|------|---------|
 | `feat:` | Minor (0.11.2 → 0.12.0) | `feat: add set search` |
 | `fix:` | Patch (0.11.2 → 0.11.3) | `fix: correct sort order` |
-| `feat!:` | Major (0.11.2 → 1.0.0) | `feat!: redesign data model` |
-| `chore:`, `docs:`, `refactor:` | None | `chore: update dependencies` |
+| `<type>!:` | Major (0.11.2 → 1.0.0) | `feat!: redesign data model`, `fix!: change error codes` |
+| `chore:`, `docs:`, `refactor:`, `deps:` | None | `chore: update dependencies` |
 
 The version is displayed in Settings > About and varies by environment:
 - **Production** (Netlify): `0.12.0`
