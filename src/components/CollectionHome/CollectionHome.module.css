@@ -10,7 +10,7 @@
   justify-content: flex-end;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .customizeRow {
     padding: 0 var(--layout-content-padding);
   }
