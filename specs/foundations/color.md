@@ -27,20 +27,20 @@ UI theme is set via `data-ui-theme` attribute. Value: `mono` or unset (baseplate
 
 | Token | Value | Description |
 |-------|-------|-------------|
-| `--color-white` | `#ffffff` |  |
-| `--color-black` | `#000000` |  |
-| `--color-gray-50` | `#fafafa` |  |
+| `--color-white` | `#ffffff` | Pure white |
+| `--color-black` | `#000000` | Pure black |
+| `--color-gray-50` | `#fafafa` | Lightest gray |
 | `--color-gray-100` | `#f4f4f5` |  |
 | `--color-gray-200` | `#e4e4e7` |  |
 | `--color-gray-300` | `#d4d4d8` |  |
 | `--color-gray-400` | `#a1a1aa` |  |
-| `--color-gray-500` | `#71717a` |  |
+| `--color-gray-500` | `#71717a` | Mid gray |
 | `--color-gray-600` | `#52525b` |  |
 | `--color-gray-700` | `#3f3f46` |  |
 | `--color-gray-800` | `#27272a` |  |
-| `--color-gray-850` | `#1f1f23` |  |
+| `--color-gray-850` | `#1f1f23` | Non-standard step |
 | `--color-gray-900` | `#18181b` |  |
-| `--color-gray-950` | `#09090b` |  |
+| `--color-gray-950` | `#09090b` | Darkest gray |
 
 ### Accent — Orange
 
@@ -136,13 +136,13 @@ In mono theme, the interactive and link tokens change based on color mode:
 
 | Token | Value |
 |-------|-------|
-| `--interactive-primary` | `--color-gray-900 (#18181b)` |
-| `--interactive-primary-hover` | `--color-black (#000000)` |
-| `--interactive-primary-bg` | `rgba(0, 0, 0, 0.05)` |
-| `--text-inverse` | `--color-white (#ffffff)` |
-| `--text-link` | `--color-gray-700 (#3f3f46)` |
-| `--text-link-hover` | `--color-gray-900 (#18181b)` |
-| `--border-focus` | `--color-gray-600 (#52525b)` |
+| `--interactive-primary` | `--color-gray-100 (#f4f4f5)` |
+| `--interactive-primary-hover` | `--color-white (#ffffff)` |
+| `--interactive-primary-bg` | `rgba(255, 255, 255, 0.1)` |
+| `--text-inverse` | `--color-gray-900 (#18181b)` |
+| `--text-link` | `--color-gray-300 (#d4d4d8)` |
+| `--text-link-hover` | `--color-gray-100 (#f4f4f5)` |
+| `--border-focus` | `--color-gray-400 (#a1a1aa)` |
 
 ### Mono + Light
 

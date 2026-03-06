@@ -39,7 +39,6 @@ All spacing uses a 4px base unit. Use `--space-*` tokens for padding, margin, an
 |-------|-------|-------|
 | `--layout-content-padding` | `--space-4 (16px)` |  |
 | `--layout-content-padding-mobile` | `--space-4 (16px)` |  |
-| `--layout-content-padding` | `--space-2 (8px)` |  |
 
 ### Header
 

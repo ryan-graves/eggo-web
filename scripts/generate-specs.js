@@ -45,6 +45,7 @@ function parseCSS(filePath) {
   let currentSectionComment = null;
   let braceDepth = 0;
   let inMultiLineComment = false;
+  const selectorStack = []; // track nested selectors (e.g., @media > rule)
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -86,8 +87,18 @@ function parseCSS(filePath) {
     if (trimmed.includes("{") && !trimmed.startsWith("--")) {
       const selectorPart = trimmed.replace(/\s*\{.*$/, "").trim();
       if (selectorPart) pendingSelectorParts.push(selectorPart);
-      currentSelector = pendingSelectorParts.join(" ").trim();
+      const newSelector = pendingSelectorParts.join(" ").trim();
       pendingSelectorParts = [];
+
+      // Push parent selector onto stack for nesting (e.g., @media)
+      if (braceDepth > 0 && currentSelector) {
+        selectorStack.push(currentSelector);
+      }
+
+      // Build full selector with parent context
+      const parentContext = selectorStack.length > 0 ? selectorStack[selectorStack.length - 1] + " >> " : "";
+      currentSelector = parentContext + newSelector;
+
       braceDepth++;
       continue;
     }
@@ -95,16 +106,18 @@ function parseCSS(filePath) {
     // Track closing braces
     if (trimmed === "}") {
       braceDepth--;
-      if (braceDepth <= 0 && currentProps.length > 0) {
+      if (currentProps.length > 0) {
         blocks.push({
           selector: currentSelector,
           props: [...currentProps],
         });
         currentProps = [];
       }
-      if (braceDepth <= 0) {
-        currentSelector = null;
+      // Pop selector stack when exiting nested block
+      if (selectorStack.length > 0 && braceDepth <= selectorStack.length) {
+        selectorStack.pop();
       }
+      currentSelector = selectorStack.length > 0 ? selectorStack[selectorStack.length - 1] : null;
       continue;
     }
 
@@ -113,8 +126,8 @@ function parseCSS(filePath) {
       pendingSelectorParts.push(trimmed);
       continue;
     }
-    // Lines that look like selectors without { (e.g., part of multi-line selector)
-    if (braceDepth === 0 && !trimmed.startsWith("--") && !trimmed.includes(":") && /^[\[\]:.\w#@*>+~,\s'-]+$/.test(trimmed) && trimmed.length > 0) {
+    // Also handle partial selectors inside @media blocks
+    if (braceDepth > 0 && trimmed.endsWith(",") && !trimmed.startsWith("--")) {
       pendingSelectorParts.push(trimmed);
       continue;
     }
@@ -158,6 +171,9 @@ function parseTokens() {
 
   let inLayer2 = false;
   for (const block of tokensBlocks) {
+    // Skip @media override blocks (e.g., mobile overrides) — those are responsive adjustments
+    if (block.selector && block.selector.includes("@media")) continue;
+
     for (const prop of block.props) {
       // Detect Layer 2 boundary by section comment
       if (
@@ -189,30 +205,44 @@ function parseTokens() {
   for (const block of themeBlocks) {
     const sel = block.selector || "";
 
+    // Helper: extract the innermost selector (after >>)
+    const innerSel = sel.includes(" >> ") ? sel.split(" >> ").pop() : sel;
+    // Helper: check if wrapped in @media (prefers-color-scheme: light)
+    const inLightMedia = sel.includes("prefers-color-scheme: light");
+    // Helper: check for positive (non-:not) attribute selector matches
+    // Strips :not(...) wrappers before checking for attribute presence
+    const selWithoutNot = innerSel.replace(/:not\([^)]*\)/g, "");
+
     // Mono theme overrides (check these first — they're more specific)
-    if (sel.includes("data-ui-theme='mono'")) {
-      if (
-        sel.includes("data-theme='dark'") ||
-        sel.includes(":not([data-theme='light'])")
+    if (innerSel.includes("data-ui-theme='mono'")) {
+      // Mono dark: explicit dark selector (not inside :not), or system dark default
+      if (selWithoutNot.includes("[data-theme='dark']")) {
+        for (const p of block.props) monoTokens.dark.set(p.name, p.value);
+      // Mono dark default: :not(light) in non-light-media context
+      } else if (
+        !inLightMedia && innerSel.includes(":not([data-theme='light'])")
       ) {
         for (const p of block.props) monoTokens.dark.set(p.name, p.value);
-      } else if (sel.includes("data-theme='light'")) {
-        for (const p of block.props) monoTokens.light.set(p.name, p.value);
-      } else if (sel.includes("prefers-color-scheme: light")) {
+      // Mono light: explicit light selector, or system-preference-light media query
+      } else if (
+        selWithoutNot.includes("[data-theme='light']") ||
+        inLightMedia
+      ) {
         for (const p of block.props) monoTokens.light.set(p.name, p.value);
       }
       continue;
     }
 
     // Dark theme: :root (default), :root + [data-theme='dark'], or explicit dark
+    // Use selWithoutNot to avoid matching :not() wrappers
     const isDark =
-      sel === ":root" ||
-      sel.includes(":root,") ||
-      (sel.includes("data-theme='dark'") && !sel.includes("data-theme='light'"));
+      innerSel === ":root" ||
+      innerSel.includes(":root,") ||
+      (selWithoutNot.includes("[data-theme='dark']") && !inLightMedia);
     // Light theme: explicit light or system preference light
     const isLight =
-      sel.includes("data-theme='light'") ||
-      sel.includes("prefers-color-scheme: light");
+      selWithoutNot.includes("[data-theme='light']") ||
+      inLightMedia;
 
     if (isDark) {
       for (const p of block.props) darkTokens.set(p.name, p);
@@ -686,6 +716,16 @@ function generateColorSpec(tokens) {
   lines.push("");
   lines.push("UI theme is set via `data-ui-theme` attribute. Value: `mono` or unset (baseplate).");
 
+  // Annotations for neutral colors
+  const colorNotes = {
+    "--color-white": "Pure white",
+    "--color-black": "Pure black",
+    "--color-gray-50": "Lightest gray",
+    "--color-gray-500": "Mid gray",
+    "--color-gray-850": "Non-standard step",
+    "--color-gray-950": "Darkest gray",
+  };
+
   // Primitive palette sections
   const colorSections = {
     "Colors: Neutral": { title: "Neutrals", hasNotes: true },
@@ -716,7 +756,8 @@ function generateColorSpec(tokens) {
     }
 
     if (sectionDef.hasNotes) {
-      lines.push(`| \`${prim.name}\` | \`${prim.value}\` | ${prim.inlineComment || ""} |`);
+      const desc = prim.inlineComment || colorNotes[prim.name] || "";
+      lines.push(`| \`${prim.name}\` | \`${prim.value}\` | ${desc} |`);
     } else {
       lines.push(`| \`${prim.name}\` | \`${prim.value}\` |`);
     }
