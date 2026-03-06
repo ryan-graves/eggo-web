@@ -19,12 +19,12 @@
 }
 
 .card:active {
-  opacity: 0.7;
+  opacity: var(--opacity-active);
 }
 
 /* Persistent loading state while navigation is pending */
 .cardLoading {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   pointer-events: none;
 }
 
@@ -37,8 +37,8 @@
 }
 
 .card:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
+  outline: var(--outline-width) solid var(--border-focus);
+  outline-offset: var(--outline-offset);
 }
 
 .imageContainer {
@@ -61,11 +61,11 @@
   position: absolute;
   top: var(--space-2);
   right: var(--space-2);
-  width: 8px;
-  height: 8px;
+  width: var(--size-dot);
+  height: var(--size-dot);
   border-radius: var(--radius-full);
   background-color: var(--status-error);
-  z-index: 1;
+  z-index: var(--z-above);
 }
 
 .placeholder {
@@ -116,8 +116,8 @@
 /* Status badges use global .status-badge-sm / .status-* classes from status.css */
 
 .owner {
-  font-size: 0.625rem;
-  padding: 0.125rem var(--space-1);
+  font-size: var(--font-size-2xs);
+  padding: var(--space-0-5) var(--space-1);
   background-color: transparent;
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-sm);

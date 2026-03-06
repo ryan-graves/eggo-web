@@ -16,8 +16,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: var(--size-button-icon);
+  height: var(--size-button-icon);
   padding: 0;
   background-color: var(--interactive-primary);
   border: none;
@@ -32,7 +32,7 @@
 }
 
 .main {
-  max-width: 1000px;
+  max-width: var(--max-width-detail);
   margin: 0 auto;
   padding: var(--space-6);
 }
@@ -46,7 +46,7 @@
 
 .imageSection {
   position: sticky;
-  top: calc(var(--space-6) + 60px);
+  top: calc(var(--space-6) + var(--layout-header-height));
 }
 
 .imageContainer {
@@ -67,7 +67,7 @@
     var(--surface-secondary) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  animation: shimmer var(--duration-shimmer) ease-in-out infinite;
 }
 
 /* shimmer keyframes defined in globals.css */
@@ -126,11 +126,11 @@
 }
 
 .imageBannerButton:hover:not(:disabled) {
-  background-color: rgb(239 68 68 / 0.1);
+  background-color: var(--status-error-bg);
 }
 
 .imageBannerButton:disabled {
-  opacity: 0.6;
+  opacity: var(--opacity-muted);
   cursor: not-allowed;
 }
 
@@ -290,7 +290,7 @@
   }
 
   .imageContainer {
-    max-width: 400px;
+    max-width: var(--max-width-image-mobile);
     margin: 0 auto;
   }
 
