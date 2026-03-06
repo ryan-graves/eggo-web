@@ -45,11 +45,12 @@ src/
 │   └── theme.css          # Themed semantic variables (Layer 2)
 └── types/                 # TypeScript type definitions
 specs/                         # Design system specifications (LLM-readable)
-├── foundations/               # Color, spacing, typography, radius, elevation, motion
-├── tokens/                    # Master token reference
-└── components/                # Per-component specs
+├── foundations/               # Auto-generated from tokens.css + theme.css
+├── tokens/                    # Auto-generated master token reference
+└── components/                # Per-component specs (hand-authored)
 scripts/
-└── token-audit.js             # CI-ready audit script for hardcoded values
+├── token-audit.js             # CI-ready audit script for hardcoded values
+└── generate-specs.js          # Auto-generates token-reference.md + foundation specs
 ```
 
 ## Development Commands
@@ -64,6 +65,8 @@ npm run test         # Run Jest tests
 npm run test:watch   # Jest in watch mode
 npm run e2e          # Run Playwright tests
 npm run storybook    # Start Storybook
+npm run generate-specs        # Regenerate token-reference + foundation specs from CSS
+npm run generate-specs:check  # CI: verify generated specs match CSS (exit 1 if stale)
 ```
 
 ## Code Style Guidelines
@@ -96,8 +99,10 @@ npm run storybook    # Start Storybook
   - Opacity: use `--opacity-*` tokens
   - Motion: use `--duration-*`, `--transition-*`, `--ease-*` tokens
   - Sizing: use `--size-*`, `--layout-*`, `--max-width-*`, `--min-width-*` tokens
-- **Spec files** live in `specs/` — foundations, tokens, and per-component specs
+- **Spec files** live in `specs/` — foundations and token-reference are **auto-generated** from `tokens.css` + `theme.css`; component specs are hand-authored
+- **After modifying tokens.css or theme.css**, run `npm run generate-specs` to regenerate spec docs, then commit the updated specs
 - **Audit script**: `node scripts/token-audit.js` scans all CSS for violations (CI-ready, exit code 1 on errors)
+- **Spec freshness check**: `npm run generate-specs:check` verifies generated specs match CSS (CI-ready, exit code 1 if stale)
 
 ### Components
 
