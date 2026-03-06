@@ -3,7 +3,10 @@
  *
  * Layer 1: Primitive tokens — raw design values (colors, spacing, type scale).
  * Layer 2: Semantic aliases — project-level references to Layer 1 with fallbacks.
- * Layer 3: Components consume ONLY Layer 2 aliases, never raw values.
+ * Layer 3: Components — consume Layer 2 semantic aliases for themed values (colors,
+ *          shadows, interactive states). Scale tokens (--space-*, --font-size-*,
+ *          --radius-*, --font-weight-*, --line-height-*, --letter-spacing-*) may be
+ *          used directly since they don't change with theme or color mode.
  *
  * Naming convention:
  *   Layer 1  →  --color-gray-500, --space-4, --font-size-sm
@@ -14,7 +17,8 @@
 :root {
   /* ==========================================================================
    * LAYER 1 — Primitive Tokens
-   * Raw design values. Never reference these directly in components.
+   * Raw design values. Color primitives must go through Layer 2 semantic aliases.
+   * Scale tokens (spacing, typography, radius) may be used directly in components.
    * ========================================================================== */
 
   /* ---- Colors: Neutral ---- */
@@ -177,8 +181,8 @@
   --size-toggle-width: 44px;
   --size-toggle-height: 24px;
   --size-toggle-knob: 20px;
-  --toggle-knob-inset: 2px;
-  --toggle-knob-offset: 20px;
+  --toggle-knob-inset: var(--space-0-5);
+  --toggle-knob-offset: var(--space-5);
 
   /* ---- Sizing: Checkbox ---- */
   --size-checkbox: 18px;
@@ -255,7 +259,7 @@
   --size-modal-handle: var(--size-avatar-lg);
 
   /* ---- Form ---- */
-  --form-input-height: 40px;
+  --form-input-height: var(--size-button-icon);
   --form-textarea-min-height: 60px;
 
   /* ---- Focus Ring ---- */

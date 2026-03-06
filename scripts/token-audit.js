@@ -72,6 +72,7 @@ const OPACITY_MAP = {
 };
 
 const Z_INDEX_MAP = {
+  "0": ["--z-base"],
   "1": ["--z-above"],
   "50": ["--z-dropdown"],
   "90": ["--z-sticky"],
@@ -105,9 +106,9 @@ const RULES = [
       const primitive = COLOR_HEX_MAP[lower];
       return `use a semantic token (Layer 2) — maps to ${primitive}`;
     },
-    skipIf(line, match) {
+    skipIf(line, match, matchIndex) {
       // Skip if inside a var() fallback: var(--something, #hex)
-      if (/var\([^)]*$/.test(line.slice(0, line.indexOf(match)))) return true;
+      if (/var\([^)]*$/.test(line.slice(0, matchIndex))) return true;
       // Skip if in a CSS custom property definition (token file would be excluded anyway)
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
       // Skip if in a data URI
@@ -125,11 +126,10 @@ const RULES = [
     suggest() {
       return "use a semantic color token or overlay token";
     },
-    skipIf(line, match) {
+    skipIf(line, match, matchIndex) {
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
       if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
       // Skip if inside a var() fallback
-      const matchIndex = line.indexOf(match);
       if (matchIndex > 0 && /var\([^)]*$/.test(line.slice(0, matchIndex)))
         return true;
       return false;
@@ -331,7 +331,7 @@ function scanFile(filePath) {
 
       while ((match = rule.pattern.exec(line)) !== null) {
         // Check skip conditions
-        if (rule.skipIf && rule.skipIf(line, match[0])) continue;
+        if (rule.skipIf && rule.skipIf(line, match[0], match.index)) continue;
 
         // Skip values inside @keyframes
         if (

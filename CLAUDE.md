@@ -88,12 +88,12 @@ npm run generate-specs:check  # CI: verify generated specs match CSS (exit 1 if 
 - **Three-layer token architecture:**
   - Layer 1 (primitives): Raw values in `tokens.css` (e.g., `--color-gray-500`, `--space-4`)
   - Layer 2 (semantic aliases): Project-level references in `tokens.css` and `theme.css` (e.g., `--text-primary`, `--surface-background`)
-  - Layer 3 (components): CSS Modules that consume **only Layer 2 aliases**, never raw values
-- **Token rules — no raw values allowed in components:**
-  - Colors: use `--text-*`, `--surface-*`, `--border-*`, `--interactive-*`, `--status-*` tokens
-  - Spacing: use `--space-*` tokens for padding, margin, gap
-  - Typography: use `--font-size-*`, `--font-weight-*`, `--line-height-*`, `--letter-spacing-*`
-  - Border radius: use `--radius-*` tokens
+  - Layer 3 (components): CSS Modules that consume Layer 2 aliases for themed values. Scale tokens (`--space-*`, `--font-size-*`, `--radius-*`, etc.) may be used directly since they don't change with theme.
+- **Token rules — no hardcoded raw values in components:**
+  - Colors: use Layer 2 semantic tokens (`--text-*`, `--surface-*`, `--border-*`, `--interactive-*`, `--status-*`) — never use hex/rgb directly
+  - Spacing: use `--space-*` scale tokens for padding, margin, gap
+  - Typography: use `--font-size-*`, `--font-weight-*`, `--line-height-*`, `--letter-spacing-*` scale tokens
+  - Border radius: use `--radius-*` scale tokens
   - Shadows: use `--shadow-*` tokens
   - Z-index: use `--z-*` tokens
   - Opacity: use `--opacity-*` tokens

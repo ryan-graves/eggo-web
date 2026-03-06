@@ -60,7 +60,7 @@
 }
 
 .trigger:focus-visible {
-  outline: var(--border-width-medium) solid var(--border-focus);
+  outline: var(--outline-width) solid var(--border-focus);
   outline-offset: var(--outline-offset);
 }
 

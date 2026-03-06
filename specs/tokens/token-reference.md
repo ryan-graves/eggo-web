@@ -308,8 +308,8 @@ Components (Layer 3) reference Layer 2 semantic aliases. Never reference Layer 1
 | `--size-toggle-width` | `44px` |  |
 | `--size-toggle-height` | `24px` |  |
 | `--size-toggle-knob` | `20px` |  |
-| `--toggle-knob-inset` | `2px` |  |
-| `--toggle-knob-offset` | `20px` |  |
+| `--toggle-knob-inset` | `var(--space-0-5) (2px)` |  |
+| `--toggle-knob-offset` | `var(--space-5) (20px)` |  |
 
 ---
 
@@ -443,7 +443,7 @@ Components (Layer 3) reference Layer 2 semantic aliases. Never reference Layer 1
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--form-input-height` | `40px` |  |
+| `--form-input-height` | `var(--size-button-icon) (40px)` |  |
 | `--form-textarea-min-height` | `60px` |  |
 
 ---
