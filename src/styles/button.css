@@ -46,7 +46,7 @@
 
 .btn-default:active:not(:disabled),
 .btn-small:active:not(:disabled) {
-  opacity: var(--opacity-hover);
+  opacity: var(--opacity-active);
 }
 
 /* ==========================================================================

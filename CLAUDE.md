@@ -81,7 +81,7 @@ npm run storybook    # Start Storybook
 - Use semantic CSS variables from `theme.css` (e.g., `var(--text-primary)`)
 - Never use hard-coded colors - always reference tokens or semantic variables
 - Keep specificity low - prefer class selectors
-- **Before writing or modifying any UI code, read the relevant spec file in `specs/`.** Use only tokens from `tokens.css`. Run the token audit script (`node scripts/token-audit.js`) before committing. Zero errors required.
+- **Before writing or modifying any UI code, read the relevant spec file in `specs/`.** Use only design tokens from `tokens.css` (Layer 1 primitives) and `theme.css` (Layer 2 semantic aliases). Run the token audit script (`node scripts/token-audit.js`) before committing. Zero errors required.
 - **Three-layer token architecture:**
   - Layer 1 (primitives): Raw values in `tokens.css` (e.g., `--color-gray-500`, `--space-4`)
   - Layer 2 (semantic aliases): Project-level references in `tokens.css` and `theme.css` (e.g., `--text-primary`, `--surface-background`)

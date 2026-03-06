@@ -28,7 +28,7 @@
 | --font-weight-medium | font weight | 500 |
 | --transition-fast | all transitions | 150ms ease-out |
 | --opacity-muted | disabled opacity | 0.6 |
-| --opacity-hover | active press opacity | 0.8 |
+| --opacity-active | active press opacity | 0.7 |
 
 ## Sizes
 
@@ -54,7 +54,7 @@
 ## States
 - **Default**: Variant-specific background and text color
 - **Hover**: Variant-specific hover background (`:hover:not(:disabled)`)
-- **Active**: `opacity: 0.8` (`:active:not(:disabled)`)
+- **Active**: `opacity: var(--opacity-active)` = 0.7 (`:active:not(:disabled)`)
 - **Disabled**: `opacity: 0.6`, `cursor: not-allowed`
 
 ## Code Example

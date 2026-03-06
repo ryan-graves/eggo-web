@@ -72,13 +72,13 @@ const OPACITY_MAP = {
 };
 
 const Z_INDEX_MAP = {
-  "1": "--z-above",
-  "50": "--z-dropdown",
-  "90": "--z-sticky",
-  "100": "--z-header",
-  "101": "--z-modal",
-  "1000": "--z-banner",
-  "9999": "--z-progress",
+  "1": ["--z-above"],
+  "50": ["--z-dropdown"],
+  "90": ["--z-sticky"],
+  "100": ["--z-header", "--z-overlay"],
+  "101": ["--z-modal"],
+  "1000": ["--z-banner"],
+  "9999": ["--z-progress"],
 };
 
 // ============================================================================
@@ -119,14 +119,18 @@ const RULES = [
   {
     name: "hardcoded-rgb-color",
     pattern:
-      /(?<!var\([^)]*)rgba?\(\s*\d+[\s,]+\d+[\s,]+\d+(?:[\s,/]+[\d.]+%?)?\s*\)/g,
+      /rgba?\(\s*\d+[\s,]+\d+[\s,]+\d+(?:[\s,/]+[\d.]+%?)?\s*\)/g,
     severity: "error",
     suggest() {
       return "use a semantic color token or overlay token";
     },
-    skipIf(line) {
+    skipIf(line, match) {
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
       if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      // Skip if inside a var() fallback
+      const matchIndex = line.indexOf(match);
+      if (matchIndex > 0 && /var\([^)]*$/.test(line.slice(0, matchIndex)))
+        return true;
       return false;
     },
   },
@@ -154,9 +158,11 @@ const RULES = [
     severity: "error",
     suggest(match) {
       const val = match.match(/(\d+)/)?.[1];
-      return Z_INDEX_MAP[val]
-        ? `var(${Z_INDEX_MAP[val]})`
-        : "define a z-index token";
+      const tokens = Z_INDEX_MAP[val];
+      if (!tokens) return "define a z-index token";
+      return tokens.length === 1
+        ? `var(${tokens[0]})`
+        : `var(${tokens.join(") or var(")})`;
     },
     skipIf(line) {
       if (/z-index\s*:\s*var\(/.test(line)) return true;
@@ -292,15 +298,18 @@ function findCSSFiles(dir) {
 }
 
 function isInsideKeyframes(lines, lineIndex) {
-  // Walk backwards to see if we're inside a @keyframes block
+  // Walk backwards tracking brace depth to determine if lineIndex is inside @keyframes
   let braceDepth = 0;
   for (let i = lineIndex; i >= 0; i--) {
     const line = lines[i];
     const closeBraces = (line.match(/\}/g) || []).length;
     const openBraces = (line.match(/\{/g) || []).length;
     braceDepth += closeBraces - openBraces;
-    if (braceDepth < 0 && /@keyframes/.test(line)) return true;
-    if (/@keyframes/.test(line)) return true;
+    // When braceDepth goes negative, we've found an enclosing block opener.
+    // Check if that opener is a @keyframes declaration.
+    if (braceDepth < 0) {
+      return /@keyframes/.test(line);
+    }
   }
   return false;
 }
