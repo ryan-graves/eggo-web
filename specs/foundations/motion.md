@@ -34,6 +34,8 @@ Combines duration and easing into a single token for use with the CSS `transitio
 
 ## Opacity Scale
 
+Opacity tokens are Layer 2 non-themed aliases defined in `tokens.css` (not `theme.css`) because they are identical in light and dark modes.
+
 | Token | Value | Usage |
 |-------|-------|-------|
 | `--opacity-disabled` | `0.5` | Disabled controls |

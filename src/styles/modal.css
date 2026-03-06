@@ -97,10 +97,10 @@
   display: block;
   position: relative;
   opacity: var(--opacity-active);
-  background: var(--color-gray-300);
+  background: var(--modal-handle-bg);
   margin: var(--space-4) auto var(--space-1);
   height: 6px;
-  width: var(--size-avatar-lg);
+  width: var(--size-modal-handle);
   border-radius: var(--radius-xl);
   touch-action: pan-y;
 }

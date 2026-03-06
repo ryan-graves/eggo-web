@@ -151,8 +151,8 @@
   --z-dropdown: 50;
   --z-sticky: 90;
   --z-header: 100;
-  --z-overlay: 100;
-  --z-modal: 101;
+  --z-overlay: 200;
+  --z-modal: 201;
   --z-banner: 1000;
   --z-progress: 9999;
 
@@ -250,6 +250,9 @@
   --button-font-size-small: var(--font-size-xs);
   --button-gap: var(--space-2);
   --button-radius: var(--radius-md);
+
+  /* ---- Modal ---- */
+  --size-modal-handle: var(--size-avatar-lg);
 
   /* ---- Form ---- */
   --form-input-height: 40px;

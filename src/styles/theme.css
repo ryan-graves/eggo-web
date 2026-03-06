@@ -52,6 +52,13 @@
   --status-error-bg: rgba(239, 68, 68, 0.15);
   --status-info-bg: rgba(59, 130, 246, 0.15);
 
+  /* Status: Unopened (neutral variant, themed) */
+  --status-unopened-bg: var(--color-gray-700);
+  --status-unopened: var(--color-gray-200);
+
+  /* Modal handle */
+  --modal-handle-bg: var(--color-gray-300);
+
   /* Shadows */
   --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
   --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
@@ -100,6 +107,13 @@
   --status-error-bg: #fee2e2;
   --status-info-bg: #dbeafe;
 
+  /* Status: Unopened (neutral variant, themed) */
+  --status-unopened-bg: var(--color-gray-200);
+  --status-unopened: var(--color-gray-700);
+
+  /* Modal handle */
+  --modal-handle-bg: var(--color-gray-300);
+
   /* Shadows */
   --shadow-card: var(--shadow-md);
   --shadow-dropdown: var(--shadow-lg);
@@ -137,6 +151,11 @@
     --status-warning-bg: #fef3c7;
     --status-error-bg: #fee2e2;
     --status-info-bg: #dbeafe;
+
+    --status-unopened-bg: var(--color-gray-200);
+    --status-unopened: var(--color-gray-700);
+
+    --modal-handle-bg: var(--color-gray-300);
 
     --shadow-card: var(--shadow-md);
     --shadow-dropdown: var(--shadow-lg);

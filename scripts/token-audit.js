@@ -75,8 +75,9 @@ const Z_INDEX_MAP = {
   "1": ["--z-above"],
   "50": ["--z-dropdown"],
   "90": ["--z-sticky"],
-  "100": ["--z-header", "--z-overlay"],
-  "101": ["--z-modal"],
+  "100": ["--z-header"],
+  "200": ["--z-overlay"],
+  "201": ["--z-modal"],
   "1000": ["--z-banner"],
   "9999": ["--z-progress"],
 };
@@ -100,9 +101,9 @@ const RULES = [
     severity: "error",
     suggest(match) {
       const lower = match.toLowerCase();
-      return COLOR_HEX_MAP[lower]
-        ? `var(${COLOR_HEX_MAP[lower]})`
-        : "use a token from tokens.css";
+      if (!COLOR_HEX_MAP[lower]) return "use a semantic color token";
+      const primitive = COLOR_HEX_MAP[lower];
+      return `use a semantic token (Layer 2) — maps to ${primitive}`;
     },
     skipIf(line, match) {
       // Skip if inside a var() fallback: var(--something, #hex)

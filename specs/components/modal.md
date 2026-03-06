@@ -42,7 +42,8 @@
 | --opacity-active | icon button active state | 0.7 |
 | --duration-slower | open/close animation duration | 500ms |
 | --ease-vaul | animation easing | cubic-bezier(0.32, 0.72, 0, 1) |
-| --color-gray-300 | handle color | #d4d4d8 |
+| --modal-handle-bg | handle color | (themed) |
+| --size-modal-handle | handle width | var(--size-avatar-lg) = 48px |
 
 ## Layout Behavior
 

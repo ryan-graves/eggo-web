@@ -21,9 +21,8 @@
 | --space-1, --space-2 | default padding | 4px 8px |
 | --space-0-5, --space-1 | small padding | 2px 4px |
 | --radius-sm | border radius | 6px |
-| --color-gray-200 | unopened bg (light) | #e4e4e7 |
-| --color-gray-700 | unopened text (light) / unopened bg (dark) | #3f3f46 |
-| --color-gray-200 | unopened text (dark) | #e4e4e7 |
+| --status-unopened-bg | unopened bg | (themed) |
+| --status-unopened | unopened text | (themed) |
 | --status-info-bg | in_progress / rebuild bg | (themed) |
 | --status-info | in_progress / rebuild text | (themed) |
 | --status-success-bg | assembled bg | (themed) |
@@ -42,15 +41,14 @@
 
 | Status | Class | Background | Text |
 |--------|-------|-----------|------|
-| Unopened | `.status-unopened` | --color-gray-200 | --color-gray-700 |
+| Unopened | `.status-unopened` | --status-unopened-bg | --status-unopened |
 | In Progress | `.status-in_progress` | --status-info-bg | --status-info |
 | Rebuild In Progress | `.status-rebuild_in_progress` | --status-info-bg | --status-info |
 | Assembled | `.status-assembled` | --status-success-bg | --status-success |
 | Disassembled | `.status-disassembled` | --status-warning-bg | --status-warning |
 
 ## Dark Mode
-- Unopened badge inverts: --color-gray-700 bg, --color-gray-200 text
-- Other status variants handled by themed semantic variables
+- All status variants (including unopened) handled by themed semantic variables in theme.css
 
 ## States
 - **Default**: static display only, no interactive states
