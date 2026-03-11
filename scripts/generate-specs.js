@@ -627,21 +627,29 @@ function generateTokenReference(tokens) {
       const px = remToPx(p.value);
       if (px) displayValue += ` (${px})`;
 
-      // For var() references, try to add resolved px
-      const varMatch = p.value.match(/var\((--[\w-]+)\)/);
-      if (varMatch) {
-        const refName = varMatch[1];
-        // Try to find the referenced token's px value in our known tokens
-        const refProp = [...(tokens.primitives || []), ...(tokens.semanticNonThemed || [])].find(
-          (t) => t.name === refName
-        );
-        if (refProp) {
-          const refPx = remToPx(refProp.value);
-          if (refPx) {
-            displayValue = `${escapeForTable(p.value)} (${refPx})`;
-          } else if (refProp.value && !refProp.value.includes("var(")) {
-            displayValue = `${escapeForTable(p.value)} (${refProp.value})`;
+      // For var() references, try to add resolved px (supports multi-value tokens)
+      const varMatches = [...p.value.matchAll(/var\((--[\w-]+)\)/g)];
+      if (varMatches.length > 0) {
+        const allTokens = [...(tokens.primitives || []), ...(tokens.semanticNonThemed || [])];
+        const resolvedParts = [];
+        let allResolved = true;
+        for (const vm of varMatches) {
+          const refProp = allTokens.find((t) => t.name === vm[1]);
+          if (refProp) {
+            const refPx = remToPx(refProp.value);
+            if (refPx) {
+              resolvedParts.push(refPx);
+            } else if (refProp.value && !refProp.value.includes("var(")) {
+              resolvedParts.push(refProp.value);
+            } else {
+              allResolved = false;
+            }
+          } else {
+            allResolved = false;
           }
+        }
+        if (allResolved && resolvedParts.length > 0) {
+          displayValue = `${escapeForTable(p.value)} (${resolvedParts.join(" ")})`;
         }
       }
 
@@ -955,16 +963,21 @@ function generateSpacingSpec(tokens) {
     );
     for (const p of matching) {
       let displayVal = p.value;
-      // Resolve var refs to show px
-      const varMatch = p.value.match(/var\((--[\w-]+)\)/);
-      if (varMatch) {
-        const ref = [...tokens.primitives, ...tokens.semanticNonThemed].find(
-          (t) => t.name === varMatch[1]
-        );
-        if (ref) {
-          const refPx = remToPx(ref.value);
-          if (refPx) displayVal = `${varMatch[1]} (${refPx})`;
+      // Resolve all var() refs to show px values
+      const varMatches = [...p.value.matchAll(/var\((--[\w-]+)\)/g)];
+      if (varMatches.length > 0) {
+        const allTokens = [...tokens.primitives, ...tokens.semanticNonThemed];
+        const parts = [];
+        for (const vm of varMatches) {
+          const ref = allTokens.find((t) => t.name === vm[1]);
+          if (ref) {
+            const refPx = remToPx(ref.value);
+            parts.push(refPx ? `${vm[1]} (${refPx})` : vm[1]);
+          } else {
+            parts.push(vm[1]);
+          }
         }
+        displayVal = parts.join(" ");
       }
       lines.push(`| \`${p.name}\` | \`${escapeForTable(displayVal)}\` | ${p.inlineComment || ""} |`);
     }

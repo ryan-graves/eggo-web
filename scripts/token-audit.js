@@ -113,8 +113,9 @@ const RULES = [
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
       // Skip if in a data URI
       if (/url\(/.test(line)) return true;
-      // Skip if in a comment
+      // Skip if in a comment (line-start or inline)
       if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
   },
@@ -129,6 +130,7 @@ const RULES = [
     skipIf(line, match, matchIndex) {
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
       if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       // Skip if inside a var() fallback
       if (matchIndex > 0 && /var\([^)]*$/.test(line.slice(0, matchIndex)))
         return true;
@@ -296,6 +298,15 @@ function findCSSFiles(dir) {
     }
   }
   return results;
+}
+
+function isInsideInlineComment(line, matchIndex) {
+  // Check if matchIndex falls after a /* with no closing */ before it
+  const before = line.slice(0, matchIndex);
+  const lastOpen = before.lastIndexOf("/*");
+  if (lastOpen === -1) return false;
+  const lastClose = before.lastIndexOf("*/");
+  return lastClose < lastOpen;
 }
 
 function isInsideKeyframes(lines, lineIndex) {

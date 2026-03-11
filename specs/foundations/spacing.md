@@ -44,9 +44,9 @@ All spacing uses a 4px base unit. Use `--space-*` tokens for padding, margin, an
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--layout-header-padding` | `--space-3 (12px)` |  |
-| `--layout-header-padding-mobile` | `--space-2 (8px)` |  |
-| `--layout-header-button-size` | `var(--size-button-icon)` |  |
+| `--layout-header-padding` | `--space-3 (12px) --space-4 (16px)` |  |
+| `--layout-header-padding-mobile` | `--space-2 (8px) --space-3 (12px)` |  |
+| `--layout-header-button-size` | `--size-button-icon` |  |
 | `--layout-header-radius` | `--radius-2xl (20px)` |  |
 | `--layout-header-height` | `60px` |  |
 | `--layout-banner-height` | `56px` |  |

@@ -400,8 +400,8 @@ Components (Layer 3) reference Layer 2 semantic aliases. Never reference Layer 1
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--layout-header-padding` | `var(--space-3) var(--space-4) (12px)` |  |
-| `--layout-header-padding-mobile` | `var(--space-2) var(--space-3) (8px)` |  |
+| `--layout-header-padding` | `var(--space-3) var(--space-4) (12px 16px)` |  |
+| `--layout-header-padding-mobile` | `var(--space-2) var(--space-3) (8px 12px)` |  |
 | `--layout-header-button-size` | `var(--size-button-icon) (40px)` |  |
 | `--layout-header-radius` | `var(--radius-2xl) (20px)` |  |
 | `--layout-header-height` | `60px` |  |
