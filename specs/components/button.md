@@ -55,7 +55,7 @@
 - **Default**: Variant-specific background and text color
 - **Hover**: Variant-specific hover background (`:hover:not(:disabled)`)
 - **Active**: `opacity: var(--opacity-active)` = 0.7 (`:active:not(:disabled)`)
-- **Disabled**: `opacity: 0.6`, `cursor: not-allowed`
+- **Disabled**: `opacity: var(--opacity-muted)` = 0.6, `cursor: not-allowed`
 
 ## Code Example
 ```tsx
