@@ -60,7 +60,6 @@ const COLOR_HEX_MAP = {
   "#fef3c7": "--status-warning-bg",
   "#fee2e2": "--status-error-bg",
   "#dbeafe": "--status-info-bg",
-  "#e2e2e4": "--color-gray-300",
 };
 
 const OPACITY_MAP = {
@@ -91,7 +90,7 @@ const Z_INDEX_MAP = {
  * Each rule: { pattern, severity, suggest, skipIf }
  *   severity: 'error' | 'warning'
  *   suggest: function(match) → string suggestion
- *   skipIf: function(line, match) → boolean (skip this match)
+ *   skipIf: function(line, match, matchIndex) → boolean (skip this match)
  */
 const RULES = [
   // ---- ERRORS: Must use tokens ----
@@ -103,16 +102,20 @@ const RULES = [
     suggest(match) {
       const lower = match.toLowerCase();
       if (!COLOR_HEX_MAP[lower]) return "use a semantic color token";
-      const primitive = COLOR_HEX_MAP[lower];
-      return `use a semantic token (Layer 2) — maps to ${primitive}`;
+      const token = COLOR_HEX_MAP[lower];
+      if (token.startsWith("--status-") || token.startsWith("--surface-") || token.startsWith("--text-") || token.startsWith("--border-") || token.startsWith("--interactive-")) {
+        return `use var(${token})`;
+      }
+      return `use a semantic token (Layer 2) — primitive: ${token}`;
     },
     skipIf(line, match, matchIndex) {
       // Skip if inside a var() fallback: var(--something, #hex)
       if (/var\([^)]*$/.test(line.slice(0, matchIndex))) return true;
       // Skip if in a CSS custom property definition (token file would be excluded anyway)
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
-      // Skip if in a data URI
-      if (/url\(/.test(line)) return true;
+      // Skip if in a data URI (check that the match is actually inside the url())
+      const urlStart = line.lastIndexOf("url(", matchIndex);
+      if (urlStart !== -1 && !line.slice(urlStart, matchIndex).includes(")")) return true;
       // Skip if in a comment (line-start or inline)
       if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
       if (isInsideInlineComment(line, matchIndex)) return true;
@@ -147,10 +150,10 @@ const RULES = [
         ? `var(${OPACITY_MAP[val]})`
         : "define an opacity token";
     },
-    skipIf(line) {
-      // Skip if already using var()
+    skipIf(line, match, matchIndex) {
       if (/opacity\s*:\s*var\(/.test(line)) return true;
-      // Skip if inside @keyframes (animation values)
+      if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
     checkContext: true,
@@ -167,8 +170,10 @@ const RULES = [
         ? `var(${tokens[0]})`
         : `var(${tokens.join(") or var(")})`;
     },
-    skipIf(line) {
+    skipIf(line, match, matchIndex) {
       if (/z-index\s*:\s*var\(/.test(line)) return true;
+      if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
   },
@@ -180,11 +185,12 @@ const RULES = [
     suggest() {
       return "use a --font-size-* token";
     },
-    skipIf(line) {
+    skipIf(line, match, matchIndex) {
       if (/font-size\s*:\s*var\(/.test(line)) return true;
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
-      // Allow 16px !important for iOS zoom fix
       if (/16px\s*!important/.test(line)) return true;
+      if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
   },
@@ -195,9 +201,11 @@ const RULES = [
     suggest() {
       return "use a --font-weight-* token";
     },
-    skipIf(line) {
+    skipIf(line, match, matchIndex) {
       if (/font-weight\s*:\s*var\(/.test(line)) return true;
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
+      if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
   },
@@ -208,11 +216,12 @@ const RULES = [
     suggest() {
       return "use a --radius-* token";
     },
-    skipIf(line) {
+    skipIf(line, match, matchIndex) {
       if (/border-radius\s*:\s*var\(/.test(line)) return true;
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
-      // 50% is fine (circles)
       if (/border-radius\s*:\s*50%/.test(line)) return true;
+      if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
   },
@@ -223,10 +232,12 @@ const RULES = [
     suggest() {
       return "use a --shadow-* token";
     },
-    skipIf(line) {
+    skipIf(line, match, matchIndex) {
       if (/box-shadow\s*:\s*var\(/.test(line)) return true;
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
       if (/box-shadow\s*:\s*none/.test(line)) return true;
+      if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
   },
@@ -241,13 +252,13 @@ const RULES = [
     suggest() {
       return "consider using --space-* tokens";
     },
-    skipIf(line) {
+    skipIf(line, match, matchIndex) {
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
-      // Skip if the value uses var() or calc()
       if (/(?:padding|margin|gap)\s*:\s*var\(/.test(line)) return true;
       if (/(?:padding|margin|gap)\s*:\s*calc\(/.test(line)) return true;
-      // Skip padding-bottom with env()
       if (/env\(/.test(line)) return true;
+      if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
   },
@@ -259,11 +270,12 @@ const RULES = [
     suggest() {
       return "consider using --duration-* or --transition-* tokens";
     },
-    skipIf(line) {
+    skipIf(line, match, matchIndex) {
       if (/var\(--(?:transition|duration|ease)/.test(line)) return true;
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
-      // Allow 0ms and 0s (reduced motion overrides)
       if (/(?:transition|animation)[^:]*:\s*[^;]*\b0m?s\b/.test(line)) return true;
+      if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
   },
@@ -274,9 +286,11 @@ const RULES = [
     suggest() {
       return "use a --letter-spacing-* token";
     },
-    skipIf(line) {
+    skipIf(line, match, matchIndex) {
       if (/letter-spacing\s*:\s*var\(/.test(line)) return true;
       if (/^\s*--[\w-]+\s*:/.test(line)) return true;
+      if (/^\s*\/[/*]/.test(line) || /^\s*\*/.test(line)) return true;
+      if (isInsideInlineComment(line, matchIndex)) return true;
       return false;
     },
   },

@@ -72,7 +72,7 @@
 
 ## States
 - **Default**: list of configured sections with drag handles
-- **Dragging**: dragged item at 0.4 opacity, elevated z-index
+- **Dragging**: dragged item at reduced opacity (0.4), elevated z-index
 - **Empty draft**: centered "No sections configured" message
 - **Hover** (add button): --interactive-primary border and text
 - **Hover** (remove): --status-error-bg bg, --status-error color

@@ -288,18 +288,6 @@ function groupBySection(props) {
 }
 
 /**
- * Resolve a primitive token value to a hex + px description for display.
- */
-function resolveDisplayValue(name, value, inlineComment) {
-  // If it references another var, show both
-  const varRef = value.match(/var\((--[\w-]+)\)/);
-  if (varRef) {
-    return value;
-  }
-  return value;
-}
-
-/**
  * For rem values, compute px equivalent.
  */
 function remToPx(value) {
@@ -572,7 +560,6 @@ function generateTokenReference(tokens) {
 
   // Also include themed shadows (card, dropdown) in shadow section
   const themedShadowTokens = ["--shadow-card", "--shadow-dropdown"];
-  const modalHandleToken = "--modal-handle-bg";
 
   for (const group of nonThemedGroups) {
     const h2 = nonThemedHeadings[group.section];
@@ -657,13 +644,6 @@ function generateTokenReference(tokens) {
       lines.push(`| \`${p.name}\` | \`${displayValue}\` | ${escapeForTable(usage)} |`);
     }
   }
-
-  // Modal handle themed token
-  if (darkTokens.has(modalHandleToken)) {
-    // Already included in Modal section via non-themed; add themed info
-  }
-
-  // Overlay section from non-themed already handled
 
   return lines.join("\n") + "\n";
 }
@@ -1144,7 +1124,8 @@ function generateRadiusSpec(tokens) {
   lines.push("|-----------|-------|-------------|");
   lines.push("| Buttons | `--button-radius` | `--radius-md` (8px) |");
   lines.push("| Modals | `--radius-xl` | 16px |");
-  lines.push("| Cards | `--radius-lg` | 12px |");
+  lines.push("| Set Cards | `--radius-md` | 8px |");
+  lines.push("| Form Cards | `--radius-lg` | 12px |");
   lines.push("| Inputs | `--radius-md` | 8px |");
   lines.push("| Badges | `--radius-sm` | 6px |");
   lines.push("| Pills / Chips | `--radius-full` | 9999px |");

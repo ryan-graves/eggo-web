@@ -19,7 +19,8 @@
 |-----------|-------|-------------|
 | Buttons | `--button-radius` | `--radius-md` (8px) |
 | Modals | `--radius-xl` | 16px |
-| Cards | `--radius-lg` | 12px |
+| Set Cards | `--radius-md` | 8px |
+| Form Cards | `--radius-lg` | 12px |
 | Inputs | `--radius-md` | 8px |
 | Badges | `--radius-sm` | 6px |
 | Pills / Chips | `--radius-full` | 9999px |

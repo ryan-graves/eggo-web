@@ -21,8 +21,8 @@
 | Token | Property | Value |
 |-------|----------|-------|
 | --overlay-dark | overlay background | rgb(0 0 0 / 0.4) |
-| --z-overlay | overlay z-index | 100 |
-| --z-modal | sheet z-index | 101 |
+| --z-overlay | overlay z-index | 200 |
+| --z-modal | sheet z-index | 201 |
 | --surface-primary | sheet & footer background | (themed) |
 | --radius-xl | sheet top corners (mobile) / all corners (desktop) | 16px |
 | --max-width-modal | desktop max width | 600px |
