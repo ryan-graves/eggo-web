@@ -44,13 +44,8 @@ src/
 │   ├── tokens.css         # Design tokens — Layer 1 primitives + Layer 2 aliases
 │   └── theme.css          # Themed semantic variables (Layer 2)
 └── types/                 # TypeScript type definitions
-specs/                         # Design system specifications (LLM-readable)
-├── foundations/               # Auto-generated from tokens.css + theme.css
-├── tokens/                    # Auto-generated master token reference
-└── components/                # Per-component specs (hand-authored)
 scripts/
-├── token-audit.js             # CI-ready audit script for hardcoded values
-└── generate-specs.js          # Auto-generates token-reference.md + foundation specs
+└── token-audit.js             # CI-ready audit script for hardcoded values
 ```
 
 ## Development Commands
@@ -65,8 +60,6 @@ npm run test         # Run Jest tests
 npm run test:watch   # Jest in watch mode
 npm run e2e          # Run Playwright tests
 npm run storybook    # Start Storybook
-npm run generate-specs        # Regenerate token-reference + foundation specs from CSS
-npm run generate-specs:check  # CI: verify generated specs match CSS (exit 1 if stale)
 ```
 
 ## Code Style Guidelines
@@ -84,7 +77,7 @@ npm run generate-specs:check  # CI: verify generated specs match CSS (exit 1 if 
 - Use semantic CSS variables from `theme.css` (e.g., `var(--text-primary)`)
 - Never use hard-coded colors - always reference tokens or semantic variables
 - Keep specificity low - prefer class selectors
-- **Before writing or modifying any UI code, read the relevant spec file in `specs/`.** Use only design tokens from `tokens.css` (Layer 1 primitives) and `theme.css` (Layer 2 semantic aliases). Run the token audit script (`node scripts/token-audit.js`) before committing. Zero errors required.
+- Use design tokens from `tokens.css` (Layer 1 primitives) and `theme.css` (Layer 2 semantic aliases). Run the token audit script (`node scripts/token-audit.js`) before committing. Zero errors required.
 - **Three-layer token architecture:**
   - Layer 1 (primitives): Raw values in `tokens.css` (e.g., `--color-gray-500`, `--space-4`)
   - Layer 2 (semantic aliases): Project-level references in `tokens.css` and `theme.css` (e.g., `--text-primary`, `--surface-background`)
@@ -99,10 +92,7 @@ npm run generate-specs:check  # CI: verify generated specs match CSS (exit 1 if 
   - Opacity: use `--opacity-*` tokens
   - Motion: use `--duration-*`, `--transition-*`, `--ease-*` tokens
   - Sizing: use `--size-*`, `--layout-*`, `--max-width-*`, `--min-width-*` tokens
-- **Spec files** live in `specs/` — foundations and token-reference are **auto-generated** from `tokens.css` + `theme.css`; component specs are hand-authored
-- **After modifying tokens.css or theme.css**, run `npm run generate-specs` to regenerate spec docs, then commit the updated specs
 - **Audit script**: `node scripts/token-audit.js` scans all CSS for violations (CI-ready, exit code 1 on errors)
-- **Spec freshness check**: `npm run generate-specs:check` verifies generated specs match CSS (CI-ready, exit code 1 if stale)
 
 ### Components
 

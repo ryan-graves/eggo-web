@@ -19,8 +19,6 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "review": "bash scripts/code-review.sh",
-    "generate-specs": "node scripts/generate-specs.js",
-    "generate-specs:check": "node scripts/generate-specs.js --check",
     "validate": "npm run typecheck && npm run lint && npm run test"
   },
   "dependencies": {
