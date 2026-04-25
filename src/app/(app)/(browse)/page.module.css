@@ -185,7 +185,7 @@
 
 .skeletonSectionTitle {
   width: 140px;
-  height: 20px;
+  height: calc(var(--font-size-lg) * var(--line-height-tight));
   margin-bottom: var(--space-4);
   margin-left: var(--layout-content-padding);
 }
@@ -262,12 +262,12 @@
 
 .skeletonStatText {
   width: 60px;
-  height: 16px;
+  height: calc(var(--font-size-sm) * var(--line-height-normal));
 }
 
 .skeletonStatTextLong {
   width: 120px;
-  height: 16px;
+  height: calc(var(--font-size-sm) * var(--line-height-normal));
 }
 
 .skeletonGrid {
