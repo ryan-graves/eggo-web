@@ -177,7 +177,7 @@
 }
 
 .refreshSpinner svg {
-  animation: spin var(--duration-spin) linear infinite;
+  animation: spin 1s linear infinite;
 }
 
 /* Checkbox */

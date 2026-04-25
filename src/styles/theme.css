@@ -233,13 +233,13 @@
 }
 
 [data-ui-theme='mono'] h2 {
-  font-size: var(--font-size-xl);
-  line-height: var(--line-height-snug);
+  font-size: 1.25rem;
+  line-height: 1.3;
 }
 
 [data-ui-theme='mono'] h3 {
   font-size: var(--font-size-xl);
-  line-height: var(--line-height-snug);
+  line-height: 1.4;
 }
 
 /* Capsule-shaped buttons in mono theme */

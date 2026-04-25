@@ -149,14 +149,14 @@
 }
 
 .skeletonLogo {
-  width: var(--size-image-xs);
-  height: var(--size-icon-button-sm);
+  width: 60px;
+  height: 28px;
   border-radius: var(--radius-md);
 }
 
 .skeletonSelector {
-  width: var(--min-width-search);
-  height: var(--size-icon-button-sm);
+  width: 200px;
+  height: 28px;
   border-radius: var(--radius-md);
 }
 
@@ -169,13 +169,13 @@
 
 .skeletonToggle {
   width: 175px;
-  height: var(--size-button-icon-sm);
+  height: 36px;
   border-radius: var(--radius-md);
 }
 
 .skeletonAddButton {
-  width: var(--size-image-sm);
-  height: var(--size-button-icon-sm);
+  width: 85px;
+  height: 36px;
   border-radius: var(--radius-md);
 }
 
@@ -184,8 +184,8 @@
 }
 
 .skeletonSectionTitle {
-  width: var(--min-width-select);
-  height: var(--size-toggle-knob);
+  width: 140px;
+  height: 20px;
   margin-bottom: var(--space-4);
   margin-left: var(--layout-content-padding);
 }
@@ -235,7 +235,7 @@
 }
 
 .skeletonFilterButton {
-  width: var(--size-image-sm);
+  width: 100px;
   height: var(--form-input-height);
 }
 
@@ -261,13 +261,13 @@
 }
 
 .skeletonStatText {
-  width: var(--size-image-xs);
-  height: var(--size-checkbox-sm);
+  width: 60px;
+  height: 16px;
 }
 
 .skeletonStatTextLong {
-  width: var(--size-image-md);
-  height: var(--size-checkbox-sm);
+  width: 120px;
+  height: 16px;
 }
 
 .skeletonGrid {

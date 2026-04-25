@@ -71,10 +71,8 @@ const OPACITY_MAP = {
 };
 
 const Z_INDEX_MAP = {
-  "0": ["--z-base"],
   "1": ["--z-above"],
   "50": ["--z-dropdown"],
-  "90": ["--z-sticky"],
   "100": ["--z-header"],
   "200": ["--z-overlay"],
   "201": ["--z-modal"],

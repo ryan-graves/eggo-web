@@ -169,12 +169,12 @@
 }
 
 .skeletonLine {
-  height: var(--font-size-base);
+  height: 0.875rem;
 }
 
 .skeletonLineName {
   width: 65%;
-  height: var(--font-size-xl);
+  height: 1.25rem;
 }
 
 .skeletonLineMeta {
