@@ -21,7 +21,7 @@
   font-size: var(--font-size-4xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--letter-spacing-tighter);
   view-transition-name: auth-title;
 }
 
@@ -40,7 +40,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-4);
-  min-width: 320px;
+  min-width: var(--min-width-login-box);
   view-transition-name: auth-box;
 }
 
@@ -80,8 +80,8 @@
 }
 
 .googleButton:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
+  outline: var(--outline-width) solid var(--border-focus);
+  outline-offset: var(--outline-offset);
 }
 
 .googleButton:disabled {

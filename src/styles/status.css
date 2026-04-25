@@ -15,16 +15,16 @@
 
 /* Smaller variant for cards */
 .status-badge-sm {
-  font-size: 0.625rem;
-  padding: 0.125rem var(--space-1);
+  font-size: var(--font-size-2xs);
+  padding: var(--space-0-5) var(--space-1);
   border-radius: var(--radius-sm);
   font-weight: var(--font-weight-medium);
   white-space: nowrap;
 }
 
 .status-unopened {
-  background-color: var(--color-gray-200);
-  color: var(--color-gray-700);
+  background-color: var(--status-unopened-bg);
+  color: var(--status-unopened);
 }
 
 .status-in_progress {
@@ -45,10 +45,4 @@
 .status-disassembled {
   background-color: var(--status-warning-bg);
   color: var(--status-warning);
-}
-
-/* Dark mode adjustments */
-[data-theme='dark'] .status-unopened {
-  background-color: var(--color-gray-700);
-  color: var(--color-gray-200);
 }

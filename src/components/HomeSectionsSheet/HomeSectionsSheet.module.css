@@ -1,5 +1,5 @@
 .headerSpacer {
-  width: 40px;
+  width: var(--size-button-icon);
 }
 
 /* === Section list (reorder view) === */
@@ -73,8 +73,8 @@
 }
 
 .removeButton {
-  width: 28px;
-  height: 28px;
+  width: var(--size-button-icon-xs);
+  height: var(--size-button-icon-xs);
   display: flex;
   align-items: center;
   justify-content: center;

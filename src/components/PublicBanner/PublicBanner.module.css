@@ -3,15 +3,15 @@
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: var(--z-banner);
   padding: var(--space-2) var(--space-4);
   background-color: var(--surface-primary);
   border-top: 1px solid var(--border-primary);
-  box-shadow: 0 -4px 20px rgb(0 0 0 / 0.15);
+  box-shadow: var(--shadow-banner);
 }
 
 .content {
-  max-width: 1200px;
+  max-width: var(--max-width-content);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -69,8 +69,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--size-button-icon-sm);
+  height: var(--size-button-icon-sm);
   padding: 0;
   background-color: transparent;
   border: none;

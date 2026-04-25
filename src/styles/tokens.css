@@ -1,12 +1,29 @@
 /*
- * Design Tokens
+ * Design Tokens — Three-Layer Architecture
  *
- * This file defines the primitive design tokens (colors, spacing, typography, etc.)
- * These are the raw values that semantic tokens reference.
+ * Layer 1: Primitive tokens — raw design values (colors, spacing, type scale).
+ * Layer 2: Semantic aliases — project-level references to Layer 1 with fallbacks.
+ * Layer 3: Components — consume Layer 2 semantic aliases for themed values (colors,
+ *          shadows, interactive states). Scale tokens (--space-*, --font-size-*,
+ *          --radius-*, --font-weight-*, --line-height-*, --letter-spacing-*) may be
+ *          used directly since they don't change with theme or color mode.
+ *
+ * Naming convention:
+ *   Layer 1  →  --color-gray-500, --space-4, --font-size-sm
+ *   Layer 2  →  --text-secondary, --surface-primary, --shadow-card
+ *   (Layer 2 lives partly here for non-theme tokens, and in theme.css for themed tokens)
  */
 
 :root {
-  /* Primitive Colors - Neutral */
+  /* ==========================================================================
+   * LAYER 1 — Primitive Tokens
+   * Raw design values. Color primitives must go through Layer 2 semantic aliases.
+   * Scale tokens (spacing, typography, radius) may be used directly in components.
+   * ========================================================================== */
+
+  /* ---- Colors: Neutral ---- */
+  --color-white: #ffffff;
+  --color-black: #000000;
   --color-gray-50: #fafafa;
   --color-gray-100: #f4f4f5;
   --color-gray-200: #e4e4e7;
@@ -20,12 +37,12 @@
   --color-gray-900: #18181b;
   --color-gray-950: #09090b;
 
-  /* Accent Colors - Orange (Factory.ai inspired) */
+  /* ---- Colors: Accent — Orange ---- */
   --color-orange-400: #fb923c;
   --color-orange-500: #f97316;
   --color-orange-600: #ea580c;
 
-  /* Legacy Brand Colors */
+  /* ---- Colors: Brand Palette ---- */
   --color-red-500: #ef4444;
   --color-red-600: #dc2626;
   --color-yellow-400: #facc15;
@@ -35,35 +52,37 @@
   --color-green-500: #22c55e;
   --color-green-600: #16a34a;
 
-  /* Status Colors */
+  /* ---- Colors: Status ---- */
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
 
-  /* Spacing Scale */
+  /* ---- Spacing Scale (4px base) ---- */
   --space-0: 0;
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-20: 5rem;
+  --space-0-5: 0.125rem; /* 2px */
+  --space-1: 0.25rem;    /* 4px */
+  --space-2: 0.5rem;     /* 8px */
+  --space-3: 0.75rem;    /* 12px */
+  --space-4: 1rem;       /* 16px */
+  --space-5: 1.25rem;    /* 20px */
+  --space-6: 1.5rem;     /* 24px */
+  --space-8: 2rem;       /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+  --space-20: 5rem;      /* 80px */
 
-  /* Typography Scale - Tighter, more refined */
-  --font-size-xs: 0.6875rem;
-  --font-size-sm: 0.8125rem;
-  --font-size-base: 0.875rem;
-  --font-size-lg: 1rem;
-  --font-size-xl: 1.125rem;
-  --font-size-2xl: 1.375rem;
-  --font-size-3xl: 1.75rem;
-  --font-size-4xl: 2.25rem;
+  /* ---- Typography Scale ---- */
+  --font-size-2xs: 0.625rem;  /* 10px */
+  --font-size-xs: 0.6875rem;  /* 11px */
+  --font-size-sm: 0.8125rem;  /* 13px */
+  --font-size-base: 0.875rem; /* 14px */
+  --font-size-lg: 1rem;       /* 16px */
+  --font-size-xl: 1.125rem;   /* 18px */
+  --font-size-2xl: 1.375rem;  /* 22px */
+  --font-size-3xl: 1.75rem;   /* 28px */
+  --font-size-4xl: 2.25rem;   /* 36px */
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -76,94 +95,181 @@
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.65;
 
+  --letter-spacing-tighter: -0.02em;
   --letter-spacing-tight: -0.01em;
   --letter-spacing-normal: 0;
   --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
 
-  /* Border Radius - Increased for modern look */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.25rem;
+  /* ---- Border Radius ---- */
+  --radius-sm: 0.375rem;  /* 6px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-2xl: 1.25rem;  /* 20px */
   --radius-full: 9999px;
 
-  /* Shadows */
+  /* ---- Shadows ---- */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 
-  /* Durations (for animation shorthand where timing-function is set separately) */
+  /* ---- Durations ---- */
   --duration-fast: 150ms;
   --duration-normal: 200ms;
   --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  --duration-spin: 800ms;
+  --duration-shimmer: 1.5s;
+  --duration-progress: 2s;
 
-  /* Transitions - duration + easing combined (for transition shorthand) */
+  /* ---- Transitions (duration + easing) ---- */
   --transition-fast: 150ms ease-out;
   --transition-normal: 200ms ease-in-out;
   --transition-slow: 300ms ease-in-out;
+  --transition-progress: 500ms ease-out;
 
-  /* Easing */
+  /* ---- Easing ---- */
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-vaul: cubic-bezier(0.32, 0.72, 0, 1);
 
   /* ==========================================================================
-   * Layout Tokens
-   * Semantic layout values for consistent spacing across the app.
+   * LAYER 2 — Semantic Aliases (non-themed)
+   *
+   * Themed aliases (surface-*, text-*, border-*, interactive-*, status-*,
+   * shadow-card, shadow-dropdown) live in theme.css.
    * ========================================================================== */
 
-  /* Page Layout */
+  /* ---- Opacity ---- */
+  --opacity-disabled: 0.5;
+  --opacity-muted: 0.6;
+  --opacity-active: 0.7;
+  --opacity-hover: 0.8;
+  --opacity-subtle: 0.9;
+
+  /* ---- Z-Index Scale ---- */
+  --z-above: 1;
+  --z-dropdown: 50;
+  --z-header: 100;
+  --z-overlay: 200;
+  --z-modal: 201;
+  --z-banner: 1000;
+  --z-progress: 9999;
+
+  /* ---- Border ---- */
+  --border-width-medium: 2px;
+  --border-width-thick: 3px;
+
+  /* ---- Sizing: Icons & Controls ---- */
+  --size-icon-xs: 14px;
+  --size-icon-sm: 18px;
+  --size-button-icon-xs: 28px;
+  --size-button-icon-sm: 32px;
+  --size-button-icon: 40px;
+  --size-avatar-lg: 48px;
+
+  /* ---- Sizing: Toggle ---- */
+  --size-toggle-width: 44px;
+  --size-toggle-height: 24px;
+  --size-toggle-knob: 20px;
+  --toggle-knob-inset: var(--space-0-5);
+  --toggle-knob-offset: var(--space-5);
+
+  /* ---- Sizing: Checkbox ---- */
+  --size-checkbox: 18px;
+  --size-checkbox-sm: 16px;
+
+  /* ---- Sizing: Progress ---- */
+  --size-progress-bar: 2px;
+  --size-progress-track: 4px;
+
+  /* ---- Sizing: Dot / Badge ---- */
+  --size-dot: 8px;
+  --size-badge-min: 18px;
+
+  /* ---- Sizing: Images ---- */
+  --size-image-xs: 64px;
+  --size-image-sm: 80px;
+  --size-image-md: 120px;
+  --size-image-lg: 200px;
+
+  /* ---- Layout: Max Widths ---- */
+  --layout-max-width: 1400px;
+  --max-width-content: 1200px;
+  --max-width-detail: 1000px;
+  --max-width-modal: 600px;
+  --max-width-form: 520px;
+  --max-width-settings: 600px;
+  --max-width-image-mobile: 400px;
+  --min-width-login-box: 320px;
+  --min-width-dropdown: 200px;
+  --max-width-dropdown: 300px;
+  --min-width-search: 200px;
+  --min-width-select: 140px;
+  --max-width-tag: 120px;
+
+  /* ---- Layout: Page ---- */
   --layout-page-padding: var(--space-3);
   --layout-page-padding-mobile: var(--space-2);
   --layout-page-gap: var(--space-3);
   --layout-page-gap-mobile: var(--space-2);
-  --layout-max-width: 1400px;
 
-  /* Content Areas */
+  /* ---- Layout: Content ---- */
   --layout-content-padding: var(--space-4);
   --layout-content-padding-mobile: var(--space-4);
 
-  /* Card Grids */
+  /* ---- Layout: Cards ---- */
   --layout-card-gap: var(--space-3);
   --layout-card-min-width: 180px;
   --layout-card-min-width-mobile: 140px;
   --layout-carousel-card-width: 160px;
 
-  /* Header */
+  /* ---- Layout: Header ---- */
   --layout-header-padding: var(--space-3) var(--space-4);
   --layout-header-padding-mobile: var(--space-2) var(--space-3);
-  --layout-header-button-size: 40px;
+  --layout-header-button-size: var(--size-button-icon);
   --layout-header-radius: var(--radius-2xl);
+  --layout-header-height: 60px;
+  --layout-banner-height: 56px;
 
-  /* Toolbar */
+  /* ---- Layout: Toolbar ---- */
   --layout-toolbar-gap: var(--space-4);
   --layout-toolbar-gap-mobile: var(--space-2);
 
-  /* ==========================================================================
-   * Button Tokens
-   * Standardized button sizing for consistent UI across the app.
-   * ========================================================================== */
-
-  /* Button Heights */
-  --button-height-default: 40px;
-  --button-height-small: 32px;
-
-  /* Button Padding (horizontal, for text buttons) */
+  /* ---- Buttons ---- */
+  --button-height-default: var(--size-button-icon);
+  --button-height-small: var(--size-button-icon-sm);
   --button-padding-default: var(--space-4);
   --button-padding-small: var(--space-3);
-
-  /* Button Font Sizes */
   --button-font-size-default: var(--font-size-sm);
   --button-font-size-small: var(--font-size-xs);
-
-  /* Button Icon Gap (space between icon and text) */
   --button-gap: var(--space-2);
-
-  /* Button Border Radius (overridden by mono theme to pill shape) */
   --button-radius: var(--radius-md);
+
+  /* ---- Modal ---- */
+  --size-modal-handle: var(--size-avatar-lg);
+
+  /* ---- Form ---- */
+  --form-input-height: var(--size-button-icon);
+  --form-textarea-min-height: 60px;
+
+  /* ---- Focus Ring ---- */
+  --outline-width: var(--border-width-medium);
+  --outline-offset: 2px;
+
+  /* ---- Shadow: Component-specific ---- */
+  --shadow-toggle-knob: 0 1px 3px rgb(0 0 0 / 0.2);
+  --shadow-banner: 0 -4px 20px rgb(0 0 0 / 0.15);
+
+  /* ---- Overlay ---- */
+  --overlay-dark: rgb(0 0 0 / 0.4);
+  --overlay-light-20: rgb(255 255 255 / 0.2);
+  --overlay-light-30: rgb(255 255 255 / 0.3);
+  --overlay-light-40: rgb(255 255 255 / 0.4);
 }
 
-/* Mobile overrides - match toolbar padding for consistent alignment */
+/* Mobile overrides */
 @media (max-width: 768px) {
   :root {
     --layout-content-padding: var(--space-2);

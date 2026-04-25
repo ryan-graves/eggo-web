@@ -28,8 +28,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 18px;
+  min-width: var(--size-badge-min);
+  height: var(--size-badge-min);
   padding: 0 var(--space-1);
   background-color: var(--interactive-primary);
   color: var(--text-inverse);
@@ -51,7 +51,7 @@
 
 .searchInput {
   flex: 1;
-  min-width: 200px;
+  min-width: var(--min-width-search);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border-secondary);
   border-radius: var(--radius-md);
@@ -77,7 +77,7 @@
   color: var(--text-primary);
   background-color: var(--surface-primary);
   cursor: pointer;
-  min-width: 140px;
+  min-width: var(--min-width-select);
 }
 
 .select:focus {
@@ -118,7 +118,7 @@
   color: var(--text-primary);
   cursor: pointer;
   font-size: var(--font-size-sm);
-  min-width: 36px;
+  min-width: var(--size-button-icon-sm);
   transition: background-color var(--transition-fast);
 }
 

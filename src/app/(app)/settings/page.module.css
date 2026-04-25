@@ -12,7 +12,7 @@
 }
 
 .main {
-  max-width: 600px;
+  max-width: var(--max-width-settings);
   margin: 0 auto;
   padding: var(--space-4);
   width: 100%;
@@ -44,8 +44,8 @@
 }
 
 .avatar {
-  width: 48px;
-  height: 48px;
+  width: var(--size-avatar-lg);
+  height: var(--size-avatar-lg);
   border-radius: var(--radius-full);
 }
 
@@ -79,7 +79,7 @@
 }
 
 .signOutButton:hover {
-  opacity: 0.9;
+  opacity: var(--opacity-subtle);
 }
 
 .settingGroup {
@@ -128,7 +128,7 @@
 }
 
 .themeRadio {
-  margin-top: 2px;
+  margin-top: var(--space-0-5);
   accent-color: var(--interactive-primary);
 }
 
@@ -196,8 +196,8 @@
 
 .toggle {
   position: relative;
-  width: 44px;
-  height: 24px;
+  width: var(--size-toggle-width);
+  height: var(--size-toggle-height);
   padding: 0;
   background-color: var(--surface-tertiary);
   border: none;
@@ -208,7 +208,7 @@
 }
 
 .toggle:disabled {
-  opacity: 0.6;
+  opacity: var(--opacity-muted);
   cursor: not-allowed;
 }
 
@@ -218,18 +218,18 @@
 
 .toggleKnob {
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
+  top: var(--toggle-knob-inset);
+  left: var(--toggle-knob-inset);
+  width: var(--size-toggle-knob);
+  height: var(--size-toggle-knob);
   background-color: var(--surface-primary);
   border-radius: var(--radius-full);
   transition: transform var(--transition-fast);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  box-shadow: var(--shadow-toggle-knob);
 }
 
 .toggleOn .toggleKnob {
-  transform: translateX(20px);
+  transform: translateX(var(--toggle-knob-offset));
 }
 
 .shareUrlContainer {
@@ -312,8 +312,8 @@
 }
 
 .checkbox {
-  width: 18px;
-  height: 18px;
+  width: var(--size-checkbox);
+  height: var(--size-checkbox);
   accent-color: var(--interactive-primary);
   cursor: pointer;
 }

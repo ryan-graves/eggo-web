@@ -18,7 +18,7 @@
 }
 
 .container {
-  max-width: 520px;
+  max-width: var(--max-width-form);
   margin: 0 auto;
   padding: 0 var(--space-4) var(--space-4);
 }
@@ -73,7 +73,7 @@
   display: flex;
   gap: var(--space-3);
   justify-content: flex-end;
-  max-width: 520px;
+  max-width: var(--max-width-form);
   margin: 0 auto;
   width: 100%;
   padding: var(--space-3) var(--space-4);
@@ -155,7 +155,7 @@
 
 /* Skeleton loading */
 .skeletonImage {
-  width: 200px;
+  width: var(--size-image-lg);
   aspect-ratio: 1 / 1;
   border-radius: var(--radius-lg);
 }
@@ -169,12 +169,12 @@
 }
 
 .skeletonLine {
-  height: 0.875rem;
+  height: calc(var(--font-size-sm) * var(--line-height-normal));
 }
 
 .skeletonLineName {
   width: 65%;
-  height: 1.25rem;
+  height: calc(var(--font-size-xl) * var(--line-height-tight));
 }
 
 .skeletonLineMeta {
@@ -197,7 +197,7 @@
 
 .detailImageContainer {
   position: relative;
-  width: 200px;
+  width: var(--size-image-lg);
   aspect-ratio: 1 / 1;
 }
 
@@ -248,8 +248,8 @@
 
 .compactImageWrapper {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: var(--size-image-sm);
+  height: var(--size-image-sm);
   flex-shrink: 0;
 }
 
@@ -275,7 +275,7 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: var(--interactive-primary);
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
 }
 
 .compactName {
@@ -309,7 +309,7 @@
 
 .progressTrack {
   width: 100%;
-  height: 4px;
+  height: var(--size-progress-track);
   background-color: var(--surface-tertiary);
   border-radius: var(--radius-full);
   overflow: hidden;
@@ -319,7 +319,7 @@
   height: 100%;
   background-color: var(--interactive-primary);
   border-radius: var(--radius-full);
-  transition: width 0.5s ease-out;
+  transition: width var(--transition-progress);
 }
 
 .progressDone {
@@ -373,7 +373,7 @@
   }
 
   .compactImageWrapper {
-    width: 64px;
-    height: 64px;
+    width: var(--size-image-xs);
+    height: var(--size-image-xs);
   }
 }

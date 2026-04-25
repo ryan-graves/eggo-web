@@ -1,5 +1,5 @@
 /*
- * Semantic Theme Variables
+ * Semantic Theme Variables (Layer 2 — themed aliases)
  *
  * These variables use semantic names (e.g., "surface", "text-primary")
  * and map to primitive tokens. This allows easy theme switching.
@@ -52,6 +52,13 @@
   --status-error-bg: rgba(239, 68, 68, 0.15);
   --status-info-bg: rgba(59, 130, 246, 0.15);
 
+  /* Status: Unopened (neutral variant, themed) */
+  --status-unopened-bg: var(--color-gray-700);
+  --status-unopened: var(--color-gray-200);
+
+  /* Modal handle */
+  --modal-handle-bg: var(--color-gray-300);
+
   /* Shadows */
   --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
   --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
@@ -63,7 +70,7 @@
 
   /* Backgrounds */
   --surface-background: var(--color-gray-50);
-  --surface-primary: #ffffff;
+  --surface-primary: var(--color-white);
   --surface-secondary: var(--color-gray-100);
   --surface-tertiary: var(--color-gray-200);
   --surface-inverse: var(--color-gray-900);
@@ -72,7 +79,7 @@
   --text-primary: var(--color-gray-900);
   --text-secondary: var(--color-gray-600);
   --text-tertiary: var(--color-gray-500);
-  --text-inverse: #ffffff;
+  --text-inverse: var(--color-white);
   --text-link: var(--color-orange-600);
   --text-link-hover: var(--color-orange-500);
 
@@ -100,6 +107,13 @@
   --status-error-bg: #fee2e2;
   --status-info-bg: #dbeafe;
 
+  /* Status: Unopened (neutral variant, themed) */
+  --status-unopened-bg: var(--color-gray-200);
+  --status-unopened: var(--color-gray-700);
+
+  /* Modal handle */
+  --modal-handle-bg: var(--color-gray-300);
+
   /* Shadows */
   --shadow-card: var(--shadow-md);
   --shadow-dropdown: var(--shadow-lg);
@@ -111,7 +125,7 @@
     color-scheme: light;
 
     --surface-background: var(--color-gray-50);
-    --surface-primary: #ffffff;
+    --surface-primary: var(--color-white);
     --surface-secondary: var(--color-gray-100);
     --surface-tertiary: var(--color-gray-200);
     --surface-inverse: var(--color-gray-900);
@@ -119,7 +133,7 @@
     --text-primary: var(--color-gray-900);
     --text-secondary: var(--color-gray-600);
     --text-tertiary: var(--color-gray-500);
-    --text-inverse: #ffffff;
+    --text-inverse: var(--color-white);
     --text-link: var(--color-orange-600);
     --text-link-hover: var(--color-orange-500);
 
@@ -137,6 +151,11 @@
     --status-warning-bg: #fef3c7;
     --status-error-bg: #fee2e2;
     --status-info-bg: #dbeafe;
+
+    --status-unopened-bg: var(--color-gray-200);
+    --status-unopened: var(--color-gray-700);
+
+    --modal-handle-bg: var(--color-gray-300);
 
     --shadow-card: var(--shadow-md);
     --shadow-dropdown: var(--shadow-lg);
@@ -162,7 +181,7 @@
 :root[data-ui-theme='mono']:not([data-theme='light']) {
   /* Light buttons with dark text for dark backgrounds */
   --interactive-primary: var(--color-gray-100);
-  --interactive-primary-hover: #ffffff;
+  --interactive-primary-hover: var(--color-white);
   --interactive-primary-bg: rgba(255, 255, 255, 0.1);
   --text-inverse: var(--color-gray-900);
   --text-link: var(--color-gray-300);
@@ -174,9 +193,9 @@
 [data-theme='light'][data-ui-theme='mono'] {
   /* Dark buttons with light text for light backgrounds */
   --interactive-primary: var(--color-gray-900);
-  --interactive-primary-hover: #000000;
+  --interactive-primary-hover: var(--color-black);
   --interactive-primary-bg: rgba(0, 0, 0, 0.05);
-  --text-inverse: #ffffff;
+  --text-inverse: var(--color-white);
   --text-link: var(--color-gray-700);
   --text-link-hover: var(--color-gray-900);
   --border-focus: var(--color-gray-600);
@@ -186,9 +205,9 @@
 @media (prefers-color-scheme: light) {
   :root[data-ui-theme='mono']:not([data-theme='dark']):not([data-theme='light']) {
     --interactive-primary: var(--color-gray-900);
-    --interactive-primary-hover: #000000;
+    --interactive-primary-hover: var(--color-black);
     --interactive-primary-bg: rgba(0, 0, 0, 0.05);
-    --text-inverse: #ffffff;
+    --text-inverse: var(--color-white);
     --text-link: var(--color-gray-700);
     --text-link-hover: var(--color-gray-900);
     --border-focus: var(--color-gray-600);
@@ -203,14 +222,14 @@
 [data-ui-theme='mono'] h5,
 [data-ui-theme='mono'] h6 {
   font-family: var(--font-heading);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: var(--font-weight-normal);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 /* Slightly larger heading sizes with preserved line heights */
 [data-ui-theme='mono'] h1 {
-  font-size: 1.75rem;
-  line-height: 1.2;
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-tight);
 }
 
 [data-ui-theme='mono'] h2 {
@@ -219,7 +238,7 @@
 }
 
 [data-ui-theme='mono'] h3 {
-  font-size: 1.125rem;
+  font-size: var(--font-size-xl);
   line-height: 1.4;
 }
 
@@ -230,5 +249,5 @@
 [data-ui-theme='mono'] a[class*='Button' i],
 [data-ui-theme='mono'] .btn-default,
 [data-ui-theme='mono'] .btn-small {
-  border-radius: 9999px !important;
+  border-radius: var(--radius-full) !important;
 }

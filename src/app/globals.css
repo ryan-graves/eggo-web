@@ -14,7 +14,7 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 16px; /* token-audit-disable-line — rem base for the document */
   -webkit-text-size-adjust: 100%;
 }
 
@@ -74,7 +74,7 @@ button {
 
 /* Active state for touch feedback - opacity not in transition list so this is instant */
 button:active:not(:disabled) {
-  opacity: 0.7;
+  opacity: var(--opacity-active);
 }
 
 img {
@@ -85,8 +85,8 @@ img {
 
 /* Focus visible for accessibility */
 :focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
+  outline: var(--outline-width) solid var(--border-focus);
+  outline-offset: var(--outline-offset);
 }
 
 /* Smooth scrolling */
@@ -105,8 +105,8 @@ img {
 /* Eggo Logo - consistent branding across all pages */
 .eggo-logo {
   font-family: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: var(--font-weight-normal);
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 /* Prevent iOS zoom on input focus - inputs must be 16px minimum */

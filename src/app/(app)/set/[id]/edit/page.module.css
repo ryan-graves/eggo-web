@@ -18,7 +18,7 @@
 }
 
 .container {
-  max-width: 520px;
+  max-width: var(--max-width-form);
   margin: 0 auto;
   padding: 0 var(--space-4) var(--space-4);
   display: flex;
@@ -39,7 +39,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 520px;
+  max-width: var(--max-width-form);
   margin: 0 auto;
   width: 100%;
   padding: var(--space-3) var(--space-4);
@@ -71,8 +71,8 @@
 
 .imageWrapper {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: var(--size-image-md);
+  height: var(--size-image-md);
   flex-shrink: 0;
 }
 
@@ -88,7 +88,7 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: var(--interactive-primary);
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
 }
 
 .apiName {
@@ -126,8 +126,8 @@
   position: absolute;
   top: var(--space-3);
   right: var(--space-3);
-  width: 28px;
-  height: 28px;
+  width: var(--size-button-icon-xs);
+  height: var(--size-button-icon-xs);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,7 +155,7 @@
 }
 
 .refreshButton:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
@@ -168,8 +168,8 @@
   position: absolute;
   top: var(--space-3);
   right: var(--space-3);
-  width: 28px;
-  height: 28px;
+  width: var(--size-button-icon-xs);
+  height: var(--size-button-icon-xs);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -191,8 +191,8 @@
 }
 
 .checkbox {
-  width: 16px;
-  height: 16px;
+  width: var(--size-checkbox-sm);
+  height: var(--size-checkbox-sm);
   accent-color: var(--interactive-primary);
 }
 
@@ -214,7 +214,7 @@
 }
 
 .deleteButton:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
@@ -266,8 +266,8 @@
   }
 
   .imageWrapper {
-    width: 80px;
-    height: 80px;
+    width: var(--size-image-sm);
+    height: var(--size-image-sm);
   }
 
   .apiName {

@@ -41,9 +41,11 @@ src/
 │   ├── image/             # Image processing (background removal)
 │   └── providers/         # External data providers (Brickset/Rebrickable)
 ├── styles/
-│   ├── tokens.css         # Design tokens (colors, spacing, etc.)
-│   └── theme.css          # Semantic theme variables
+│   ├── tokens.css         # Design tokens — Layer 1 primitives + Layer 2 aliases
+│   └── theme.css          # Themed semantic variables (Layer 2)
 └── types/                 # TypeScript type definitions
+scripts/
+└── token-audit.js             # CI-ready audit script for hardcoded values
 ```
 
 ## Development Commands
@@ -69,12 +71,28 @@ npm run storybook    # Start Storybook
 - Export types from dedicated type files, not inline
 - Use explicit return types for functions
 
-### CSS
+### CSS & Design System
 
 - Use CSS Modules for component styles
 - Use semantic CSS variables from `theme.css` (e.g., `var(--text-primary)`)
 - Never use hard-coded colors - always reference tokens or semantic variables
 - Keep specificity low - prefer class selectors
+- Use design tokens from `tokens.css` (Layer 1 primitives) and `theme.css` (Layer 2 semantic aliases). Run the token audit script (`node scripts/token-audit.js`) before committing. Zero errors required.
+- **Three-layer token architecture:**
+  - Layer 1 (primitives): Raw values in `tokens.css` (e.g., `--color-gray-500`, `--space-4`)
+  - Layer 2 (semantic aliases): Project-level references in `tokens.css` and `theme.css` (e.g., `--text-primary`, `--surface-background`)
+  - Layer 3 (components): CSS Modules that consume Layer 2 aliases for themed values. Scale tokens (`--space-*`, `--font-size-*`, `--radius-*`, etc.) may be used directly since they don't change with theme.
+- **Token rules — no hardcoded raw values in components:**
+  - Colors: use Layer 2 semantic tokens (`--text-*`, `--surface-*`, `--border-*`, `--interactive-*`, `--status-*`) — never use hex/rgb directly
+  - Spacing: use `--space-*` scale tokens for padding, margin, gap
+  - Typography: use `--font-size-*`, `--font-weight-*`, `--line-height-*`, `--letter-spacing-*` scale tokens
+  - Border radius: use `--radius-*` scale tokens
+  - Shadows: use `--shadow-*` tokens
+  - Z-index: use `--z-*` tokens
+  - Opacity: use `--opacity-*` tokens
+  - Motion: use `--duration-*`, `--transition-*`, `--ease-*` tokens
+  - Sizing: use `--size-*`, `--layout-*`, `--max-width-*`, `--min-width-*` tokens
+- **Audit script**: `node scripts/token-audit.js` scans all CSS for violations (CI-ready, exit code 1 on errors)
 
 ### Components
 

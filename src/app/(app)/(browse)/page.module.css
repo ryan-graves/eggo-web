@@ -11,8 +11,8 @@
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: var(--size-button-icon);
+  height: var(--size-button-icon);
   border-radius: var(--radius-full);
 }
 
@@ -27,13 +27,13 @@
 
 .avatarLink:hover,
 .avatarLink:active {
-  opacity: 0.7;
+  opacity: var(--opacity-active);
 }
 
 .main {
   flex: 1;
   padding: var(--space-3) var(--space-1);
-  max-width: 1400px;
+  max-width: var(--layout-max-width);
   margin: 0 auto;
   width: 100%;
 }
@@ -125,14 +125,14 @@
     var(--surface-secondary) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  animation: shimmer var(--duration-shimmer) ease-in-out infinite;
   border-radius: var(--radius-sm);
 }
 
 .skeletonHeader {
   position: sticky;
   top: calc(var(--space-3) + env(safe-area-inset-top));
-  z-index: 100;
+  z-index: var(--z-header);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -161,8 +161,8 @@
 }
 
 .skeletonAvatar {
-  width: 40px;
-  height: 40px;
+  width: var(--size-button-icon);
+  height: var(--size-button-icon);
   border-radius: var(--radius-full);
   flex-shrink: 0;
 }
@@ -185,7 +185,7 @@
 
 .skeletonSectionTitle {
   width: 140px;
-  height: 20px;
+  height: calc(var(--font-size-lg) * var(--line-height-tight));
   margin-bottom: var(--space-4);
   margin-left: var(--layout-content-padding);
 }
@@ -198,7 +198,7 @@
 }
 
 .skeletonCarousel > * {
-  flex: 0 0 180px;
+  flex: 0 0 var(--layout-card-min-width);
   height: 260px;
 }
 
@@ -230,18 +230,18 @@
 
 .skeletonSearchInput {
   flex: 1;
-  min-width: 200px;
-  height: 38px;
+  min-width: var(--min-width-search);
+  height: var(--form-input-height);
 }
 
 .skeletonFilterButton {
   width: 100px;
-  height: 38px;
+  height: var(--form-input-height);
 }
 
 .skeletonSelect {
-  width: 140px;
-  height: 38px;
+  width: var(--min-width-select);
+  height: var(--form-input-height);
 }
 
 .skeletonSortGroup {
@@ -250,8 +250,8 @@
 }
 
 .skeletonSortButton {
-  width: 36px;
-  height: 38px;
+  width: var(--size-button-icon-sm);
+  height: var(--form-input-height);
 }
 
 .skeletonStats {
@@ -262,12 +262,12 @@
 
 .skeletonStatText {
   width: 60px;
-  height: 16px;
+  height: calc(var(--font-size-sm) * var(--line-height-normal));
 }
 
 .skeletonStatTextLong {
   width: 120px;
-  height: 16px;
+  height: calc(var(--font-size-sm) * var(--line-height-normal));
 }
 
 .skeletonGrid {
@@ -307,7 +307,7 @@
   }
 
   .skeletonCarousel > * {
-    flex: 0 0 160px;
+    flex: 0 0 var(--layout-carousel-card-width);
     height: 230px;
   }
 
@@ -359,7 +359,7 @@
   }
 
   .viewToggleButton svg {
-    width: 14px;
-    height: 14px;
+    width: var(--size-icon-xs);
+    height: var(--size-icon-xs);
   }
 }
