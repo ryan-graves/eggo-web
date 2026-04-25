@@ -347,6 +347,8 @@ function scanFile(filePath) {
     const line = lines[i];
     const lineNum = i + 1;
 
+    if (line.includes("token-audit-disable-line")) continue;
+
     for (const rule of RULES) {
       // Reset regex state
       rule.pattern.lastIndex = 0;

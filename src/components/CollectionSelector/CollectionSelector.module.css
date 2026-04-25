@@ -24,8 +24,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-icon-button-sm);
-  height: var(--size-icon-button-sm);
+  width: var(--size-button-icon-xs);
+  height: var(--size-button-icon-xs);
   margin-right: var(--space-1);
   background: none;
   border: none;

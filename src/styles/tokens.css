@@ -164,7 +164,7 @@
   /* ---- Sizing: Icons & Controls ---- */
   --size-icon-xs: 14px;
   --size-icon-sm: 18px;
-  --size-icon-button-sm: 28px;
+  --size-button-icon-xs: 28px;
   --size-button-icon-sm: 32px;
   --size-button-icon: 40px;
   --size-avatar-lg: 48px;

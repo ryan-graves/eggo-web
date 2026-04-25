@@ -14,7 +14,7 @@
 }
 
 html {
-  font-size: var(--font-size-lg);
+  font-size: 16px; /* token-audit-disable-line — rem base for the document */
   -webkit-text-size-adjust: 100%;
 }
 
@@ -85,8 +85,8 @@ img {
 
 /* Focus visible for accessibility */
 :focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
+  outline: var(--outline-width) solid var(--border-focus);
+  outline-offset: var(--outline-offset);
 }
 
 /* Smooth scrolling */
