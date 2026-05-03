@@ -14,6 +14,10 @@
     ],
     "keyframes-name-pattern": "^[a-z][a-zA-Z0-9-]*$",
     "no-descending-specificity": null,
+    "property-no-vendor-prefix": [
+      true,
+      { "ignoreProperties": ["-webkit-text-size-adjust"] }
+    ],
     "color-no-hex": true,
     "function-disallowed-list": ["rgb", "rgba"],
     "scale-unlimited/declaration-strict-value": [

@@ -16,6 +16,7 @@
 html {
   /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- rem base for the document */
   font-size: 16px;
+  -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
