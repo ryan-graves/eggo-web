@@ -44,7 +44,8 @@ src/
 │   ├── tokens.css         # Design tokens — Layer 1 primitives + Layer 2 aliases
 │   └── theme.css          # Themed semantic variables (Layer 2)
 └── types/                 # TypeScript type definitions
-scripts/
+
+scripts/                       # Top-level scripts (sibling of src/)
 └── token-audit.js             # CI-ready audit script for hardcoded values
 ```
 
