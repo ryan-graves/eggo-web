@@ -57,6 +57,7 @@
   -ms-overflow-style: none;
   padding: var(--space-1) var(--layout-content-padding);
   margin: calc(-1 * var(--space-1)) 0;
+
   /* iOS momentum scrolling */
   -webkit-overflow-scrolling: touch;
 }
@@ -83,7 +84,7 @@
 }
 
 /* Desktop: horizontal scrolling becomes grid */
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .header {
     padding: 0;
   }

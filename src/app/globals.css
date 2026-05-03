@@ -1,9 +1,9 @@
-@import '../styles/tokens.css';
-@import '../styles/theme.css';
-@import '../styles/button.css';
-@import '../styles/modal.css';
-@import '../styles/form.css';
-@import '../styles/status.css';
+@import url('../styles/tokens.css');
+@import url('../styles/theme.css');
+@import url('../styles/button.css');
+@import url('../styles/modal.css');
+@import url('../styles/form.css');
+@import url('../styles/status.css');
 
 *,
 *::before,
@@ -14,8 +14,9 @@
 }
 
 html {
-  font-size: 16px; /* token-audit-disable-line — rem base for the document */
-  -webkit-text-size-adjust: 100%;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- rem base for the document */
+  font-size: 16px;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -37,6 +38,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv11', 'ss01';
+
   /* Prevent pull-to-refresh and scroll bleed on iOS */
   overscroll-behavior: none;
 }
@@ -51,6 +53,7 @@ a {
   color: var(--text-link);
   text-decoration: none;
   transition: color var(--transition-normal);
+
   /* Prevent tap highlight on iOS */
   -webkit-tap-highlight-color: transparent;
 }
@@ -67,6 +70,7 @@ button {
     background-color var(--transition-fast),
     color var(--transition-fast),
     border-color var(--transition-fast);
+
   /* Prevent tap highlight and double-tap zoom delay on iOS */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -110,10 +114,11 @@ img {
 }
 
 /* Prevent iOS zoom on input focus - inputs must be 16px minimum */
-@media screen and (max-width: 640px) {
+@media screen and (width <= 640px) {
   input,
   textarea,
   select {
+    /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- iOS Safari zooms inputs <16px */
     font-size: 16px !important;
   }
 }

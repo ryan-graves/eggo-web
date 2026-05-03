@@ -1,0 +1,73 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "plugins": ["stylelint-declaration-strict-value"],
+  "ignoreFiles": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/storybook-static/**",
+    "**/coverage/**"
+  ],
+  "rules": {
+    "selector-pseudo-class-no-unknown": [
+      true,
+      { "ignorePseudoClasses": ["global", "local"] }
+    ],
+    "keyframes-name-pattern": "^[a-z][a-zA-Z0-9-]*$",
+    "no-descending-specificity": null,
+    "color-no-hex": true,
+    "function-disallowed-list": ["rgb", "rgba"],
+    "scale-unlimited/declaration-strict-value": [
+      [
+        "/color$/",
+        "fill",
+        "stroke",
+        "font-size",
+        "font-weight",
+        "box-shadow",
+        "border-radius",
+        "z-index",
+        "opacity"
+      ],
+      {
+        "ignoreValues": {
+          "/color$/": ["currentColor", "transparent", "inherit"],
+          "fill": ["currentColor", "transparent", "none", "inherit"],
+          "stroke": ["currentColor", "transparent", "none", "inherit"],
+          "font-size": ["inherit"],
+          "border-radius": ["0", "50%", "100%", "inherit"],
+          "box-shadow": ["none", "inherit"],
+          "z-index": ["auto", "0", "-1", "inherit"],
+          "opacity": ["0", "1", "inherit"]
+        }
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/styles/*.css", "src/app/globals.css"],
+      "rules": {
+        "selector-class-pattern": [
+          "^[a-z][a-z0-9_]*(-[a-z0-9_]+)*$",
+          { "message": "Expected class name in shared stylesheet to be kebab-case (underscores permitted for data-model values)" }
+        ]
+      }
+    },
+    {
+      "files": ["**/*.module.css"],
+      "rules": {
+        "selector-class-pattern": [
+          "^[a-z][a-zA-Z0-9]*$",
+          { "message": "Expected class name in CSS Module to be camelCase" }
+        ]
+      }
+    },
+    {
+      "files": ["src/styles/tokens.css", "src/styles/theme.css"],
+      "rules": {
+        "color-no-hex": null,
+        "function-disallowed-list": null,
+        "scale-unlimited/declaration-strict-value": null
+      }
+    }
+  ]
+}

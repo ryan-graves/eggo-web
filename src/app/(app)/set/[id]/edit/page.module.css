@@ -247,7 +247,7 @@
 }
 
 /* Mobile */
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .page {
     padding: calc(var(--space-2) + env(safe-area-inset-top))
       calc(var(--space-2) + env(safe-area-inset-right))

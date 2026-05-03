@@ -32,6 +32,7 @@
 [data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='open'] {
   animation-name: slideFromBottom;
 }
+
 [data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='closed'] {
   animation-name: slideToBottom;
 }
@@ -48,9 +49,11 @@
   animation-duration: var(--duration-slower);
   animation-timing-function: var(--ease-vaul);
 }
+
 [data-vaul-overlay][data-vaul-snap-points='false'][data-state='open'] {
   animation-name: fadeIn;
 }
+
 [data-vaul-overlay][data-state='closed'] {
   animation-name: fadeOut;
 }
@@ -62,10 +65,6 @@
 [data-vaul-overlay][data-vaul-snap-points='true'] {
   opacity: 0;
   transition: opacity var(--duration-slower) var(--ease-vaul);
-}
-
-[data-vaul-overlay][data-vaul-snap-points='true'] {
-  opacity: 1;
 }
 
 [data-vaul-drawer]:not([data-vaul-custom-container='true'])::after {
@@ -83,9 +82,7 @@
   height: 200%;
 }
 
-[data-vaul-overlay][data-vaul-snap-points='true']:not([data-vaul-snap-points-overlay='true']):not(
-    [data-state='closed']
-  ) {
+[data-vaul-overlay][data-vaul-snap-points='true']:not([data-vaul-snap-points-overlay='true'], [data-state='closed']) {
   opacity: 0;
 }
 
@@ -172,7 +169,7 @@
 /* Desktop: center modal in viewport as a dialog.
    Uses the CSS `translate` property (independent of `transform`)
    so it composes with Vaul's slide animation transforms. */
-@media (min-width: 1024px) {
+@media (width >= 1024px) {
   .modal-sheet {
     bottom: 50%;
     translate: 0 50%;

@@ -22,8 +22,8 @@
    * ========================================================================== */
 
   /* ---- Colors: Neutral ---- */
-  --color-white: #ffffff;
-  --color-black: #000000;
+  --color-white: #fff;
+  --color-black: #000;
   --color-gray-50: #fafafa;
   --color-gray-100: #f4f4f5;
   --color-gray-200: #e4e4e7;
@@ -83,18 +83,15 @@
   --font-size-2xl: 1.375rem;  /* 22px */
   --font-size-3xl: 1.75rem;   /* 28px */
   --font-size-4xl: 2.25rem;   /* 36px */
-
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-
   --line-height-none: 1;
   --line-height-tight: 1.2;
   --line-height-snug: 1.35;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.65;
-
   --letter-spacing-tighter: -0.02em;
   --letter-spacing-tight: -0.01em;
   --letter-spacing-normal: 0;
@@ -110,9 +107,9 @@
   --radius-full: 9999px;
 
   /* ---- Shadows ---- */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
 
   /* ---- Durations ---- */
   --duration-fast: 150ms;
@@ -259,18 +256,18 @@
   --outline-offset: 2px;
 
   /* ---- Shadow: Component-specific ---- */
-  --shadow-toggle-knob: 0 1px 3px rgb(0 0 0 / 0.2);
-  --shadow-banner: 0 -4px 20px rgb(0 0 0 / 0.15);
+  --shadow-toggle-knob: 0 1px 3px rgb(0 0 0 / 20%);
+  --shadow-banner: 0 -4px 20px rgb(0 0 0 / 15%);
 
   /* ---- Overlay ---- */
-  --overlay-dark: rgb(0 0 0 / 0.4);
-  --overlay-light-20: rgb(255 255 255 / 0.2);
-  --overlay-light-30: rgb(255 255 255 / 0.3);
-  --overlay-light-40: rgb(255 255 255 / 0.4);
+  --overlay-dark: rgb(0 0 0 / 40%);
+  --overlay-light-20: rgb(255 255 255 / 20%);
+  --overlay-light-30: rgb(255 255 255 / 30%);
+  --overlay-light-40: rgb(255 255 255 / 40%);
 }
 
 /* Mobile overrides */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   :root {
     --layout-content-padding: var(--space-2);
   }

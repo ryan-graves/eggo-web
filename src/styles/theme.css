@@ -36,7 +36,7 @@
   /* Interactive - Orange accent */
   --interactive-primary: var(--color-orange-500);
   --interactive-primary-hover: var(--color-orange-400);
-  --interactive-primary-bg: rgba(249, 115, 22, 0.1);
+  --interactive-primary-bg: rgb(249 115 22 / 10%);
   --interactive-secondary: var(--color-gray-800);
   --interactive-secondary-hover: var(--color-gray-700);
 
@@ -47,10 +47,10 @@
   --status-info: var(--color-info);
 
   /* Status Backgrounds (for badges, alerts) */
-  --status-success-bg: rgba(34, 197, 94, 0.15);
-  --status-warning-bg: rgba(245, 158, 11, 0.15);
-  --status-error-bg: rgba(239, 68, 68, 0.15);
-  --status-info-bg: rgba(59, 130, 246, 0.15);
+  --status-success-bg: rgb(34 197 94 / 15%);
+  --status-warning-bg: rgb(245 158 11 / 15%);
+  --status-error-bg: rgb(239 68 68 / 15%);
+  --status-info-bg: rgb(59 130 246 / 15%);
 
   /* Status: Unopened (neutral variant, themed) */
   --status-unopened-bg: var(--color-gray-700);
@@ -60,8 +60,8 @@
   --modal-handle-bg: var(--color-gray-300);
 
   /* Shadows */
-  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 30%), 0 2px 4px -2px rgb(0 0 0 / 30%);
+  --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 40%), 0 4px 6px -4px rgb(0 0 0 / 40%);
 }
 
 /* Light Theme */
@@ -91,7 +91,7 @@
   /* Interactive - Orange accent */
   --interactive-primary: var(--color-orange-500);
   --interactive-primary-hover: var(--color-orange-600);
-  --interactive-primary-bg: rgba(249, 115, 22, 0.1);
+  --interactive-primary-bg: rgb(249 115 22 / 10%);
   --interactive-secondary: var(--color-gray-200);
   --interactive-secondary-hover: var(--color-gray-300);
 
@@ -121,7 +121,7 @@
 
 /* System preference - when data-theme is "system" or not set */
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']):not([data-theme='light']) {
+  :root:not([data-theme='dark'], [data-theme='light']) {
     color-scheme: light;
 
     --surface-background: var(--color-gray-50);
@@ -129,34 +129,27 @@
     --surface-secondary: var(--color-gray-100);
     --surface-tertiary: var(--color-gray-200);
     --surface-inverse: var(--color-gray-900);
-
     --text-primary: var(--color-gray-900);
     --text-secondary: var(--color-gray-600);
     --text-tertiary: var(--color-gray-500);
     --text-inverse: var(--color-white);
     --text-link: var(--color-orange-600);
     --text-link-hover: var(--color-orange-500);
-
     --border-primary: var(--color-gray-200);
     --border-secondary: var(--color-gray-300);
     --border-focus: var(--color-orange-500);
-
     --interactive-primary: var(--color-orange-500);
     --interactive-primary-hover: var(--color-orange-600);
-    --interactive-primary-bg: rgba(249, 115, 22, 0.1);
+    --interactive-primary-bg: rgb(249 115 22 / 10%);
     --interactive-secondary: var(--color-gray-200);
     --interactive-secondary-hover: var(--color-gray-300);
-
     --status-success-bg: #dcfce7;
     --status-warning-bg: #fef3c7;
     --status-error-bg: #fee2e2;
     --status-info-bg: #dbeafe;
-
     --status-unopened-bg: var(--color-gray-200);
     --status-unopened: var(--color-gray-700);
-
     --modal-handle-bg: var(--color-gray-300);
-
     --shadow-card: var(--shadow-md);
     --shadow-dropdown: var(--shadow-lg);
   }
@@ -173,7 +166,7 @@
 /* Mono theme base - applies to all mono theme instances */
 [data-ui-theme='mono'] {
   /* Heading font */
-  --font-heading: var(--font-instrument-serif), Georgia, serif;
+  --font-heading: var(--font-instrument-serif), georgia, serif;
 }
 
 /* Mono theme in DARK mode - explicit selectors for all dark mode cases */
@@ -182,7 +175,7 @@
   /* Light buttons with dark text for dark backgrounds */
   --interactive-primary: var(--color-gray-100);
   --interactive-primary-hover: var(--color-white);
-  --interactive-primary-bg: rgba(255, 255, 255, 0.1);
+  --interactive-primary-bg: rgb(255 255 255 / 10%);
   --text-inverse: var(--color-gray-900);
   --text-link: var(--color-gray-300);
   --text-link-hover: var(--color-gray-100);
@@ -194,7 +187,7 @@
   /* Dark buttons with light text for light backgrounds */
   --interactive-primary: var(--color-gray-900);
   --interactive-primary-hover: var(--color-black);
-  --interactive-primary-bg: rgba(0, 0, 0, 0.05);
+  --interactive-primary-bg: rgb(0 0 0 / 5%);
   --text-inverse: var(--color-white);
   --text-link: var(--color-gray-700);
   --text-link-hover: var(--color-gray-900);
@@ -203,10 +196,10 @@
 
 /* Mono theme with system preference light mode (when data-theme not explicitly set) */
 @media (prefers-color-scheme: light) {
-  :root[data-ui-theme='mono']:not([data-theme='dark']):not([data-theme='light']) {
+  :root[data-ui-theme='mono']:not([data-theme='dark'], [data-theme='light']) {
     --interactive-primary: var(--color-gray-900);
     --interactive-primary-hover: var(--color-black);
-    --interactive-primary-bg: rgba(0, 0, 0, 0.05);
+    --interactive-primary-bg: rgb(0 0 0 / 5%);
     --text-inverse: var(--color-white);
     --text-link: var(--color-gray-700);
     --text-link-hover: var(--color-gray-900);

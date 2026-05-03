@@ -112,6 +112,7 @@
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -287,12 +288,13 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .page {
     padding: calc(var(--space-2) + env(safe-area-inset-top))
       calc(var(--space-2) + env(safe-area-inset-right))
@@ -338,7 +340,7 @@
 }
 
 /* Match SetList mobile breakpoint */
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .skeletonFilters {
     display: none;
   }
@@ -352,7 +354,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .viewToggleButton {
     padding: var(--space-2);
     font-size: var(--font-size-xs);

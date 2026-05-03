@@ -73,7 +73,6 @@
   background-color: var(--surface-primary);
   height: var(--form-input-height);
   box-sizing: border-box;
-  -webkit-appearance: none;
   appearance: none;
   transition: border-color var(--transition-fast);
 }
@@ -103,7 +102,7 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .form-date-occasion-row {
     flex-direction: column;
   }
