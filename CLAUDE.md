@@ -95,6 +95,7 @@ npm run storybook    # Start Storybook
   - Motion: use `--duration-*`, `--transition-*`, `--ease-*` tokens
   - Sizing: use `--size-*`, `--layout-*`, `--max-width-*`, `--min-width-*` tokens
 - **Stylelint**: `npm run lint:css` enforces the token rules above plus CSS error-checking (duplicate properties, empty blocks, etc.). Config in `.stylelintrc.json`. Token-definition files (`tokens.css`, `theme.css`) are exempted from token-discipline rules. Use `/* stylelint-disable-next-line <rule> -- reason */` for legitimate exceptions.
+- **Stylelint blind spot — string-encoded values**: stylelint parses CSS declarations and can't see colors embedded inside string-encoded data URIs (e.g., `stroke='%23737373'` inside `background-image: url("data:image/svg+xml,...")`). For SVG icons that need to follow theme, use `mask-image` plus `background-color: var(--text-*)` so the color comes from a theme-aware token instead of being baked into the SVG.
 
 ### Components
 
