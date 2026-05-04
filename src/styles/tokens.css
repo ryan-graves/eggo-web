@@ -2,7 +2,7 @@
  * Design Tokens — Three-Layer Architecture
  *
  * Layer 1: Primitive tokens — raw design values (colors, spacing, type scale).
- * Layer 2: Semantic aliases — project-level references to Layer 1 with fallbacks.
+ * Layer 2: Semantic aliases — project-level references to Layer 1.
  * Layer 3: Components — consume Layer 2 semantic aliases for themed values (colors,
  *          shadows, interactive states). Scale tokens (--space-*, --font-size-*,
  *          --radius-*, --font-weight-*, --line-height-*, --letter-spacing-*) may be
@@ -163,6 +163,7 @@
   --size-icon-sm: 18px;
   --size-button-icon-xs: 28px;
   --size-button-icon-sm: 32px;
+  --size-button-icon-md: 36px;
   --size-button-icon: 40px;
   --size-avatar-lg: 48px;
 

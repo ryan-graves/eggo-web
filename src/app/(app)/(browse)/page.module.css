@@ -170,13 +170,13 @@
 
 .skeletonToggle {
   width: 175px;
-  height: 36px;
+  height: var(--size-button-icon-md);
   border-radius: var(--radius-md);
 }
 
 .skeletonAddButton {
   width: 85px;
-  height: 36px;
+  height: var(--size-button-icon-md);
   border-radius: var(--radius-md);
 }
 

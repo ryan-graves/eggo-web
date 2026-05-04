@@ -126,7 +126,7 @@
 }
 
 .imageBannerButton:hover:not(:disabled) {
-  background-color: var(--status-error-bg);
+  background-color: var(--status-error-bg-hover);
 }
 
 .imageBannerButton:disabled {

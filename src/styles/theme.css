@@ -50,6 +50,7 @@
   --status-success-bg: rgb(34 197 94 / 15%);
   --status-warning-bg: rgb(245 158 11 / 15%);
   --status-error-bg: rgb(239 68 68 / 15%);
+  --status-error-bg-hover: rgb(239 68 68 / 25%);
   --status-info-bg: rgb(59 130 246 / 15%);
 
   /* Status: Unopened (neutral variant, themed) */
@@ -105,6 +106,7 @@
   --status-success-bg: #dcfce7;
   --status-warning-bg: #fef3c7;
   --status-error-bg: #fee2e2;
+  --status-error-bg-hover: #fecaca;
   --status-info-bg: #dbeafe;
 
   /* Status: Unopened (neutral variant, themed) */
@@ -146,6 +148,7 @@
     --status-success-bg: #dcfce7;
     --status-warning-bg: #fef3c7;
     --status-error-bg: #fee2e2;
+    --status-error-bg-hover: #fecaca;
     --status-info-bg: #dbeafe;
     --status-unopened-bg: var(--color-gray-200);
     --status-unopened: var(--color-gray-700);
