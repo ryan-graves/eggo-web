@@ -20,7 +20,7 @@
       { "ignoreProperties": ["-webkit-text-size-adjust", "-webkit-appearance"] }
     ],
     "color-no-hex": true,
-    "color-named": ["never", { "ignore": ["inside-function"] }],
+    "color-named": "never",
     "function-disallowed-list": [
       "rgb",
       "rgba",

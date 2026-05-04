@@ -251,7 +251,7 @@
 }
 
 .skeletonSortButton {
-  width: var(--size-button-icon-sm);
+  width: var(--size-button-icon-md);
   height: var(--form-input-height);
 }
 

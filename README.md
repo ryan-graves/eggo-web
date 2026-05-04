@@ -68,6 +68,7 @@ A web application for managing your Lego set collection. Track what you own, whe
 npm run dev          # Start dev server
 npm run build        # Production build
 npm run lint         # Run ESLint
+npm run lint:css     # Run stylelint (token discipline + CSS conventions)
 npm run format       # Format with Prettier
 npm run typecheck    # TypeScript type checking
 npm run test         # Run Jest tests
