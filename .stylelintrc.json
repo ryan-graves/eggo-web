@@ -17,7 +17,7 @@
     "media-feature-range-notation": null,
     "property-no-vendor-prefix": [
       true,
-      { "ignoreProperties": ["-webkit-text-size-adjust"] }
+      { "ignoreProperties": ["-webkit-text-size-adjust", "-webkit-appearance"] }
     ],
     "color-no-hex": true,
     "color-named": ["never", { "ignore": ["inside-function"] }],
