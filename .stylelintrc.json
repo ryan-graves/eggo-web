@@ -20,7 +20,19 @@
       { "ignoreProperties": ["-webkit-text-size-adjust"] }
     ],
     "color-no-hex": true,
-    "function-disallowed-list": ["rgb", "rgba"],
+    "color-named": ["never", { "ignore": ["inside-function"] }],
+    "function-disallowed-list": [
+      "rgb",
+      "rgba",
+      "hsl",
+      "hsla",
+      "hwb",
+      "lab",
+      "lch",
+      "oklch",
+      "oklab",
+      "color"
+    ],
     "scale-unlimited/declaration-strict-value": [
       [
         "/color$/",
@@ -70,6 +82,7 @@
       "files": ["src/styles/tokens.css", "src/styles/theme.css"],
       "rules": {
         "color-no-hex": null,
+        "color-named": null,
         "function-disallowed-list": null,
         "scale-unlimited/declaration-strict-value": null
       }

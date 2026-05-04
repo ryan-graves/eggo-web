@@ -32,7 +32,7 @@ A web application for managing your Lego set collection. Track what you own, whe
 
 ### Prerequisites
 
-- Node.js 20.19+ (matches Next.js 16 and stylelint 17 requirements)
+- Node.js 20.19+ (required by stylelint 17; Next.js 16 needs ≥20.9)
 - A Firebase project
 - Brickset API key (recommended) or Rebrickable API key (fallback)
 
