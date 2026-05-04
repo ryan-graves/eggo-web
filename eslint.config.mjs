@@ -20,6 +20,12 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
   ]),
   ...storybook.configs['flat/recommended'],
+  {
+    files: ['*.config.{js,cjs}', 'jest.setup.js'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 ]);
 
 export default eslintConfig;

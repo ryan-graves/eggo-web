@@ -52,7 +52,7 @@ describe('SetCard', () => {
     render(<SetCard set={mockSet} />);
 
     expect(screen.getByText('Millennium Falcon')).toBeInTheDocument();
-    expect(screen.getByText('75192')).toBeInTheDocument();
+    expect(screen.getByText('#75192')).toBeInTheDocument();
   });
 
   it('renders set image when available', () => {
@@ -116,7 +116,7 @@ describe('SetCard', () => {
     render(<SetCard set={mockSet} />);
 
     const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/collection/set-1');
+    expect(link).toHaveAttribute('href', '/set/set-1');
   });
 
   it('renders different status labels correctly', () => {
