@@ -169,7 +169,7 @@
 /* Desktop: center modal in viewport as a dialog.
    Uses the CSS `translate` property (independent of `transform`)
    so it composes with Vaul's slide animation transforms. */
-@media (width >= 1024px) {
+@media (min-width: 1024px) {
   .modal-sheet {
     bottom: 50%;
     translate: 0 50%;

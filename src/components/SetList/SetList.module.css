@@ -92,7 +92,7 @@
 }
 
 /* At wide viewports where filters won't wrap, push sort right with a divider */
-@media (width >= 1024px) {
+@media (min-width: 1024px) {
   .sortGroup {
     margin-left: auto;
     padding-left: var(--space-3);
@@ -151,7 +151,7 @@
 }
 
 /* Mobile layout (< 640px) */
-@media (width <= 640px) {
+@media (max-width: 640px) {
   .mobileFilters {
     display: flex;
   }

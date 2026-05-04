@@ -294,7 +294,7 @@
   }
 }
 
-@media (width <= 768px) {
+@media (max-width: 768px) {
   .page {
     padding: calc(var(--space-2) + env(safe-area-inset-top))
       calc(var(--space-2) + env(safe-area-inset-right))
@@ -340,7 +340,7 @@
 }
 
 /* Match SetList mobile breakpoint */
-@media (width <= 640px) {
+@media (max-width: 640px) {
   .skeletonFilters {
     display: none;
   }
@@ -354,7 +354,7 @@
   }
 }
 
-@media (width <= 480px) {
+@media (max-width: 480px) {
   .viewToggleButton {
     padding: var(--space-2);
     font-size: var(--font-size-xs);

@@ -86,7 +86,7 @@
   color: var(--text-secondary);
 }
 
-@media (width <= 640px) {
+@media (max-width: 640px) {
   .banner {
     padding: var(--space-2) var(--space-3);
   }

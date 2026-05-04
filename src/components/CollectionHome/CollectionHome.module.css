@@ -10,7 +10,7 @@
   justify-content: flex-end;
 }
 
-@media (width <= 767px) {
+@media (max-width: 767px) {
   .customizeRow {
     padding: 0 var(--layout-content-padding);
   }
@@ -81,7 +81,7 @@
   text-underline-offset: var(--space-0-5);
 }
 
-@media (width >= 768px) {
+@media (min-width: 768px) {
   .container {
     gap: var(--space-8);
   }

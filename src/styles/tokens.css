@@ -267,7 +267,7 @@
 }
 
 /* Mobile overrides */
-@media (width <= 768px) {
+@media (max-width: 768px) {
   :root {
     --layout-content-padding: var(--space-2);
   }

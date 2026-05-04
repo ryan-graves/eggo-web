@@ -115,7 +115,7 @@ img {
 }
 
 /* Prevent iOS zoom on input focus - inputs must be 16px minimum */
-@media screen and (width <= 640px) {
+@media screen and (max-width: 640px) {
   input,
   textarea,
   select {

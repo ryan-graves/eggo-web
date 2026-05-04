@@ -84,7 +84,7 @@
 }
 
 /* Desktop: horizontal scrolling becomes grid */
-@media (width >= 768px) {
+@media (min-width: 768px) {
   .header {
     padding: 0;
   }

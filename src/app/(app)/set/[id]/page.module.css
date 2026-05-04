@@ -267,7 +267,7 @@
 
 /* Dark mode for status badges handled by global status.css */
 
-@media (width <= 768px) {
+@media (max-width: 768px) {
   .page {
     padding: calc(var(--space-2) + env(safe-area-inset-top))
       calc(var(--space-2) + env(safe-area-inset-right))
