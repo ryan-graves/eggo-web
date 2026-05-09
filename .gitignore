@@ -57,3 +57,6 @@ debug-storybook.log
 
 # firebase migration export (contains user data — never commit)
 /firebase-export/
+
+# claude code: project-scoped MCP servers (contains personal access tokens)
+/.mcp.json
