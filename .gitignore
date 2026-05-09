@@ -54,3 +54,6 @@ debug-storybook.log
 
 # claude code
 .claude/settings.local.json
+
+# firebase migration export (contains user data — never commit)
+/firebase-export/
