@@ -15,7 +15,7 @@ import {
   createCollection,
   subscribeToCollectionsForUser,
   subscribeToSetsForCollection,
-} from '@/lib/firebase';
+} from '@/lib/supabase';
 import type { Collection, LegoSet } from '@/types';
 
 interface CollectionContextValue {
@@ -66,7 +66,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       return;
     }
 
-    const unsubscribe = subscribeToCollectionsForUser(user.uid, (userCollections) => {
+    const unsubscribe = subscribeToCollectionsForUser(user.id, (userCollections) => {
       setCollections(userCollections);
 
       // Auto-select first collection if none selected, or update active collection with fresh data
@@ -155,7 +155,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
           id: collectionId,
           name,
           owners,
-          memberUserIds: [user.uid],
+          memberUserIds: [user.id],
           createdAt: now,
           updatedAt: now,
         };

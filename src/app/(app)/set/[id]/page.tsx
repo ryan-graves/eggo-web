@@ -9,7 +9,7 @@ import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { formatDateForDisplay } from '@/lib/date';
 import { removeImageBackground } from '@/lib/image';
-import { updateSet } from '@/lib/firebase';
+import { updateSet } from '@/lib/supabase';
 import { LAST_BROWSE_PATH_KEY, useNavigation } from '@/hooks/useNavigation';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';

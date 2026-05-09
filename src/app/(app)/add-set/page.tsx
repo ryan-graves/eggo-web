@@ -7,7 +7,7 @@ import { useNavigation } from '@/hooks/useNavigation';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
-import { createSet, findSetsByNumber } from '@/lib/firebase';
+import { createSet, findSetsByNumber } from '@/lib/supabase';
 import { getSetDataProvider } from '@/lib/providers';
 import { removeImageBackground } from '@/lib/image';
 import type { SetStatus, SetLookupResult, LegoSet } from '@/types';

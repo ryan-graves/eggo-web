@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useNavigation } from '@/hooks/useNavigation';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
-import { updateCollection, deleteCollection } from '@/lib/firebase';
+import { updateCollection, deleteCollection } from '@/lib/supabase';
 import styles from './page.module.css';
 
 function CollectionSettingsContent(): React.JSX.Element {

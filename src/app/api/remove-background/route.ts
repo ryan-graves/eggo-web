@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdminConfigured, uploadToStorage } from '@/lib/firebase/admin';
+import { isAdminConfigured, uploadProcessedImage } from '@/lib/supabase/admin';
 
 /**
  * Background Removal API Route
  *
  * This route proxies background removal requests to a third-party service,
- * then uploads the processed image to Firebase Storage.
+ * then uploads the processed image to Supabase Storage.
  *
  * ## Provider: rembg.com (Current)
  * Cloud API built on the open-source rembg library.
@@ -110,12 +110,11 @@ export async function POST(request: NextRequest) {
     const imageBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(imageBuffer);
 
-    // If Firebase Admin is configured and setId provided, upload to Storage
+    // If Supabase admin is configured and setId provided, upload to Storage
     if (isAdminConfigured() && setId) {
       try {
-        console.log('[remove-background API] Uploading to Firebase Storage...');
-        const storagePath = `processed-images/${setId}.png`;
-        const publicUrl = await uploadToStorage(buffer, storagePath, 'image/png');
+        console.log('[remove-background API] Uploading to Supabase Storage...');
+        const publicUrl = await uploadProcessedImage(buffer, setId, 'image/png');
         console.log('[remove-background API] Uploaded to Storage:', publicUrl);
         return NextResponse.json({ processedImageUrl: publicUrl });
       } catch (storageError) {

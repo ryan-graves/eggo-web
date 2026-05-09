@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
-import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
+import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/supabase';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './page.module.css';
 

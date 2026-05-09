@@ -5,7 +5,7 @@ import {
   enablePublicSharing,
   disablePublicSharing,
   updatePublicViewSettings,
-} from '@/lib/firebase';
+} from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme, useUITheme } from '@/hooks/useTheme';
 import { useCollection } from '@/hooks/useCollection';
@@ -133,12 +133,12 @@ function SettingsContent(): React.JSX.Element {
           <h2 className={styles.sectionTitle}>Account</h2>
           <div className={styles.card}>
             <div className={styles.accountInfo}>
-              {user?.photoURL && (
+              {user?.user_metadata?.avatar_url && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.photoURL} alt="" className={styles.avatar} />
+                <img src={user.user_metadata?.avatar_url} alt="" className={styles.avatar} />
               )}
               <div className={styles.accountDetails}>
-                <p className={styles.accountName}>{user?.displayName || 'User'}</p>
+                <p className={styles.accountName}>{user?.user_metadata?.full_name || 'User'}</p>
                 <p className={styles.accountEmail}>{user?.email}</p>
               </div>
             </div>

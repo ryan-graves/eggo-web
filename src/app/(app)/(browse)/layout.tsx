@@ -197,10 +197,10 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     navigateTo('/add-set');
   };
 
-  const avatarLink = user?.photoURL ? (
+  const avatarLink = user?.user_metadata?.avatar_url ? (
     <Link href="/settings" className={styles.avatarLink}>
       <Image
-        src={user.photoURL}
+        src={user.user_metadata?.avatar_url}
         alt=""
         width={32}
         height={32}
