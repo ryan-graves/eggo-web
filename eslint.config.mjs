@@ -21,7 +21,7 @@ const eslintConfig = defineConfig([
   ]),
   ...storybook.configs['flat/recommended'],
   {
-    files: ['*.config.{js,cjs}', 'jest.setup.js'],
+    files: ['*.config.{js,cjs}'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
     },

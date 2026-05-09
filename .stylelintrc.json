@@ -19,6 +19,10 @@
       true,
       { "ignoreProperties": ["-webkit-text-size-adjust", "-webkit-appearance"] }
     ],
+    "value-keyword-case": [
+      "lower",
+      { "ignoreProperties": ["/^font/", "/^--font/"] }
+    ],
     "color-no-hex": true,
     "color-named": "never",
     "function-disallowed-list": [

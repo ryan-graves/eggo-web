@@ -169,7 +169,7 @@
 /* Mono theme base - applies to all mono theme instances */
 [data-ui-theme='mono'] {
   /* Heading font */
-  --font-heading: var(--font-instrument-serif), georgia, serif;
+  --font-heading: var(--font-instrument-serif), Georgia, serif;
 }
 
 /* Mono theme in DARK mode - explicit selectors for all dark mode cases */
