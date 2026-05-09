@@ -1,11 +1,11 @@
-import type { Config } from 'jest';
-import nextJest from 'next/jest.js';
+const nextJest = require('next/jest.js');
 
 const createJestConfig = nextJest({
   dir: './',
 });
 
-const config: Config = {
+/** @type {import('jest').Config} */
+const config = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testEnvironment: 'jsdom',
   moduleNameMapper: {
@@ -15,4 +15,4 @@ const config: Config = {
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/*.stories.{ts,tsx}'],
 };
 
-export default createJestConfig(config);
+module.exports = createJestConfig(config);

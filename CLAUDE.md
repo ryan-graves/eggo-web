@@ -41,9 +41,12 @@ src/
 │   ├── image/             # Image processing (background removal)
 │   └── providers/         # External data providers (Brickset/Rebrickable)
 ├── styles/
-│   ├── tokens.css         # Design tokens (colors, spacing, etc.)
-│   └── theme.css          # Semantic theme variables
+│   ├── tokens.css         # Design tokens — Layer 1 primitives + Layer 2 aliases
+│   └── theme.css          # Themed semantic variables (Layer 2)
 └── types/                 # TypeScript type definitions
+
+scripts/                       # Top-level scripts (sibling of src/)
+└── code-review.sh             # Code review helper script
 ```
 
 ## Development Commands
@@ -52,6 +55,7 @@ src/
 npm run dev          # Start dev server
 npm run build        # Production build
 npm run lint         # Run ESLint
+npm run lint:css     # Run stylelint (token discipline + CSS conventions)
 npm run format       # Format with Prettier
 npm run typecheck    # TypeScript type checking
 npm run test         # Run Jest tests
@@ -69,12 +73,29 @@ npm run storybook    # Start Storybook
 - Export types from dedicated type files, not inline
 - Use explicit return types for functions
 
-### CSS
+### CSS & Design System
 
 - Use CSS Modules for component styles
 - Use semantic CSS variables from `theme.css` (e.g., `var(--text-primary)`)
 - Never use hard-coded colors - always reference tokens or semantic variables
 - Keep specificity low - prefer class selectors
+- Use design tokens from `tokens.css` (Layer 1 primitives) and `theme.css` (Layer 2 semantic aliases). Token discipline is enforced by stylelint (`npm run lint:css`) and runs automatically on pre-commit.
+- **Three-layer token architecture:**
+  - Layer 1 (primitives): Raw values in `tokens.css` (e.g., `--color-gray-500`, `--space-4`)
+  - Layer 2 (semantic aliases): Project-level references in `tokens.css` and `theme.css` (e.g., `--text-primary`, `--surface-background`)
+  - Layer 3 (components): CSS Modules that consume Layer 2 aliases for themed values. Scale tokens (`--space-*`, `--font-size-*`, `--radius-*`, etc.) may be used directly since they don't change with theme.
+- **Token rules — no hardcoded raw values in components:**
+  - Colors: use Layer 2 semantic tokens (`--text-*`, `--surface-*`, `--border-*`, `--interactive-*`, `--status-*`) — never use hex/rgb directly
+  - Spacing: use `--space-*` scale tokens for padding, margin, gap
+  - Typography: use `--font-size-*`, `--font-weight-*`, `--line-height-*`, `--letter-spacing-*` scale tokens
+  - Border radius: use `--radius-*` scale tokens
+  - Shadows: use `--shadow-*` tokens
+  - Z-index: use `--z-*` tokens
+  - Opacity: use `--opacity-*` tokens
+  - Motion: use `--duration-*`, `--transition-*`, `--ease-*` tokens
+  - Sizing: use `--size-*`, `--layout-*`, `--max-width-*`, `--min-width-*` tokens
+- **Stylelint**: `npm run lint:css` enforces the token rules above plus CSS error-checking (duplicate properties, empty blocks, etc.). Config in `.stylelintrc.json`. Token-definition files (`tokens.css`, `theme.css`) are exempted from token-discipline rules. Use `/* stylelint-disable-next-line <rule> -- reason */` for legitimate exceptions.
+- **Stylelint blind spot — string-encoded values**: stylelint parses CSS declarations and can't see colors embedded inside string-encoded data URIs (e.g., `stroke='%23737373'` inside `background-image: url("data:image/svg+xml,...")`). For SVG icons that need to follow theme, use `mask-image` plus `background-color: var(--text-*)` so the color comes from a theme-aware token instead of being baked into the SVG.
 
 ### Components
 

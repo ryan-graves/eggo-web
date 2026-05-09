@@ -1,5 +1,5 @@
 .headerSpacer {
-  width: 40px;
+  width: var(--size-button-icon);
 }
 
 /* === Section list (reorder view) === */
@@ -22,7 +22,6 @@
   background-color: var(--surface-secondary);
   border-radius: var(--radius-md);
   user-select: none;
-  -webkit-user-select: none;
 }
 
 .dragHandle {
@@ -54,6 +53,7 @@
   justify-content: center;
   color: var(--text-secondary);
   flex-shrink: 0;
+
   /* Match the title line height so icon centers with the first text line */
   height: calc(var(--font-size-sm) * var(--line-height-normal));
 }
@@ -73,8 +73,8 @@
 }
 
 .removeButton {
-  width: 28px;
-  height: 28px;
+  width: var(--size-button-icon-xs);
+  height: var(--size-button-icon-xs);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,7 +91,8 @@
 
 @media (hover: hover) {
   .removeButton:hover {
-    background-color: var(--status-error-bg, rgb(239 68 68 / 0.1));
+    /* stylelint-disable-next-line function-disallowed-list -- fallback only fires if token is unloaded */
+    background-color: var(--status-error-bg, rgb(239 68 68 / 10%));
     color: var(--status-error, var(--color-red-500));
   }
 }

@@ -5,7 +5,7 @@
   flex-direction: column;
   padding: calc(var(--space-3) + env(safe-area-inset-top))
     calc(var(--space-3) + env(safe-area-inset-right))
-    calc(56px + env(safe-area-inset-bottom))
+    calc(var(--layout-banner-height) + env(safe-area-inset-bottom))
     calc(var(--space-3) + env(safe-area-inset-left));
   gap: var(--space-3);
   background-color: var(--surface-background);
@@ -15,7 +15,7 @@
 .header {
   position: sticky;
   top: calc(var(--space-3) + env(safe-area-inset-top));
-  z-index: 100;
+  z-index: var(--z-header);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -139,7 +139,7 @@
   .page {
     padding: calc(var(--space-2) + env(safe-area-inset-top))
       calc(var(--space-2) + env(safe-area-inset-right))
-      calc(56px + env(safe-area-inset-bottom))
+      calc(var(--layout-banner-height) + env(safe-area-inset-bottom))
       calc(var(--space-2) + env(safe-area-inset-left));
     gap: var(--space-2);
   }

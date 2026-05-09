@@ -9,10 +9,10 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  z-index: 9999;
+  height: var(--size-progress-bar);
+  z-index: var(--z-progress);
   background-color: var(--interactive-primary);
   transform-origin: left;
   transform: scaleX(0);
-  animation: progress-grow 2s ease-out forwards;
+  animation: progress-grow var(--duration-progress) ease-out forwards;
 }
