@@ -10,7 +10,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import {
   createCollection,
@@ -150,8 +149,8 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
         const collectionId = await createCollection({ name, owners });
 
         // Optimistically update state so the UI transitions immediately
-        // rather than waiting for the Firestore subscription to detect the new document
-        const now = Timestamp.now();
+        // rather than waiting for the realtime subscription to deliver the new row
+        const now = new Date().toISOString();
         const newCollection: Collection = {
           id: collectionId,
           name,
