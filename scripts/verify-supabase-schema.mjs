@@ -1,3 +1,11 @@
+/**
+ * Sanity-checks the Supabase schema for this project.
+ *
+ * Expects all migrations in supabase/migrations/ to have been applied
+ * (currently 0001 + 0002 + 0003 + 0004). Pre-cutover environments — where
+ * 0003 has run but 0004 hasn't, or 0003 hasn't run yet — will see clear
+ * "apply 000X" messages on the affected steps rather than a generic pass.
+ */
 import { createClient } from '@supabase/supabase-js';
 
 const required = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_SECRET_KEY'];
@@ -87,16 +95,22 @@ await step('is_collection_member helper exists', async () => {
   return 'returns false for fake ids';
 });
 
-// ---- replace_collection_members RPC exists ----
-// Calling without auth context fails the membership check and raises.
-// Either an error or a 'not authorized' response confirms the function is wired.
-await step('replace_collection_members RPC exists', async () => {
+// ---- replace_collection_members RPC exists and rejects anon ----
+// Calling without auth context should fail the membership check and raise.
+// Distinguishes "function missing" (a "could not find / does not exist"
+// error from PostgREST) from "function present but rejecting," so a
+// pre-0003 environment surfaces a clear "apply 0003" message instead of
+// silently passing on the wrong reason.
+await step('replace_collection_members RPC exists and rejects anon', async () => {
   const fake = '00000000-0000-0000-0000-000000000000';
   const { error } = await anon.rpc('replace_collection_members', {
     coll_id: fake,
     target_user_ids: [fake],
   });
   if (!error) throw new Error('expected unauthorized error from anon caller');
+  if (/Could not find the function|does not exist/i.test(error.message ?? '')) {
+    throw new Error('replace_collection_members not defined — apply 0003_drop_claim_flow.sql');
+  }
   return `correctly rejected: ${error.message}`;
 });
 

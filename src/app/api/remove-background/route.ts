@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdminConfigured, uploadProcessedImage, verifyAuthToken } from '@/lib/supabase/admin';
+import {
+  getAdminClient,
+  isAdminConfigured,
+  uploadProcessedImage,
+  verifyAuthToken,
+} from '@/lib/supabase/admin';
 
 /**
  * Background Removal API Route
@@ -41,6 +46,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Background removal not configured' }, { status: 503 });
   }
 
+  // Auth verification depends on the secret-key admin client. If it's not
+  // configured, fail closed with a 503 instead of letting verifyAuthToken
+  // throw and surface a 500.
+  if (!isAdminConfigured()) {
+    return NextResponse.json({ error: 'Server is not configured for this operation' }, { status: 503 });
+  }
+
   const auth = await verifyAuthToken(request.headers.get('Authorization'));
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -63,6 +75,38 @@ export async function POST(request: NextRequest) {
       if (!safeIdPattern.test(setId)) {
         console.log('[remove-background API] Invalid setId format:', setId);
         return NextResponse.json({ error: 'Invalid setId format' }, { status: 400 });
+      }
+    }
+
+    // When a setId is provided we'll write to processed-images/{setId}.png,
+    // which can overwrite any existing object at that path. Verify the
+    // caller is a member of the set's collection before doing any work.
+    // (No setId = add-set preview path, which only returns base64 and never
+    // touches Storage.)
+    if (setId) {
+      const adminClient = getAdminClient();
+      const { data: setRow, error: setLookupError } = await adminClient
+        .from('sets')
+        .select('collection_id')
+        .eq('id', setId)
+        .maybeSingle();
+      if (setLookupError) {
+        console.error('[remove-background API] Set lookup failed:', setLookupError);
+        return NextResponse.json({ error: 'Failed to look up set' }, { status: 500 });
+      }
+      if (!setRow) {
+        return NextResponse.json({ error: 'Set not found' }, { status: 404 });
+      }
+      const { data: isMember, error: memberError } = await adminClient.rpc('is_collection_member', {
+        coll_id: setRow.collection_id,
+        uid: auth.uid,
+      });
+      if (memberError) {
+        console.error('[remove-background API] Membership check failed:', memberError);
+        return NextResponse.json({ error: 'Failed to verify membership' }, { status: 500 });
+      }
+      if (!isMember) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
 
@@ -115,8 +159,9 @@ export async function POST(request: NextRequest) {
     const imageBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(imageBuffer);
 
-    // If Supabase admin is configured and setId provided, upload to Storage
-    if (isAdminConfigured() && setId) {
+    // setId provided → upload to Storage. (Admin config was already
+    // verified at the top of the route.)
+    if (setId) {
       try {
         console.log('[remove-background API] Uploading to Supabase Storage...');
         const publicUrl = await uploadProcessedImage(buffer, setId, 'image/png');
@@ -130,8 +175,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fallback to base64 data URL if Storage not configured
-    console.log('[remove-background API] Storage not configured, returning base64');
+    // No setId → add-set preview path. Return base64 so the form can
+    // display the processed image before the set has been created;
+    // the eventual upload happens via refreshSetMetadata once the set
+    // exists and we have an id to use as the Storage object path.
+    console.log('[remove-background API] No setId, returning base64 preview');
     const base64 = buffer.toString('base64');
     const dataUrl = `data:image/png;base64,${base64}`;
     return NextResponse.json({ processedImageUrl: dataUrl });
