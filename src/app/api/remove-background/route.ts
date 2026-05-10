@@ -136,9 +136,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fetch the image first (rembg.com requires file upload, not URL)
+    // Fetch the image first (rembg.com requires file upload, not URL).
+    // redirect: 'error' so a 3xx from an allowlisted host can't bounce us
+    // to an internal address — the host check above wouldn't see the
+    // redirect target.
     console.log('[remove-background API] Fetching source image...');
-    const imageResponse = await fetch(imageUrl);
+    let imageResponse: Response;
+    try {
+      imageResponse = await fetch(imageUrl, { redirect: 'error' });
+    } catch (fetchErr) {
+      console.error('[remove-background API] Source image fetch failed:', fetchErr);
+      return NextResponse.json({ error: 'Failed to fetch source image' }, { status: 400 });
+    }
     if (!imageResponse.ok) {
       console.error('[remove-background API] Failed to fetch source image:', imageResponse.status);
       return NextResponse.json({ error: 'Failed to fetch source image' }, { status: 400 });
