@@ -96,7 +96,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     .insert({ collection_id: collectionRow.id, user_id: userId });
   if (memberError) {
     console.error('[POST /api/collections] insert member failed; rolling back collection:', memberError);
-    await supabase.from('collections').delete().eq('id', collectionRow.id);
+    const { error: rollbackError } = await supabase
+      .from('collections')
+      .delete()
+      .eq('id', collectionRow.id);
+    if (rollbackError) {
+      console.error(
+        '[POST /api/collections] rollback delete failed; orphan collection row left:',
+        { collectionId: collectionRow.id, rollbackError }
+      );
+    }
     return NextResponse.json({ error: 'Failed to create collection' }, { status: 500 });
   }
 

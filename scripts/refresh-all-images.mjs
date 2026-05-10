@@ -34,6 +34,7 @@ const required = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'SUPABASE_SECRET_KEY',
   'BRICKSET_API_KEY',
+  'NEXT_PUBLIC_REBRICKABLE_API_KEY',
   'REMBG_API_KEY',
 ];
 const missing = required.filter((k) => !process.env[k]);

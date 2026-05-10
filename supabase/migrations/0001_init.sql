@@ -8,7 +8,7 @@
 -- re-binds existing users' data on first Supabase sign-in.
 --
 -- Apply via: Supabase Dashboard → SQL Editor → paste this file → Run.
--- After all existing users have signed in once, run 0002_drop_claim_flow.sql
+-- After all existing users have signed in once, run 0003_drop_claim_flow.sql
 -- to remove the temp claim infrastructure.
 -- ============================================================================
 

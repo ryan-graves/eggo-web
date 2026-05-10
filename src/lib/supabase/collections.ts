@@ -1,3 +1,4 @@
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { getSupabaseClient } from './client';
 import { getAccessToken } from './auth';
 import type { Collection, PublicViewSettings } from '@/types';
@@ -94,11 +95,15 @@ export async function getCollectionsForUser(_userId: string): Promise<Collection
 }
 
 /**
- * Realtime subscription. Fires the callback once with the initial snapshot
- * and again on any change to `collections` or to the user's
- * `collection_members` rows. Refetches on each change rather than applying
- * deltas, since the join needed to project memberUserIds isn't expressible
- * as a single Realtime filter.
+ * Realtime subscription. Fires the callback with the initial snapshot, then
+ * again whenever the user's membership changes or any of the collections
+ * they belong to is updated.
+ *
+ * Subscribes to one filtered channel per collection so the WebSocket only
+ * receives events for collections this user is a member of — an unfiltered
+ * `postgres_changes` listener on `collections` would stream payloads for
+ * every other tenant's row updates. The membership channel triggers a
+ * refetch which reconciles the per-collection channel set.
  */
 export function subscribeToCollectionsForUser(
   userId: string,
@@ -106,6 +111,7 @@ export function subscribeToCollectionsForUser(
   onError?: (error: Error) => void
 ): () => void {
   const supabase = getSupabaseClient();
+  const perCollection = new Map<string, RealtimeChannel>();
 
   const refetch = async () => {
     try {
@@ -114,31 +120,51 @@ export function subscribeToCollectionsForUser(
         .select(COLLECTION_SELECT)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      callback((data ?? []).map((row) => fromDb(row as CollectionRow)));
+      const collections = (data ?? []).map((row) => fromDb(row as CollectionRow));
+      callback(collections);
+
+      // Reconcile per-collection channels with the new membership set
+      const liveIds = new Set(collections.map((c) => c.id));
+      for (const id of liveIds) {
+        if (!perCollection.has(id)) {
+          const ch = supabase
+            .channel(`collection:${id}`)
+            .on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table: 'collections', filter: `id=eq.${id}` },
+              () => void refetch()
+            )
+            .subscribe();
+          perCollection.set(id, ch);
+        }
+      }
+      for (const [id, ch] of perCollection) {
+        if (!liveIds.has(id)) {
+          void supabase.removeChannel(ch);
+          perCollection.delete(id);
+        }
+      }
     } catch (err) {
       console.error('[subscribeToCollectionsForUser] refetch error:', err);
       onError?.(err as Error);
     }
   };
 
-  void refetch();
-
-  const channel = supabase
-    .channel(`collections:${userId}`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'collections' }, () => {
-      void refetch();
-    })
+  const membersChannel = supabase
+    .channel(`collection_members:${userId}`)
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'collection_members', filter: `user_id=eq.${userId}` },
-      () => {
-        void refetch();
-      }
+      () => void refetch()
     )
     .subscribe();
 
+  void refetch();
+
   return () => {
-    void supabase.removeChannel(channel);
+    void supabase.removeChannel(membersChannel);
+    for (const ch of perCollection.values()) void supabase.removeChannel(ch);
+    perCollection.clear();
   };
 }
 
