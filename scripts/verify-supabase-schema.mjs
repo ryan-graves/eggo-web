@@ -69,8 +69,10 @@ await step('anon only sees sets from public collections', async () => {
 });
 
 // ---- Cleanup migration applied: _firebase_uid_map should be gone ----
+// Don't use { head: true } here — HEAD requests bypass the schema cache
+// lookup and return 204 even after the table has been dropped.
 await step('_firebase_uid_map has been dropped', async () => {
-  const { error } = await admin.from('_firebase_uid_map').select('*', { count: 'exact', head: true });
+  const { error } = await admin.from('_firebase_uid_map').select('*');
   if (!error) throw new Error('table still exists — apply 0003_drop_claim_flow.sql');
   return `correctly missing: ${error.message}`;
 });
