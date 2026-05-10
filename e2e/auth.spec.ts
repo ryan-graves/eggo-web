@@ -19,7 +19,7 @@ test.describe('Authentication', () => {
     await page.goto('/collection');
 
     // Should either show loading state or redirect to login
-    // Since Firebase auth state takes time, we check for either
+    // Since auth state takes time to resolve, we check for either
     const loginButton = page.getByRole('button', { name: /sign in with google/i });
     const loadingOrCollection = page.locator('text=Loading');
 

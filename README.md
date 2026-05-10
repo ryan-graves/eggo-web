@@ -19,8 +19,9 @@ A web application for managing your Lego set collection. Track what you own, whe
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript (strict mode)
 - **UI Library**: React 19
-- **Database**: Firebase Firestore
-- **Authentication**: Firebase Auth (Google Sign-In)
+- **Database**: Supabase Postgres (with RLS)
+- **Authentication**: Supabase Auth (Google OAuth, PKCE flow)
+- **Storage**: Supabase Storage (processed set images)
 - **Styling**: CSS Modules + CSS Custom Properties (design tokens)
 - **Animations**: View Transitions API (via next-view-transitions)
 - **Notifications**: Sonner (toast notifications)
@@ -33,8 +34,9 @@ A web application for managing your Lego set collection. Track what you own, whe
 ### Prerequisites
 
 - Node.js 20.19+ (required by stylelint 17; Next.js 16 needs ≥20.9)
-- A Firebase project
+- A Supabase project
 - Brickset API key (recommended) or Rebrickable API key (fallback)
+- rembg.com API key (for background removal on set images)
 
 ### Setup
 
@@ -52,7 +54,7 @@ A web application for managing your Lego set collection. Track what you own, whe
    cp .env.local.example .env.local
    ```
 
-4. Fill in your Firebase and Brickset/Rebrickable credentials in `.env.local`
+4. Fill in your Supabase, Brickset/Rebrickable, and rembg.com credentials in `.env.local`
 
 5. Start the development server:
 

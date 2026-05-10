@@ -264,9 +264,9 @@ export interface RefreshSetResult {
 }
 
 /**
- * Refresh a set's metadata from the external data provider. Equivalent to
- * the Firebase version: re-fetches name/pieceCount/year/theme/subtheme/image
- * and optionally re-runs background removal.
+ * Refresh a set's metadata from the external data provider. Re-fetches
+ * name/pieceCount/year/theme/subtheme/image and optionally re-runs
+ * background removal.
  */
 export async function refreshSetMetadata(setId: string): Promise<RefreshSetResult> {
   const set = await getSet(setId);

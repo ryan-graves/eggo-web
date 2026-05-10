@@ -7,10 +7,10 @@ const MAX_STRING_LENGTH = 200;
 /**
  * POST /api/collections — Create a new collection.
  *
- * Uses the Supabase secret-key client to bypass RLS, mirroring the previous
- * Firebase Admin SDK pattern. The collection row is created and the calling
- * user's auth.users.id is inserted into collection_members in a single
- * sequence — both succeed or the row gets cleaned up.
+ * Uses the Supabase secret-key client to bypass RLS. The collection row is
+ * created and the calling user's auth.users.id is inserted into
+ * collection_members in a single sequence — both succeed or the row gets
+ * cleaned up.
  *
  * Expects:
  * - Authorization: Bearer <Supabase access token>

@@ -78,7 +78,6 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
           // Find the updated version of the current collection
           const updatedCollection = userCollections.find((c) => c.id === current.id);
           if (updatedCollection) {
-            // Return the fresh data from Firestore
             return updatedCollection;
           }
           // Collection was deleted, select first available or null

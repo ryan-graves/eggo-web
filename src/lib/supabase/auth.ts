@@ -2,9 +2,8 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { getSupabaseClient } from './client';
 
 /**
- * Re-export Supabase's User shape. Consumer code should read `user.id`,
- * `user.email`, and `user.user_metadata.full_name` / `avatar_url` rather
- * than Firebase's `uid` / `displayName` / `photoURL`.
+ * Re-export Supabase's User shape. Consumer code reads `user.id`,
+ * `user.email`, and `user.user_metadata.full_name` / `avatar_url`.
  */
 export type User = SupabaseUser;
 

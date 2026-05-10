@@ -44,8 +44,8 @@ function fromDb(row: CollectionRow): Collection {
 const COLLECTION_SELECT = '*, collection_members(user_id)';
 
 /**
- * Create a new collection via the server-side API route (which uses the
- * secret key to bypass RLS, matching the Firebase Admin SDK pattern).
+ * Create a new collection via the server-side API route, which uses the
+ * secret key to bypass RLS for the membership insert.
  */
 export async function createCollection(data: {
   name: string;
@@ -160,8 +160,7 @@ export async function updateCollection(
   if (error) throw new Error(error.message);
 
   if (data.memberUserIds !== undefined) {
-    // Replace the membership set wholesale to match the previous Firestore
-    // behavior of overwriting memberUserIds[].
+    // Replace the membership set wholesale (delete + re-insert).
     const { error: delErr } = await supabase
       .from('collection_members')
       .delete()

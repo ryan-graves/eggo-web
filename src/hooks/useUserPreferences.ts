@@ -71,7 +71,6 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
     applyUITheme(storedUITheme);
   }, []);
 
-  // Subscribe to Firestore preferences when user is logged in
   useEffect(() => {
     if (!user?.id) return;
 

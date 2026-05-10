@@ -9,7 +9,7 @@ import { openModal, closeModal, verifyModalCentered, verifyModalOverlay } from '
  * animations, accessibility, and responsive layouts.
  *
  * NOTE: These tests require authentication to access collection pages.
- * Set up Firebase auth in test environment or use test credentials before running.
+ * Set up Supabase auth in test environment or use test credentials before running.
  */
 
 test.describe('Modals - Responsive Behavior', () => {
@@ -20,7 +20,7 @@ test.describe('Modals - Responsive Behavior', () => {
 
     // Wait for potential auth state or redirect
     // In a real test environment, you would:
-    // 1. Mock Firebase auth
+    // 1. Mock Supabase auth
     // 2. Use test credentials
     // 3. Or stub auth state
   });

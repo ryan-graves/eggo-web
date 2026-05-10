@@ -2,8 +2,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Server-side Supabase client using the secret key, which bypasses RLS.
- * Mirrors the role the Firebase Admin SDK played in /api/collections and
- * /api/remove-background.
+ * Used by /api/collections (member insert during create) and
+ * /api/remove-background (Storage upload).
  */
 
 let cachedAdmin: SupabaseClient | null = null;
@@ -34,8 +34,7 @@ export function getAdminClient(): SupabaseClient {
 
 /**
  * Verify a Bearer token from a request header. Returns the user's auth.users
- * row id and email on success, or null if missing/invalid. Replaces the
- * previous Firebase Admin verifyIdToken pattern in /api/collections.
+ * row id and email on success, or null if missing/invalid.
  */
 export async function verifyAuthToken(
   authHeader: string | null
@@ -50,8 +49,7 @@ export async function verifyAuthToken(
 
 /**
  * Upload a processed-image PNG to Supabase Storage's `processed-images`
- * bucket. Same path convention as the legacy Firebase Storage path:
- * `processed-images/{setId}.png`. Returns the public URL.
+ * bucket at `{setId}.png`. Returns the public URL.
  */
 export async function uploadProcessedImage(
   buffer: Buffer,

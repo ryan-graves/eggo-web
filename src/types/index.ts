@@ -41,9 +41,6 @@ export type HomeSectionConfig =
   | { type: SmartSectionType }
   | { type: 'theme'; themeName: string };
 
-/**
- * User preferences stored in Firestore
- */
 export interface UserPreferences {
   theme: ThemePreference;
   uiTheme: UITheme;

@@ -44,7 +44,7 @@ function EditSetContent(): React.JSX.Element {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Sync form state when set data first becomes available (e.g. deep-link
-  // before Firestore has loaded). Only runs once to avoid overwriting edits.
+  // before the data has loaded). Only runs once to avoid overwriting edits.
   const hasInitializedForm = useRef(!!set);
   useEffect(() => {
     if (set && !hasInitializedForm.current) {
