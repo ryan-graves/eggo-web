@@ -21,6 +21,21 @@ const eslintConfig = defineConfig([
   ]),
   ...storybook.configs['flat/recommended'],
   {
+    rules: {
+      // Allow the standard `_`-prefix convention to silence intentionally-unused
+      // function args and destructured vars (e.g., kept for API parity with a
+      // legacy implementation).
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+  {
     files: ['*.config.{js,cjs}'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',

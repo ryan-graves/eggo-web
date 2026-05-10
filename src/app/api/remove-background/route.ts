@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdminConfigured, uploadToStorage } from '@/lib/firebase/admin';
+import {
+  getAdminClient,
+  isAdminConfigured,
+  uploadProcessedImage,
+  verifyAuthToken,
+} from '@/lib/supabase/admin';
 
 /**
  * Background Removal API Route
  *
  * This route proxies background removal requests to a third-party service,
- * then uploads the processed image to Firebase Storage.
+ * then uploads the processed image to Supabase Storage.
  *
  * ## Provider: rembg.com (Current)
  * Cloud API built on the open-source rembg library.
@@ -31,6 +36,27 @@ import { isAdminConfigured, uploadToStorage } from '@/lib/firebase/admin';
 
 const REMBG_API_URL = 'https://api.rembg.com/rmbg';
 
+// Hostnames the route is allowed to fetch source images from. Without
+// this allowlist any authenticated caller could point imageUrl at an
+// internal address (cloud metadata, localhost, private CIDR) and have
+// the server proxy it back. The list mirrors what next.config.ts permits
+// for next/image, narrowed to the upstreams that actually serve set art.
+const ALLOWED_IMAGE_HOSTS = new Set([
+  'images.brickset.com',
+  'cdn.rebrickable.com',
+  'rebrickable.com',
+]);
+
+function isAllowedImageUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:') return false;
+    return ALLOWED_IMAGE_HOSTS.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   const apiKey = process.env.REMBG_API_KEY;
 
@@ -39,6 +65,18 @@ export async function POST(request: NextRequest) {
   if (!apiKey) {
     console.log('[remove-background API] No API key configured');
     return NextResponse.json({ error: 'Background removal not configured' }, { status: 503 });
+  }
+
+  // Auth verification depends on the secret-key admin client. If it's not
+  // configured, fail closed with a 503 instead of letting verifyAuthToken
+  // throw and surface a 500.
+  if (!isAdminConfigured()) {
+    return NextResponse.json({ error: 'Server is not configured for this operation' }, { status: 503 });
+  }
+
+  const auth = await verifyAuthToken(request.headers.get('Authorization'));
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -52,6 +90,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'imageUrl is required' }, { status: 400 });
     }
 
+    if (!isAllowedImageUrl(imageUrl)) {
+      console.log('[remove-background API] imageUrl host not in allowlist:', imageUrl);
+      return NextResponse.json({ error: 'imageUrl host not allowed' }, { status: 400 });
+    }
+
     // Validate setId contains only safe characters for storage paths
     if (setId && typeof setId === 'string') {
       const safeIdPattern = /^[a-zA-Z0-9_-]+$/;
@@ -61,9 +104,50 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fetch the image first (rembg.com requires file upload, not URL)
+    // When a setId is provided we'll write to processed-images/{setId}.png,
+    // which can overwrite any existing object at that path. Verify the
+    // caller is a member of the set's collection before doing any work.
+    // (No setId = add-set preview path, which only returns base64 and never
+    // touches Storage.)
+    if (setId) {
+      const adminClient = getAdminClient();
+      const { data: setRow, error: setLookupError } = await adminClient
+        .from('sets')
+        .select('collection_id')
+        .eq('id', setId)
+        .maybeSingle();
+      if (setLookupError) {
+        console.error('[remove-background API] Set lookup failed:', setLookupError);
+        return NextResponse.json({ error: 'Failed to look up set' }, { status: 500 });
+      }
+      if (!setRow) {
+        return NextResponse.json({ error: 'Set not found' }, { status: 404 });
+      }
+      const { data: isMember, error: memberError } = await adminClient.rpc('is_collection_member', {
+        coll_id: setRow.collection_id,
+        uid: auth.uid,
+      });
+      if (memberError) {
+        console.error('[remove-background API] Membership check failed:', memberError);
+        return NextResponse.json({ error: 'Failed to verify membership' }, { status: 500 });
+      }
+      if (!isMember) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
+    // Fetch the image first (rembg.com requires file upload, not URL).
+    // redirect: 'error' so a 3xx from an allowlisted host can't bounce us
+    // to an internal address — the host check above wouldn't see the
+    // redirect target.
     console.log('[remove-background API] Fetching source image...');
-    const imageResponse = await fetch(imageUrl);
+    let imageResponse: Response;
+    try {
+      imageResponse = await fetch(imageUrl, { redirect: 'error' });
+    } catch (fetchErr) {
+      console.error('[remove-background API] Source image fetch failed:', fetchErr);
+      return NextResponse.json({ error: 'Failed to fetch source image' }, { status: 400 });
+    }
     if (!imageResponse.ok) {
       console.error('[remove-background API] Failed to fetch source image:', imageResponse.status);
       return NextResponse.json({ error: 'Failed to fetch source image' }, { status: 400 });
@@ -110,12 +194,12 @@ export async function POST(request: NextRequest) {
     const imageBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(imageBuffer);
 
-    // If Firebase Admin is configured and setId provided, upload to Storage
-    if (isAdminConfigured() && setId) {
+    // setId provided → upload to Storage. (Admin config was already
+    // verified at the top of the route.)
+    if (setId) {
       try {
-        console.log('[remove-background API] Uploading to Firebase Storage...');
-        const storagePath = `processed-images/${setId}.png`;
-        const publicUrl = await uploadToStorage(buffer, storagePath, 'image/png');
+        console.log('[remove-background API] Uploading to Supabase Storage...');
+        const publicUrl = await uploadProcessedImage(buffer, setId, 'image/png');
         console.log('[remove-background API] Uploaded to Storage:', publicUrl);
         return NextResponse.json({ processedImageUrl: publicUrl });
       } catch (storageError) {
@@ -126,8 +210,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fallback to base64 data URL if Storage not configured
-    console.log('[remove-background API] Storage not configured, returning base64');
+    // No setId → add-set preview path. Return base64 so the form can
+    // display the processed image before the set has been created;
+    // the eventual upload happens via refreshSetMetadata once the set
+    // exists and we have an id to use as the Storage object path.
+    console.log('[remove-background API] No setId, returning base64 preview');
     const base64 = buffer.toString('base64');
     const dataUrl = `data:image/png;base64,${base64}`;
     return NextResponse.json({ processedImageUrl: dataUrl });

@@ -1,16 +1,10 @@
 /**
- * Background removal utility for Lego set images.
- *
- * Uses the remove.bg API via a server-side API route for cloud-based background removal.
- * This can be called from client-side code and the server handles the API key securely.
- *
- * To enable:
- * 1. Get an API key from https://www.remove.bg/api
- * 2. Set REMOVEBG_API_KEY in your server environment
- *
- * Note: Free tier includes 50 API calls/month at preview resolution.
- * The processed images are stored as data URLs in Firestore.
+ * Client wrapper around POST /api/remove-background. The server route calls
+ * rembg.com and uploads the result to Supabase Storage; this module just
+ * forwards the image URL + set id and returns the public Storage URL.
  */
+
+import { getAccessToken } from '@/lib/supabase';
 
 interface RemoveBackgroundApiResponse {
   processedImageUrl?: string;
@@ -27,7 +21,7 @@ export interface RemoveBackgroundResult {
  * Remove the background from an image URL using the background removal API.
  *
  * @param imageUrl - The URL of the image to process
- * @param setId - Optional set ID for uploading to Firebase Storage with a stable path
+ * @param setId - Optional set ID; the server uses it as the Storage object path so re-runs upsert in place
  * @returns A result object containing the processed image URL, any error message, and whether it was skipped
  */
 export async function removeImageBackground(
@@ -37,10 +31,12 @@ export async function removeImageBackground(
   console.log('[removeBackground] Starting background removal for:', imageUrl, 'setId:', setId);
 
   try {
+    const token = await getAccessToken();
     const response = await fetch('/api/remove-background', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ imageUrl, setId }),
     });

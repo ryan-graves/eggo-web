@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { getCollectionByShareToken, getSetsForCollection } from '@/lib/firebase';
+import { getCollectionByShareToken, getSetsForCollection } from '@/lib/supabase';
 import type { Collection, LegoSet } from '@/types';
 
 interface PublicCollectionContextValue {

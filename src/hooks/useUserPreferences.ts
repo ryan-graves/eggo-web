@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
-import { subscribeToUserPreferences, setUserPreferences } from '@/lib/firebase';
+import { subscribeToUserPreferences, setUserPreferences } from '@/lib/supabase';
 import type { ThemePreference, UITheme, HomeSectionConfig } from '@/types';
 
 const THEME_STORAGE_KEY = 'eggo-theme';
@@ -71,11 +71,10 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
     applyUITheme(storedUITheme);
   }, []);
 
-  // Subscribe to Firestore preferences when user is logged in
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.id) return;
 
-    const unsubscribe = subscribeToUserPreferences(user.uid, (prefs) => {
+    const unsubscribe = subscribeToUserPreferences(user.id, (prefs) => {
       if (prefs) {
         if (prefs.theme) {
           setThemeState(prefs.theme);
@@ -94,7 +93,7 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
     });
 
     return unsubscribe;
-  }, [user?.uid]);
+  }, [user?.id]);
 
   // Track resolved theme
   useEffect(() => {
@@ -122,8 +121,8 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
       localStorage.setItem(THEME_STORAGE_KEY, newTheme);
       applyTheme(newTheme);
 
-      if (user?.uid) {
-        setUserPreferences(user.uid, { theme: newTheme }).catch(console.error);
+      if (user?.id) {
+        setUserPreferences(user.id, { theme: newTheme }).catch(console.error);
       }
     },
     [user]
@@ -135,8 +134,8 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
       localStorage.setItem(UI_THEME_STORAGE_KEY, newUITheme);
       applyUITheme(newUITheme);
 
-      if (user?.uid) {
-        setUserPreferences(user.uid, { uiTheme: newUITheme }).catch(console.error);
+      if (user?.id) {
+        setUserPreferences(user.id, { uiTheme: newUITheme }).catch(console.error);
       }
     },
     [user]
@@ -146,8 +145,8 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
     (sections: HomeSectionConfig[]) => {
       setHomeSectionsState(sections);
 
-      if (user?.uid) {
-        setUserPreferences(user.uid, { homeSections: sections }).catch(console.error);
+      if (user?.id) {
+        setUserPreferences(user.id, { homeSections: sections }).catch(console.error);
       }
     },
     [user]

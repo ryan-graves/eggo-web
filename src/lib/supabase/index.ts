@@ -1,5 +1,13 @@
-export { getFirebaseAuth, getFirebaseDb, isFirebaseConfigured } from './config';
-export { signInWithGoogle, signOut, subscribeToAuthChanges, getCurrentUser } from './auth';
+export { getSupabaseClient } from './client';
+export { isSupabaseConfigured, getSupabaseUrl, getSupabasePublishableKey } from './config';
+export {
+  signInWithGoogle,
+  signOut,
+  subscribeToAuthChanges,
+  getCurrentUser,
+  getAccessToken,
+  type User,
+} from './auth';
 export {
   createCollection,
   getCollection,

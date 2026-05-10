@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useNavigation } from '@/hooks/useNavigation';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
-import { updateCollection, deleteCollection } from '@/lib/firebase';
+import { updateCollection, deleteCollection } from '@/lib/supabase';
 import styles from './page.module.css';
 
 function CollectionSettingsContent(): React.JSX.Element {
@@ -16,7 +16,7 @@ function CollectionSettingsContent(): React.JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sync form state when collection data first becomes available (e.g.
-  // deep-link before Firestore has loaded). Only runs once to avoid
+  // deep-link before the data has loaded). Only runs once to avoid
   // overwriting edits.
   const hasInitializedForm = useRef(!!activeCollection);
   useEffect(() => {

@@ -10,13 +10,12 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import {
   createCollection,
   subscribeToCollectionsForUser,
   subscribeToSetsForCollection,
-} from '@/lib/firebase';
+} from '@/lib/supabase';
 import type { Collection, LegoSet } from '@/types';
 
 interface CollectionContextValue {
@@ -67,7 +66,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       return;
     }
 
-    const unsubscribe = subscribeToCollectionsForUser(user.uid, (userCollections) => {
+    const unsubscribe = subscribeToCollectionsForUser(user.id, (userCollections) => {
       setCollections(userCollections);
 
       // Auto-select first collection if none selected, or update active collection with fresh data
@@ -79,7 +78,6 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
           // Find the updated version of the current collection
           const updatedCollection = userCollections.find((c) => c.id === current.id);
           if (updatedCollection) {
-            // Return the fresh data from Firestore
             return updatedCollection;
           }
           // Collection was deleted, select first available or null
@@ -150,13 +148,13 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
         const collectionId = await createCollection({ name, owners });
 
         // Optimistically update state so the UI transitions immediately
-        // rather than waiting for the Firestore subscription to detect the new document
-        const now = Timestamp.now();
+        // rather than waiting for the realtime subscription to deliver the new row
+        const now = new Date().toISOString();
         const newCollection: Collection = {
           id: collectionId,
           name,
           owners,
-          memberUserIds: [user.uid],
+          memberUserIds: [user.id],
           createdAt: now,
           updatedAt: now,
         };

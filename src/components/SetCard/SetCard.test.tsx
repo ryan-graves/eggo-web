@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import { Timestamp } from 'firebase/firestore';
 import { SetCard } from './SetCard';
 import type { LegoSet } from '@/types';
 
@@ -43,8 +42,8 @@ const mockSet: LegoSet = {
   dateReceived: '2020-01-01',
   owners: ['Ryan'],
   dataSource: 'rebrickable',
-  createdAt: Timestamp.now(),
-  updatedAt: Timestamp.now(),
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 };
 
 describe('SetCard', () => {

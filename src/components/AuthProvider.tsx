@@ -1,13 +1,13 @@
 'use client';
 
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import type { User } from 'firebase/auth';
 import {
   subscribeToAuthChanges,
-  signInWithGoogle as firebaseSignInWithGoogle,
-  signOut as firebaseSignOut,
-  isFirebaseConfigured,
-} from '@/lib/firebase';
+  signInWithGoogle as supabaseSignInWithGoogle,
+  signOut as supabaseSignOut,
+  isSupabaseConfigured,
+  type User,
+} from '@/lib/supabase';
 
 interface AuthContextValue {
   user: User | null;
@@ -29,24 +29,23 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if Firebase is configured before attempting to subscribe
-    if (!isFirebaseConfigured()) {
-      console.error('Firebase is not configured. Check environment variables.');
+    if (!isSupabaseConfigured()) {
+      console.error('Supabase is not configured. Check environment variables.');
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Setting error state on config failure is intentional
-      setError('Firebase is not configured. Please check environment variables.');
+      setError('Supabase is not configured. Please check environment variables.');
       setLoading(false);
       return;
     }
 
     try {
-      const unsubscribe = subscribeToAuthChanges((firebaseUser) => {
-        setUser(firebaseUser);
+      const unsubscribe = subscribeToAuthChanges((supabaseUser) => {
+        setUser(supabaseUser);
         setLoading(false);
       });
 
       return unsubscribe;
     } catch (err) {
-      console.error('Failed to initialize Firebase Auth:', err);
+      console.error('Failed to initialize Supabase Auth:', err);
       setError(err instanceof Error ? err.message : 'Failed to initialize authentication');
       setLoading(false);
     }
@@ -55,7 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
   const signInWithGoogle = useCallback(async () => {
     setError(null);
     try {
-      await firebaseSignInWithGoogle();
+      await supabaseSignInWithGoogle();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to sign in';
       setError(message);
@@ -66,7 +65,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
   const signOut = useCallback(async () => {
     setError(null);
     try {
-      await firebaseSignOut();
+      await supabaseSignOut();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to sign out';
       setError(message);

@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
-import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/firebase';
+import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/supabase';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './page.module.css';
 
@@ -44,7 +44,7 @@ function EditSetContent(): React.JSX.Element {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Sync form state when set data first becomes available (e.g. deep-link
-  // before Firestore has loaded). Only runs once to avoid overwriting edits.
+  // before the data has loaded). Only runs once to avoid overwriting edits.
   const hasInitializedForm = useRef(!!set);
   useEffect(() => {
     if (set && !hasInitializedForm.current) {

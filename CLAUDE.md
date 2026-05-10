@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Eggo is a web application for tracking Lego set collections. Built with Next.js and Firebase, it supports real-time sync and will eventually have an iOS companion app.
+Eggo is a web application for tracking Lego set collections. Built with Next.js and Supabase, it supports real-time sync and will eventually have an iOS companion app.
 
 ## Tech Stack
 
@@ -12,8 +12,9 @@ Eggo is a web application for tracking Lego set collections. Built with Next.js 
 - **Styling**: CSS Modules + CSS Custom Properties (no Tailwind)
 - **Animations**: View Transitions API (native, used in add-set form)
 - **Notifications**: Sonner (toast notifications)
-- **Database**: Firebase Firestore
-- **Authentication**: Firebase Auth (Google Sign-In)
+- **Database**: Supabase Postgres (with RLS)
+- **Authentication**: Supabase Auth (Google OAuth, PKCE flow)
+- **Storage**: Supabase Storage (processed set images)
 - **Testing**: Jest (unit), Playwright (E2E)
 - **Components**: Storybook for isolated development
 - **Deployment**: Netlify
@@ -37,7 +38,7 @@ src/
 │       └── Component.stories.tsx
 ├── hooks/                 # Custom React hooks
 ├── lib/
-│   ├── firebase/          # Firebase configuration
+│   ├── supabase/          # Supabase client, auth, data access, admin
 │   ├── image/             # Image processing (background removal)
 │   └── providers/         # External data providers (Brickset/Rebrickable)
 ├── styles/
@@ -45,8 +46,13 @@ src/
 │   └── theme.css          # Themed semantic variables (Layer 2)
 └── types/                 # TypeScript type definitions
 
+supabase/
+└── migrations/            # SQL migrations (schema, RLS, realtime, storage)
+
 scripts/                       # Top-level scripts (sibling of src/)
-└── code-review.sh             # Code review helper script
+├── code-review.sh             # Code review helper script
+├── refresh-all-images.mjs     # Batch re-fetch metadata + re-process images
+└── verify-supabase-schema.mjs # Sanity-check tables, RLS, helpers
 ```
 
 ## Development Commands
@@ -173,7 +179,7 @@ refactor: simplify auth flow         # refactoring → no bump
 Groups of Lego sets (e.g., "The Graves Collection")
 
 - `owners`: Simple string tags like "Ryan", "Alyssa"
-- `memberUserIds`: Firebase user IDs who can access
+- `memberUserIds`: Supabase auth user IDs (UUIDs) — modeled as a `collection_members` join table; `is_collection_member()` SECURITY DEFINER helper resolves membership for RLS without recursion
 - `isPublic`: (optional) Whether collection is publicly viewable via share link
 - `publicShareToken`: (optional) Unique 12-character token for public share URL
 - `publicViewSettings`: (optional) Object controlling which fields are visible publicly:
@@ -233,77 +239,47 @@ Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js supp
 
 | Variable | Description | Where to get it |
 |----------|-------------|-----------------|
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase Web API key | Firebase Console > Project Settings |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase Auth domain | Firebase Console > Project Settings |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project ID | Firebase Console > Project Settings |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket | Firebase Console > Project Settings |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase sender ID | Firebase Console > Project Settings |
-| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID | Firebase Console > Project Settings |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Supabase Dashboard > Project Settings > API Keys |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser-safe key (subject to RLS), `sb_publishable_…` | Supabase Dashboard > Project Settings > API Keys |
+| `SUPABASE_SECRET_KEY` | Server-only key that bypasses RLS, `sb_secret_…` — never expose to the browser | Supabase Dashboard > Project Settings > API Keys |
 | `BRICKSET_API_KEY` | Brickset API key (recommended, server-only) | https://brickset.com/tools/webservices/requestkey |
 | `NEXT_PUBLIC_REBRICKABLE_API_KEY` | Rebrickable API key (fallback) | https://rebrickable.com/api/ |
-| `REMBG_API_KEY` | rembg.com API key for background removal (optional, free) | https://www.rembg.com |
+| `REMBG_API_KEY` | rembg.com API key for background removal | https://www.rembg.com |
 
-### Firebase Setup for Production
+### Supabase Setup for Production
 
-1. In Firebase Console, add your Netlify domain to authorized domains:
-   - Authentication > Settings > Authorized domains
-   - Add: `your-site.netlify.app` and custom domain if applicable
-2. Update Firestore security rules for production use (see below)
-3. Create required Firestore indexes (see below)
+1. In the Supabase Dashboard, configure the Google OAuth provider:
+   - Authentication > Providers > Google
+   - Add your Google client ID/secret and the Netlify redirect URL (`https://your-site.netlify.app/auth/callback`)
+2. Add your site URL and any deploy-preview URLs under Authentication > URL Configuration
+3. Run the SQL migrations in `supabase/migrations/` against the project (in order)
+4. Verify RLS, helpers, and tables with `node scripts/verify-supabase-schema.mjs`
 
-### Firestore Composite Index (Required for Public Sharing)
+### Schema, RLS, and Realtime
 
-The public collection sharing feature requires a composite index. Create it in Firebase Console:
+Schema lives in `supabase/migrations/`:
 
-1. Go to Firestore Database > Indexes > Composite
-2. Create an index on the `collections` collection:
-   - Field 1: `publicShareToken` (Ascending)
-   - Field 2: `isPublic` (Ascending)
-   - Query scope: Collection
+- `0001_init.sql` — tables (`collections`, `collection_members`, `sets`, `user_preferences`), enums, the `is_collection_member()` SECURITY DEFINER helper, and full RLS policies. Also created the temporary `_firebase_uid_map` and claim trigger used during the Firestore cutover.
+- `0002_realtime_and_storage.sql` — adds tables to the `supabase_realtime` publication and creates the `processed-images` storage bucket (5 MB limit, public read)
+- `0003_drop_claim_flow.sql` — drops the temporary claim infrastructure once all returning users have signed in. Adds the `replace_collection_members()` RPC for atomic membership replacement.
+- `0004_harden_replace_members.sql` — re-creates `replace_collection_members()` with guards rejecting empty arrays and inputs missing `auth.uid()`, so the RPC can't lock everyone out of a collection via RLS.
+- `0005_fix_members_select_policy.sql` — broadens the `collection_members` SELECT policy from "your own row only" to "any row where you're a member of the same collection", so the embed in `Collection.memberUserIds` returns the full membership list.
 
-Alternatively, Firestore will provide a link to auto-create the index when the query first fails.
+RLS policy summary:
 
-### Firestore Security Rules (Required for Public Sharing)
+- `collections` — members can read/write; anyone can read rows where `is_public = true`
+- `collection_members` — members of the same collection can read; the API route inserts via the secret-key client during creation
+- `sets` — members of the parent collection can read/write; public read when the parent collection is public
+- `user_preferences` — only the owning user (`auth.uid() = user_id`)
 
-Update your Firestore security rules to allow public access to shared collections:
+The browser uses the publishable key and is fully constrained by RLS. The two server routes that need to bypass RLS (`/api/collections` for member insert during create, `/api/remove-background` for Storage uploads) use `getAdminClient()` with `SUPABASE_SECRET_KEY` and verify the caller's JWT explicitly.
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Collections - members can read/write, public can read if isPublic
-    // Note: create uses request.resource.data (incoming), update/delete use resource.data (existing)
-    match /collections/{collectionId} {
-      allow read: if request.auth != null && request.auth.uid in resource.data.memberUserIds;
-      allow read: if resource.data.isPublic == true;
-      allow create: if request.auth != null && request.auth.uid in request.resource.data.memberUserIds;
-      allow update, delete: if request.auth != null && request.auth.uid in resource.data.memberUserIds;
-    }
-
-    // Sets - members can read/write, public can read if parent collection is public
-    // Note: create uses request.resource.data (incoming), update/delete use resource.data (existing)
-    match /sets/{setId} {
-      allow create: if request.auth != null &&
-        request.auth.uid in get(/databases/$(database)/documents/collections/$(request.resource.data.collectionId)).data.memberUserIds;
-      allow read, update, delete: if request.auth != null &&
-        request.auth.uid in get(/databases/$(database)/documents/collections/$(resource.data.collectionId)).data.memberUserIds;
-      allow read: if get(/databases/$(database)/documents/collections/$(resource.data.collectionId)).data.isPublic == true;
-    }
-
-    // Users - only the user themselves can read/write
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
-```
-
-**Important**: Test these rules in the Firebase Console Rules Playground before deploying to production.
+Realtime is wired via `postgres_changes` channels in the data hooks — subscriptions trigger a refetch rather than patching local state.
 
 ## Getting Started
 
 1. Copy `.env.local.example` to `.env.local`
-2. Fill in Firebase and Brickset API credentials
+2. Fill in Supabase, Brickset, and rembg.com API credentials
 3. Run `npm install`
 4. Run `npm run dev`
 

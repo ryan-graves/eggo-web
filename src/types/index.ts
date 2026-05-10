@@ -1,5 +1,3 @@
-import type { Timestamp } from 'firebase/firestore';
-
 /**
  * Status of a Lego set in the collection
  */
@@ -43,14 +41,11 @@ export type HomeSectionConfig =
   | { type: SmartSectionType }
   | { type: 'theme'; themeName: string };
 
-/**
- * User preferences stored in Firestore
- */
 export interface UserPreferences {
   theme: ThemePreference;
   uiTheme: UITheme;
   homeSections?: HomeSectionConfig[];
-  updatedAt: Timestamp;
+  updatedAt: string;
 }
 
 /**
@@ -82,7 +77,7 @@ export interface LegoSet {
   // User data
   status: SetStatus;
   hasBeenAssembled: boolean;
-  occasion: string;
+  occasion?: string;
   dateReceived: string | null; // YYYY-MM-DD format
   owners: string[]; // Can have multiple owners for shared sets
   notes?: string;
@@ -90,11 +85,11 @@ export interface LegoSet {
   // Data provenance
   dataSource: DataSource;
   dataSourceId?: string;
-  lastSyncedAt?: Timestamp;
+  lastSyncedAt?: string;
 
   // Metadata
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
@@ -120,8 +115,8 @@ export interface Collection {
   isPublic?: boolean; // Whether collection is publicly viewable
   publicShareToken?: string; // Unique token for public share URL
   publicViewSettings?: PublicViewSettings; // Controls which fields are visible publicly
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
@@ -135,8 +130,8 @@ export interface User {
   theme: ThemePreference;
   uiTheme: UITheme;
   collectionIds: string[];
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**

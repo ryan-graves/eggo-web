@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FieldValue } from 'firebase-admin/firestore';
-import { FirebaseAuthError } from 'firebase-admin/auth';
-import { isAdminConfigured, getAdminAuth, getAdminFirestore } from '@/lib/firebase/admin';
+import { getAdminClient, isAdminConfigured, verifyAuthToken } from '@/lib/supabase/admin';
 
 const MAX_OWNERS = 20;
 const MAX_STRING_LENGTH = 200;
 
 /**
- * POST /api/collections - Create a new collection
+ * POST /api/collections — Create a new collection.
  *
- * Uses the Firebase Admin SDK so that collection creation works regardless
- * of whether the deployed Firestore security rules properly handle CREATE
- * operations (CREATE requires `request.resource.data`, not `resource.data`).
+ * Uses the Supabase secret-key client to bypass RLS. The collection row is
+ * created and the calling user's auth.users.id is inserted into
+ * collection_members in a single sequence — both succeed or the row gets
+ * cleaned up.
  *
  * Expects:
- * - Authorization: Bearer <Firebase ID token>
+ * - Authorization: Bearer <Supabase access token>
  * - Body: { name: string, owners: string[] }
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -25,25 +24,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Missing authorization' }, { status: 401 });
+  const authResult = await verifyAuthToken(request.headers.get('Authorization'));
+  if (!authResult) {
+    return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 });
   }
-
-  const idToken = authHeader.substring(7);
-
-  let decodedToken;
-  try {
-    decodedToken = await getAdminAuth().verifyIdToken(idToken);
-  } catch (error) {
-    if (error instanceof FirebaseAuthError) {
-      return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 });
-    }
-    console.error('[POST /api/collections] Auth error:', error);
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
-  }
-
-  const userId = decodedToken.uid;
+  const userId = authResult.uid;
 
   let body;
   try {
@@ -76,9 +61,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Each owner must be a string' }, { status: 400 });
     }
     const trimmed = owner.trim();
-    if (trimmed.length === 0) {
-      continue;
-    }
+    if (trimmed.length === 0) continue;
     if (trimmed.length > MAX_STRING_LENGTH) {
       return NextResponse.json({ error: 'Owner name is too long' }, { status: 400 });
     }
@@ -88,22 +71,43 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   if (sanitizedOwners.length === 0) {
-    return NextResponse.json({ error: 'At least one non-empty owner is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'At least one non-empty owner is required' },
+      { status: 400 }
+    );
   }
 
-  try {
-    const db = getAdminFirestore();
-    const docRef = await db.collection('collections').add({
-      name: name.trim(),
-      owners: sanitizedOwners,
-      memberUserIds: [userId],
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    });
+  const supabase = getAdminClient();
 
-    return NextResponse.json({ id: docRef.id });
-  } catch (error) {
-    console.error('[POST /api/collections] Firestore error:', error);
+  // Insert the collection
+  const { data: collectionRow, error: collectionError } = await supabase
+    .from('collections')
+    .insert({ name: name.trim(), owners: sanitizedOwners })
+    .select('id')
+    .single();
+  if (collectionError || !collectionRow) {
+    console.error('[POST /api/collections] insert collection failed:', collectionError);
     return NextResponse.json({ error: 'Failed to create collection' }, { status: 500 });
   }
+
+  // Insert the creator as the first member
+  const { error: memberError } = await supabase
+    .from('collection_members')
+    .insert({ collection_id: collectionRow.id, user_id: userId });
+  if (memberError) {
+    console.error('[POST /api/collections] insert member failed; rolling back collection:', memberError);
+    const { error: rollbackError } = await supabase
+      .from('collections')
+      .delete()
+      .eq('id', collectionRow.id);
+    if (rollbackError) {
+      console.error(
+        '[POST /api/collections] rollback delete failed; orphan collection row left:',
+        { collectionId: collectionRow.id, rollbackError }
+      );
+    }
+    return NextResponse.json({ error: 'Failed to create collection' }, { status: 500 });
+  }
+
+  return NextResponse.json({ id: collectionRow.id });
 }

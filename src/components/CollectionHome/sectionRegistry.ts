@@ -1,18 +1,10 @@
-import type { Timestamp } from 'firebase/firestore';
 import type { LegoSet, HomeSectionConfig, SmartSectionType } from '@/types';
 
 /**
  * Safely convert a dateReceived value to a sortable string.
- * Handles both string (YYYY-MM-DD) and legacy Firestore Timestamp formats.
  */
-function getDateString(dateReceived: string | Timestamp | null | undefined): string {
-  if (!dateReceived) return '';
-  if (typeof dateReceived === 'string') return dateReceived;
-  if (typeof dateReceived === 'object' && 'toDate' in dateReceived) {
-    const date = dateReceived.toDate();
-    return date.toISOString().split('T')[0];
-  }
-  return '';
+function getDateString(dateReceived: string | null | undefined): string {
+  return dateReceived ?? '';
 }
 
 /**
