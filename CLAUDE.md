@@ -262,6 +262,8 @@ Schema lives in `supabase/migrations/`:
 - `0001_init.sql` — tables (`collections`, `collection_members`, `sets`, `user_preferences`), enums, the `is_collection_member()` SECURITY DEFINER helper, and full RLS policies. Also created the temporary `_firebase_uid_map` and claim trigger used during the Firestore cutover.
 - `0002_realtime_and_storage.sql` — adds tables to the `supabase_realtime` publication and creates the `processed-images` storage bucket (5 MB limit, public read)
 - `0003_drop_claim_flow.sql` — drops the temporary claim infrastructure once all returning users have signed in. Adds the `replace_collection_members()` RPC for atomic membership replacement.
+- `0004_harden_replace_members.sql` — re-creates `replace_collection_members()` with guards rejecting empty arrays and inputs missing `auth.uid()`, so the RPC can't lock everyone out of a collection via RLS.
+- `0005_fix_members_select_policy.sql` — broadens the `collection_members` SELECT policy from "your own row only" to "any row where you're a member of the same collection", so the embed in `Collection.memberUserIds` returns the full membership list.
 
 RLS policy summary:
 
