@@ -36,6 +36,27 @@ import {
 
 const REMBG_API_URL = 'https://api.rembg.com/rmbg';
 
+// Hostnames the route is allowed to fetch source images from. Without
+// this allowlist any authenticated caller could point imageUrl at an
+// internal address (cloud metadata, localhost, private CIDR) and have
+// the server proxy it back. The list mirrors what next.config.ts permits
+// for next/image, narrowed to the upstreams that actually serve set art.
+const ALLOWED_IMAGE_HOSTS = new Set([
+  'images.brickset.com',
+  'cdn.rebrickable.com',
+  'rebrickable.com',
+]);
+
+function isAllowedImageUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:') return false;
+    return ALLOWED_IMAGE_HOSTS.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   const apiKey = process.env.REMBG_API_KEY;
 
@@ -67,6 +88,11 @@ export async function POST(request: NextRequest) {
     if (!imageUrl || typeof imageUrl !== 'string') {
       console.log('[remove-background API] Missing or invalid imageUrl');
       return NextResponse.json({ error: 'imageUrl is required' }, { status: 400 });
+    }
+
+    if (!isAllowedImageUrl(imageUrl)) {
+      console.log('[remove-background API] imageUrl host not in allowlist:', imageUrl);
+      return NextResponse.json({ error: 'imageUrl host not allowed' }, { status: 400 });
     }
 
     // Validate setId contains only safe characters for storage paths

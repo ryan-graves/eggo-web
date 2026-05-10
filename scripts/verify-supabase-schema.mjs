@@ -2,9 +2,11 @@
  * Sanity-checks the Supabase schema for this project.
  *
  * Expects all migrations in supabase/migrations/ to have been applied
- * (currently 0001 + 0002 + 0003 + 0004). Pre-cutover environments — where
- * 0003 has run but 0004 hasn't, or 0003 hasn't run yet — will see clear
- * "apply 000X" messages on the affected steps rather than a generic pass.
+ * (currently 0001 + 0002 + 0003 + 0004 + 0005). Pre-cutover environments
+ * where one of the later migrations is missing will see "apply 000X"
+ * messages on the affected steps rather than a generic pass. Note that
+ * 0005 (collection_members SELECT policy) has no dedicated check yet —
+ * verifying it would require an authenticated test user.
  */
 import { createClient } from '@supabase/supabase-js';
 

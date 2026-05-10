@@ -112,6 +112,10 @@ export function subscribeToCollectionsForUser(
 ): () => void {
   const supabase = getSupabaseClient();
   const perCollection = new Map<string, RealtimeChannel>();
+  // If the consumer unmounts while a refetch() is awaiting Postgres, the
+  // resumed reconciliation loop would otherwise re-populate the cleared
+  // perCollection map with channels that never get removed.
+  let unmounted = false;
 
   const refetch = async () => {
     try {
@@ -119,6 +123,7 @@ export function subscribeToCollectionsForUser(
         .from(TABLE)
         .select(COLLECTION_SELECT)
         .order('created_at', { ascending: false });
+      if (unmounted) return;
       if (error) throw error;
       const collections = (data ?? []).map((row) => fromDb(row as CollectionRow));
       callback(collections);
@@ -145,6 +150,7 @@ export function subscribeToCollectionsForUser(
         }
       }
     } catch (err) {
+      if (unmounted) return;
       console.error('[subscribeToCollectionsForUser] refetch error:', err);
       onError?.(err as Error);
     }
@@ -162,6 +168,7 @@ export function subscribeToCollectionsForUser(
   void refetch();
 
   return () => {
+    unmounted = true;
     void supabase.removeChannel(membersChannel);
     for (const ch of perCollection.values()) void supabase.removeChannel(ch);
     perCollection.clear();
@@ -203,9 +210,9 @@ export async function addMemberToCollection(
   userId: string
 ): Promise<void> {
   const supabase = getSupabaseClient();
-  // Idempotent: the partial unique index on (collection_id, user_id) where
-  // user_id is not null protects against duplicates, but we want to swallow
-  // the conflict rather than throw.
+  // Idempotent: collection_members_collection_user_unique on
+  // (collection_id, user_id) protects against duplicates; we want to
+  // swallow the conflict rather than throw.
   const { error } = await supabase
     .from('collection_members')
     .upsert(
@@ -234,11 +241,19 @@ export async function removeMemberFromCollection(
 
 function generateShareToken(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  const randomValues = new Uint8Array(12);
-  crypto.getRandomValues(randomValues);
+  // 256 isn't a multiple of 55, so plain `byte % 55` would over-pick the
+  // first 36 alphabet entries. Reject any byte at or above the largest
+  // multiple of `chars.length` that fits in a uint8 and re-sample.
+  const cap = 256 - (256 % chars.length); // 220 for 55-char alphabet
   let token = '';
-  for (let i = 0; i < 12; i++) {
-    token += chars.charAt(randomValues[i] % chars.length);
+  while (token.length < 12) {
+    const buf = new Uint8Array(12 - token.length);
+    crypto.getRandomValues(buf);
+    for (const b of buf) {
+      if (b < cap && token.length < 12) {
+        token += chars.charAt(b % chars.length);
+      }
+    }
   }
   return token;
 }
