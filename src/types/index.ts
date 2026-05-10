@@ -77,7 +77,7 @@ export interface LegoSet {
   // User data
   status: SetStatus;
   hasBeenAssembled: boolean;
-  occasion: string;
+  occasion?: string;
   dateReceived: string | null; // YYYY-MM-DD format
   owners: string[]; // Can have multiple owners for shared sets
   notes?: string;

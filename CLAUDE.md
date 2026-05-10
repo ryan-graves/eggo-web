@@ -259,8 +259,9 @@ Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js supp
 
 Schema lives in `supabase/migrations/`:
 
-- `0001_init.sql` — tables (`collections`, `collection_members`, `sets`, `user_preferences`), enums, the `is_collection_member()` SECURITY DEFINER helper, and full RLS policies
+- `0001_init.sql` — tables (`collections`, `collection_members`, `sets`, `user_preferences`), enums, the `is_collection_member()` SECURITY DEFINER helper, and full RLS policies. Also created the temporary `_firebase_uid_map` and claim trigger used during the Firestore cutover.
 - `0002_realtime_and_storage.sql` — adds tables to the `supabase_realtime` publication and creates the `processed-images` storage bucket (5 MB limit, public read)
+- `0003_drop_claim_flow.sql` — drops the temporary claim infrastructure once all returning users have signed in. Adds the `replace_collection_members()` RPC for atomic membership replacement.
 
 RLS policy summary:
 

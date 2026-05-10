@@ -10,8 +10,7 @@ const TABLE = 'user_preferences';
 
 interface UserPrefsRow {
   id: string;
-  user_id: string | null;
-  firebase_uid: string | null;
+  user_id: string;
   theme: ThemePreference;
   ui_theme: UITheme;
   home_sections: HomeSectionConfig[] | null;

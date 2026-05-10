@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdminConfigured, uploadProcessedImage } from '@/lib/supabase/admin';
+import { isAdminConfigured, uploadProcessedImage, verifyAuthToken } from '@/lib/supabase/admin';
 
 /**
  * Background Removal API Route
@@ -39,6 +39,11 @@ export async function POST(request: NextRequest) {
   if (!apiKey) {
     console.log('[remove-background API] No API key configured');
     return NextResponse.json({ error: 'Background removal not configured' }, { status: 503 });
+  }
+
+  const auth = await verifyAuthToken(request.headers.get('Authorization'));
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {

@@ -17,6 +17,16 @@ function getAppVersion(): string {
   return `${base}-local`;
 }
 
+function getSupabaseHost(): string | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) return null;
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
+}
+
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: getAppVersion(),
@@ -53,11 +63,15 @@ const nextConfig: NextConfig = {
         hostname: 'storage.googleapis.com',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: '*.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
+      ...(getSupabaseHost()
+        ? [
+            {
+              protocol: 'https' as const,
+              hostname: getSupabaseHost() as string,
+              pathname: '/storage/v1/object/public/**',
+            },
+          ]
+        : []),
     ],
   },
 };

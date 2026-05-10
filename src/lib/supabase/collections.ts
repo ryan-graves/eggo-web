@@ -6,11 +6,9 @@ const TABLE = 'collections';
 
 /**
  * Snake-case Postgres row → camelCase Collection. Member ids come from the
- * embedded `collection_members(user_id)` rows; firebase_uid-only rows
- * (pending claim) are excluded since the consumer only cares about active
- * Supabase user_ids.
+ * embedded `collection_members(user_id)` rows.
  */
-type CollectionMemberRow = { user_id: string | null };
+type CollectionMemberRow = { user_id: string };
 
 interface CollectionRow {
   id: string;
@@ -25,9 +23,7 @@ interface CollectionRow {
 }
 
 function fromDb(row: CollectionRow): Collection {
-  const memberUserIds = (row.collection_members ?? [])
-    .map((m) => m.user_id)
-    .filter((u): u is string => u !== null);
+  const memberUserIds = (row.collection_members ?? []).map((m) => m.user_id);
   return {
     id: row.id,
     name: row.name,
@@ -160,19 +156,13 @@ export async function updateCollection(
   if (error) throw new Error(error.message);
 
   if (data.memberUserIds !== undefined) {
-    // Replace the membership set wholesale (delete + re-insert).
-    const { error: delErr } = await supabase
-      .from('collection_members')
-      .delete()
-      .eq('collection_id', collectionId)
-      .not('user_id', 'is', null);
-    if (delErr) throw new Error(delErr.message);
-    if (data.memberUserIds.length > 0) {
-      const { error: insErr } = await supabase
-        .from('collection_members')
-        .insert(data.memberUserIds.map((uid) => ({ collection_id: collectionId, user_id: uid })));
-      if (insErr) throw new Error(insErr.message);
-    }
+    // Atomic delete + insert in a single transaction. The RPC is
+    // SECURITY DEFINER and re-checks membership against auth.uid().
+    const { error: rpcErr } = await supabase.rpc('replace_collection_members', {
+      coll_id: collectionId,
+      target_user_ids: data.memberUserIds,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
   }
 }
 

@@ -49,7 +49,7 @@ function fromDb(row: SetRow): LegoSet {
     customImageUrl: row.custom_image_url ?? undefined,
     status: row.status,
     hasBeenAssembled: row.has_been_assembled,
-    occasion: row.occasion ?? '',
+    occasion: row.occasion ?? undefined,
     dateReceived: row.date_received,
     owners: row.owners ?? [],
     notes: row.notes ?? undefined,

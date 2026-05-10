@@ -4,6 +4,8 @@
  * forwards the image URL + set id and returns the public Storage URL.
  */
 
+import { getAccessToken } from '@/lib/supabase';
+
 interface RemoveBackgroundApiResponse {
   processedImageUrl?: string;
   error?: string;
@@ -29,10 +31,12 @@ export async function removeImageBackground(
   console.log('[removeBackground] Starting background removal for:', imageUrl, 'setId:', setId);
 
   try {
+    const token = await getAccessToken();
     const response = await fetch('/api/remove-background', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ imageUrl, setId }),
     });

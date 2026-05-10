@@ -44,8 +44,16 @@ export default function AuthCallbackExchangePage() {
       else if (event === 'SIGNED_OUT') setError('Sign-in failed. Please try again.');
     });
 
+    // Stuck-spinner fallback: if the SDK never finishes the code exchange
+    // (malformed/expired code, missing PKCE verifier), surface an error UI
+    // instead of leaving the user on an indefinite loading screen.
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) setError('Sign-in timed out. Please try again.');
+    }, 10_000);
+
     return () => {
       cancelled = true;
+      window.clearTimeout(timeout);
       subscription.subscription.unsubscribe();
     };
   }, [router]);

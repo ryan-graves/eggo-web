@@ -42,43 +42,37 @@ for (const table of expectedTables) {
   });
 }
 
-// _firebase_uid_map: secret key should be able to read it (admin can do anything)
-await step('secret can read _firebase_uid_map', async () => {
-  const { count, error } = await admin.from('_firebase_uid_map').select('*', { count: 'exact', head: true });
-  if (error) throw error;
-  return `${count ?? 0} rows`;
-});
-
-// ---- RLS sanity: anon (publishable) should get empty results, not errors ----
-// With no auth context, every RLS policy fails closed — but the *table* should still be queryable.
-await step('anon cannot read collections (RLS empty)', async () => {
-  const { data, error } = await anon.from('collections').select('*');
+// ---- RLS sanity: anon can only see public rows ----
+// With no auth context, anon reads should return only collections where
+// is_public = true (and their sets via the parent-collection policy).
+// Private rows must not leak.
+await step('anon only sees public collections', async () => {
+  const { data, error } = await anon.from('collections').select('id, is_public');
   if (error) throw new Error(`unexpected error: ${error.message}`);
-  if (data && data.length > 0) throw new Error(`expected no rows, got ${data.length}`);
-  return 'returned empty (RLS blocking as expected)';
+  const leak = (data ?? []).filter((c) => c.is_public !== true);
+  if (leak.length > 0) {
+    throw new Error(`SECURITY ISSUE: anon sees ${leak.length} non-public collection(s)`);
+  }
+  return `${data?.length ?? 0} public row(s) visible, no leaks`;
 });
 
-await step('anon cannot read sets (RLS empty)', async () => {
-  const { data, error } = await anon.from('sets').select('*');
+await step('anon only sees sets from public collections', async () => {
+  const { data: pubCols } = await anon.from('collections').select('id').eq('is_public', true);
+  const publicIds = new Set((pubCols ?? []).map((c) => c.id));
+  const { data, error } = await anon.from('sets').select('id, collection_id');
   if (error) throw new Error(`unexpected error: ${error.message}`);
-  if (data && data.length > 0) throw new Error(`expected no rows, got ${data.length}`);
-  return 'returned empty (RLS blocking as expected)';
+  const leak = (data ?? []).filter((s) => !publicIds.has(s.collection_id));
+  if (leak.length > 0) {
+    throw new Error(`SECURITY ISSUE: anon sees ${leak.length} set(s) from non-public collections`);
+  }
+  return `${data?.length ?? 0} set(s) visible, all from public collections`;
 });
 
-// ---- Privacy: anon must NOT be able to read the temp claim map ----
-// We revoked all grants from anon/authenticated on _firebase_uid_map,
-// so this should error with permission denied (not return empty).
-await step('anon CANNOT read _firebase_uid_map (revoked grants)', async () => {
-  const { data, error } = await anon.from('_firebase_uid_map').select('*');
-  if (error) {
-    return `correctly blocked: ${error.message}`;
-  }
-  // PostgREST may return [] if it can't see the table at all. Either is acceptable
-  // as long as no data leaks; the key check is data is empty.
-  if (data && data.length > 0) {
-    throw new Error(`SECURITY ISSUE: anon got ${data.length} rows from _firebase_uid_map`);
-  }
-  return 'returned empty (acceptable, but expected error)';
+// ---- Cleanup migration applied: _firebase_uid_map should be gone ----
+await step('_firebase_uid_map has been dropped', async () => {
+  const { error } = await admin.from('_firebase_uid_map').select('*', { count: 'exact', head: true });
+  if (!error) throw new Error('table still exists — apply 0003_drop_claim_flow.sql');
+  return `correctly missing: ${error.message}`;
 });
 
 // ---- Helper function exists ----
@@ -89,6 +83,19 @@ await step('is_collection_member helper exists', async () => {
   if (error) throw error;
   if (data !== false) throw new Error(`expected false, got ${data}`);
   return 'returns false for fake ids';
+});
+
+// ---- replace_collection_members RPC exists ----
+// Calling without auth context fails the membership check and raises.
+// Either an error or a 'not authorized' response confirms the function is wired.
+await step('replace_collection_members RPC exists', async () => {
+  const fake = '00000000-0000-0000-0000-000000000000';
+  const { error } = await anon.rpc('replace_collection_members', {
+    coll_id: fake,
+    target_user_ids: [fake],
+  });
+  if (!error) throw new Error('expected unauthorized error from anon caller');
+  return `correctly rejected: ${error.message}`;
 });
 
 console.log('');
