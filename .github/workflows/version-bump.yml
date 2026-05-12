@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: '20.19'
 
       - name: Determine bump type from commit message
         id: bump
