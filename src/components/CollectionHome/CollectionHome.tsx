@@ -41,13 +41,18 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
           ...resolved,
           sets: resolved.getSets(sets),
           display: config.display ?? 'standard',
+          // Public share view has no /all route, so only link there in the app.
+          viewAllHref:
+            !readOnly && resolved.viewAllFilter
+              ? `/all?${resolved.viewAllFilter}`
+              : undefined,
         };
       })
       .filter(
         (section): section is NonNullable<typeof section> =>
           section !== null && section.sets.length > 0
       );
-  }, [sectionConfigs, sets]);
+  }, [sectionConfigs, sets, readOnly]);
 
   const handleSaveSections = (newSections: HomeSectionConfig[]): void => {
     setHomeSections(newSections);
@@ -113,6 +118,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
             emptyMessage={section.emptyMessage}
             getDetail={section.getDetail}
             display={section.display}
+            viewAllHref={section.viewAllHref}
             linkPrefix={linkPrefix}
             hideStatus={hideStatus}
           />

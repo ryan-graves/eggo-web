@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SetCard } from '@/components/SetCard';
 import { FilterSheet } from '@/components/FilterSheet';
 import { FilterTags } from '@/components/FilterTags';
@@ -45,9 +46,18 @@ export function SetList({
   viewSettings,
   emptyMessage = 'No sets in your collection yet. Add your first set!',
 }: SetListProps): React.JSX.Element {
-  const [statusFilter, setStatusFilter] = useState<SetStatus | 'all'>('all');
+  // Initial status/theme filters can be deep-linked from the home "View All" links
+  const searchParams = useSearchParams();
+  const [statusFilter, setStatusFilter] = useState<SetStatus | 'all'>(() => {
+    const param = searchParams.get('status');
+    return STATUS_OPTIONS.some((o) => o.value === param)
+      ? (param as SetStatus | 'all')
+      : 'all';
+  });
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
-  const [themeFilter, setThemeFilter] = useState<string>('all');
+  const [themeFilter, setThemeFilter] = useState<string>(
+    () => searchParams.get('theme') ?? 'all'
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('dateReceived');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
