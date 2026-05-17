@@ -115,12 +115,30 @@ function SuspenseFallback(): React.JSX.Element {
   return <CollectionSkeleton isAllSets={isAllSets} />;
 }
 
+function CollectionError(): React.JSX.Element {
+  return (
+    <div className={styles.errorState}>
+      <h2 className={styles.errorTitle}>We couldn’t load your collection</h2>
+      <p className={styles.errorBody}>
+        Something went wrong while loading. Check your connection and try again.
+      </p>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="btn-default btn-primary"
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
+
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
   const router = useRouter();
   const { navigateTo } = useNavigation();
   const { user } = useAuth();
-  const { collections, activeCollection, setActiveCollection, sets, isInitializing } = useCollection();
+  const { collections, activeCollection, setActiveCollection, sets, isInitializing, loadError } = useCollection();
   const [isPending, startTransition] = useTransition();
   const [pendingView, setPendingView] = useState<'home' | 'all' | null>(null);
 
@@ -212,6 +230,15 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
   if (isInitializing) {
     return <CollectionSkeleton isAllSets={pathname === '/all'} />;
+  }
+
+  if (loadError) {
+    return (
+      <div className={styles.page}>
+        <Header variant="main" rightContent={avatarLink} />
+        <CollectionError />
+      </div>
+    );
   }
 
   if (collections.length === 0) {

@@ -19,14 +19,31 @@ function formatDate(dateStr: string): string | undefined {
 }
 
 /**
- * Return a random sample of up to `count` items from the array.
- * Uses a partial Fisher-Yates shuffle to avoid shuffling the entire array.
+ * Small seeded PRNG (mulberry32). Lets a "random" sample stay stable for a
+ * given seed instead of reshuffling on every realtime refetch.
  */
-function randomSample<T>(array: T[], count: number): T[] {
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Return a random sample of up to `count` items from the array, using a
+ * partial Fisher-Yates shuffle. When `seed` is provided the sample is
+ * deterministic for that seed, so it stays stable across refetches.
+ */
+function randomSample<T>(array: T[], count: number, seed?: number): T[] {
+  const random =
+    seed === undefined ? Math.random : mulberry32(Math.floor(seed * 0xffffffff));
   const copy = [...array];
   const n = Math.min(count, copy.length);
   for (let i = 0; i < n; i++) {
-    const j = i + Math.floor(Math.random() * (copy.length - i));
+    const j = i + Math.floor(random() * (copy.length - i));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy.slice(0, n);
@@ -35,7 +52,8 @@ function randomSample<T>(array: T[], count: number): T[] {
 interface SmartSectionDefinition {
   title: string;
   description: string;
-  getSets: (sets: LegoSet[]) => LegoSet[];
+  /** `seed` makes random sections deterministic for a session; most ignore it. */
+  getSets: (sets: LegoSet[], seed?: number) => LegoSet[];
   emptyMessage: string;
   viewAllFilter?: string;
   /** Extract a detail string from a set for display on the card. */
@@ -56,10 +74,11 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
   discover: {
     title: 'Discover Something New',
     description: 'Random picks from your unopened or disassembled sets',
-    getSets: (sets) =>
+    getSets: (sets, seed) =>
       randomSample(
         sets.filter((s) => s.status === 'unopened' || s.status === 'disassembled'),
-        24
+        24,
+        seed
       ),
     emptyMessage: 'All sets have been built!',
     getDetail: (set) =>
@@ -165,7 +184,7 @@ export interface ResolvedSection {
   title: string;
   /** Short editorial description, surfaced as a subtitle in the featured display. */
   description?: string;
-  getSets: (sets: LegoSet[]) => LegoSet[];
+  getSets: (sets: LegoSet[], seed?: number) => LegoSet[];
   emptyMessage: string;
   viewAllFilter?: string;
   /** Extract a detail string from a set for display on the card. */

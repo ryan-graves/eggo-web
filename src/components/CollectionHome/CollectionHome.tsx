@@ -21,6 +21,9 @@ interface CollectionHomeProps {
 export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus }: CollectionHomeProps): React.JSX.Element {
   const { homeSections, setHomeSections } = useHomeSections();
   const [showCustomize, setShowCustomize] = useState(false);
+  // One seed per mount keeps random sections (Discover) stable across the
+  // realtime refetches that would otherwise reshuffle them under the user.
+  const [shuffleSeed] = useState(() => Math.random());
 
   const sectionConfigs = readOnly ? DEFAULT_HOME_SECTIONS : (homeSections ?? DEFAULT_HOME_SECTIONS);
 
@@ -39,7 +42,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
         if (!resolved) return null;
         return {
           ...resolved,
-          sets: resolved.getSets(sets),
+          sets: resolved.getSets(sets, shuffleSeed),
           display: config.display ?? 'standard',
           // Public share view has no /all route, so only link there in the app.
           viewAllHref:
@@ -52,7 +55,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
         (section): section is NonNullable<typeof section> =>
           section !== null && section.sets.length > 0
       );
-  }, [sectionConfigs, sets, readOnly]);
+  }, [sectionConfigs, sets, readOnly, shuffleSeed]);
 
   const handleSaveSections = (newSections: HomeSectionConfig[]): void => {
     setHomeSections(newSections);
@@ -63,7 +66,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
     return (
       <div className={styles.empty}>
         <p>{readOnly ? 'This collection is empty.' : 'Your collection is empty.'}</p>
-        {!readOnly && <p>Add some sets to get started!</p>}
+        {!readOnly && <p>Add your first set to begin.</p>}
       </div>
     );
   }
@@ -97,7 +100,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
 
       {sections.length === 0 ? (
         <div className={styles.emptySections}>
-          <p>No sections have matching sets.</p>
+          <p>None of your home sections have matching sets.</p>
           {!readOnly && (
             <button
               type="button"

@@ -107,6 +107,31 @@
   background-color: var(--interactive-primary-hover);
 }
 
+/* Load error state */
+.errorState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-4);
+  text-align: center;
+}
+
+.errorTitle {
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.errorBody {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: var(--max-width-form);
+}
+
 /* Skeleton loading styles */
 @keyframes shimmer {
   0% {
