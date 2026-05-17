@@ -34,12 +34,21 @@ export type SmartSectionType =
   | 'disassembled';
 
 /**
+ * Display style for a home section.
+ * - standard: default carousel (horizontal scroll on mobile, responsive grid on desktop)
+ * - featured: enlarged cards and a larger header, for small actionable sections
+ * - gallery: denser cards, for theme sections meant to show breadth
+ */
+export type SectionDisplay = 'standard' | 'featured' | 'gallery';
+
+/**
  * A home section configuration entry.
  * Either a smart filter (type is a SmartSectionType) or a theme filter (type is 'theme').
+ * `display` is optional; absent means 'standard'.
  */
 export type HomeSectionConfig =
-  | { type: SmartSectionType }
-  | { type: 'theme'; themeName: string };
+  | { type: SmartSectionType; display?: SectionDisplay }
+  | { type: 'theme'; themeName: string; display?: SectionDisplay };
 
 export interface UserPreferences {
   theme: ThemePreference;

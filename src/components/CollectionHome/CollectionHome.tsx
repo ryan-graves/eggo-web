@@ -40,6 +40,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
         return {
           ...resolved,
           sets: resolved.getSets(sets),
+          display: config.display ?? 'standard',
         };
       })
       .filter(
@@ -107,10 +108,11 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
           <SetCarousel
             key={section.id}
             title={section.title}
+            description={section.description}
             sets={section.sets}
             emptyMessage={section.emptyMessage}
-            maxItems={section.maxItems}
             getDetail={section.getDetail}
+            display={section.display}
             linkPrefix={linkPrefix}
             hideStatus={hideStatus}
           />

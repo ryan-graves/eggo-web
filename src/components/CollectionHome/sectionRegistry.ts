@@ -38,8 +38,6 @@ interface SmartSectionDefinition {
   getSets: (sets: LegoSet[]) => LegoSet[];
   emptyMessage: string;
   viewAllFilter?: string;
-  /** Max items to show in the carousel. Undefined means show all. */
-  maxItems?: number;
   /** Extract a detail string from a set for display on the card. */
   getDetail?: (set: LegoSet) => string | undefined;
 }
@@ -61,10 +59,9 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
     getSets: (sets) =>
       randomSample(
         sets.filter((s) => s.status === 'unopened' || s.status === 'disassembled'),
-        10
+        24
       ),
     emptyMessage: 'All sets have been built!',
-    maxItems: 10,
     getDetail: (set) =>
       set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
@@ -80,7 +77,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
           return dateB.localeCompare(dateA);
         }),
     emptyMessage: 'No sets with dates yet',
-    maxItems: 10,
     getDetail: (set) => formatDate(getDateString(set.dateReceived)),
   },
   largest: {
@@ -91,7 +87,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.pieceCount)
         .sort((a, b) => (b.pieceCount || 0) - (a.pieceCount || 0)),
     emptyMessage: 'No piece counts available',
-    maxItems: 10,
     getDetail: (set) =>
       set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
@@ -103,7 +98,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.pieceCount)
         .sort((a, b) => (a.pieceCount || 0) - (b.pieceCount || 0)),
     emptyMessage: 'No piece counts available',
-    maxItems: 10,
     getDetail: (set) =>
       set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
@@ -115,7 +109,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.year)
         .sort((a, b) => (b.year || 0) - (a.year || 0)),
     emptyMessage: 'No release years available',
-    maxItems: 10,
     getDetail: (set) => (set.year ? String(set.year) : undefined),
   },
   oldest_year: {
@@ -126,7 +119,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.year)
         .sort((a, b) => (a.year || 0) - (b.year || 0)),
     emptyMessage: 'No release years available',
-    maxItems: 10,
     getDetail: (set) => (set.year ? String(set.year) : undefined),
   },
   unopened: {
@@ -171,11 +163,11 @@ const ALL_SMART_TYPES: SmartSectionType[] = [
 export interface ResolvedSection {
   id: string;
   title: string;
+  /** Short editorial description, surfaced as a subtitle in the featured display. */
+  description?: string;
   getSets: (sets: LegoSet[]) => LegoSet[];
   emptyMessage: string;
   viewAllFilter?: string;
-  /** Max items to show in the carousel. Undefined means show all. */
-  maxItems?: number;
   /** Extract a detail string from a set for display on the card. */
   getDetail?: (set: LegoSet) => string | undefined;
 }
@@ -207,10 +199,10 @@ export function resolveSection(config: HomeSectionConfig): ResolvedSection | nul
   return {
     id: config.type,
     title: def.title,
+    description: def.description,
     getSets: def.getSets,
     emptyMessage: def.emptyMessage,
     viewAllFilter: def.viewAllFilter,
-    maxItems: def.maxItems,
     getDetail: def.getDetail,
   };
 }
@@ -238,16 +230,10 @@ export function getSectionLabel(config: HomeSectionConfig): string {
 }
 
 export const DEFAULT_HOME_SECTIONS: HomeSectionConfig[] = [
-  { type: 'in_progress' },
-  { type: 'discover' },
-  { type: 'recently_added' },
-  { type: 'largest' },
-  { type: 'disassembled' },
-  { type: 'unopened' },
-  { type: 'assembled' },
-  { type: 'smallest' },
-  { type: 'newest_year' },
-  { type: 'oldest_year' },
+  { type: 'in_progress', display: 'featured' },
+  { type: 'recently_added', display: 'standard' },
+  { type: 'assembled', display: 'standard' },
+  { type: 'discover', display: 'standard' },
 ];
 
 /**

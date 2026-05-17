@@ -191,6 +191,7 @@
   --size-image-sm: 80px;
   --size-image-md: 120px;
   --size-image-lg: 200px;
+  --size-image-xl: 280px;
 
   /* ---- Layout: Max Widths ---- */
   --layout-max-width: 1400px;
@@ -222,6 +223,12 @@
   --layout-card-min-width: 180px;
   --layout-card-min-width-mobile: 140px;
   --layout-carousel-card-width: 160px;
+
+  /* Home section display variants: featured (large plates) and gallery (denser) */
+  --layout-card-min-width-featured: 520px;
+  --layout-card-min-width-gallery: 140px;
+  --layout-carousel-card-width-featured: 300px;
+  --layout-carousel-card-width-gallery: 128px;
 
   /* ---- Layout: Header ---- */
   --layout-header-padding: var(--space-3) var(--space-4);
