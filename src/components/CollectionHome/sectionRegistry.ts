@@ -67,7 +67,8 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
     getSets: (sets) =>
       sets.filter((s) => s.status === 'in_progress' || s.status === 'rebuild_in_progress'),
     emptyMessage: 'No builds in progress',
-    viewAllFilter: 'status=in_progress',
+    // No viewAllFilter: this section spans two statuses (in_progress +
+    // rebuild_in_progress), which /all's single-status filter can't represent.
     getDetail: (set) =>
       set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },

@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
@@ -152,6 +152,7 @@ function CollectionError(): React.JSX.Element {
 
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { navigateTo } = useNavigation();
   const { user } = useAuth();
@@ -163,10 +164,15 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
   // Use pending view during transition, fall back to actual path
   const isAllSetsView = isPending && pendingView !== null ? pendingView === 'all' : actualIsAllSets;
 
-  // Store the current browse path so set detail pages know where to return to
+  // Store the current browse path, including any active filter query, so set
+  // detail pages can return to the same filtered view.
   useEffect(() => {
-    sessionStorage.setItem(LAST_BROWSE_PATH_KEY, pathname);
-  }, [pathname]);
+    const query = searchParams.toString();
+    sessionStorage.setItem(
+      LAST_BROWSE_PATH_KEY,
+      query ? `${pathname}?${query}` : pathname
+    );
+  }, [pathname, searchParams]);
 
   // Restore scroll position when returning to this browse view
   useEffect(() => {

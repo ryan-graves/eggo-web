@@ -31,6 +31,12 @@ const DISPLAY_CLASS: Record<SectionDisplay, string> = {
 /** On desktop the track becomes a grid; cap it to this many complete rows. */
 const GRID_ROWS = 2;
 
+/**
+ * Conservative cap applied on the first render, before the layout effect can
+ * measure the grid. Keeps a large section from mounting every card up front.
+ */
+const INITIAL_VISIBLE_COUNT = 16;
+
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -47,9 +53,12 @@ export function SetCarousel({
 }: SetCarouselProps): React.JSX.Element {
   const isFeatured = display === 'featured';
   const trackRef = useRef<HTMLDivElement>(null);
-  // null = show every set (mobile scroll carousel); a number caps the desktop
-  // grid to whole rows so the last row is never ragged.
-  const [visibleCount, setVisibleCount] = useState<number | null>(null);
+  // A number caps the desktop grid to whole rows so the last row is never
+  // ragged; null = show every set (mobile scroll carousel). Starts capped so
+  // the first render never mounts a whole large section before measuring.
+  const [visibleCount, setVisibleCount] = useState<number | null>(
+    INITIAL_VISIBLE_COUNT
+  );
 
   useIsomorphicLayoutEffect(() => {
     const track = trackRef.current;

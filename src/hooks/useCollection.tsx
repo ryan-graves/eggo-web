@@ -46,7 +46,10 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
   const [activeCollection, setActiveCollectionState] = useState<Collection | null>(null);
   const [sets, setSets] = useState<LegoSet[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  // The collections and sets streams fail independently, so each tracks its
+  // own error; loadError below is derived from both.
+  const [collectionsError, setCollectionsError] = useState<string | null>(null);
+  const [setsError, setSetsError] = useState<string | null>(null);
 
   // Track initialization state separately from loading
   const [collectionsInitialized, setCollectionsInitialized] = useState(false);
@@ -72,7 +75,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
 
     const unsubscribe = subscribeToCollectionsForUser(user.id, (userCollections) => {
       setCollections(userCollections);
-      setLoadError(null);
+      setCollectionsError(null);
 
       // Auto-select first collection if none selected, or update active collection with fresh data
       setActiveCollectionState((current) => {
@@ -94,7 +97,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       // Mark collections as initialized after first successful load
       setCollectionsInitialized(true);
     }, (err) => {
-      setLoadError(err.message || 'Failed to load collections');
+      setCollectionsError(err.message || 'Failed to load collections');
       setCollectionsInitialized(true);
     });
 
@@ -116,6 +119,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       // No collection selected - clear sets but preserve initialized state
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state when no collection is intentional
       setSets([]);
+      setSetsError(null);
       loadedCollectionIdRef.current = null;
       return;
     }
@@ -129,12 +133,12 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
 
     const unsubscribe = subscribeToSetsForCollection(activeCollection.id, (collectionSets) => {
       setSets(collectionSets);
-      setLoadError(null);
+      setSetsError(null);
       loadedCollectionIdRef.current = activeCollection.id;
       setSetsInitialized(true);
       setIsSwitchingCollection(false);
     }, (err) => {
-      setLoadError(err.message || 'Failed to load sets');
+      setSetsError(err.message || 'Failed to load sets');
       setSetsInitialized(true);
       setIsSwitchingCollection(false);
     });
@@ -196,6 +200,10 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
 
   // Compute isInitializing: true until auth is resolved AND we have loaded collections AND sets
   const isInitializing = authLoading || !collectionsInitialized || (activeCollection !== null && !setsInitialized);
+
+  // Surface whichever stream is currently failing; collections takes priority
+  // since the sets view depends on having a collection at all.
+  const loadError = collectionsError ?? setsError;
 
   const value = useMemo(
     () => ({

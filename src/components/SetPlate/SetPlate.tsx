@@ -56,7 +56,7 @@ export function SetPlate({
               src={imageUrl}
               alt={set.name}
               fill
-              sizes="120px"
+              sizes="280px"
               className={styles.image}
             />
           ) : (
