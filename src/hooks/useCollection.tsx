@@ -28,8 +28,10 @@ interface CollectionContextValue {
   isSwitchingCollection: boolean;
   /** Set when creating a collection fails */
   error: string | null;
-  /** Set when loading collections or sets fails */
-  loadError: string | null;
+  /** Set when loading the collections list fails */
+  collectionsError: string | null;
+  /** Set when loading the active collection's sets fails */
+  setsError: string | null;
   setActiveCollection: (collection: Collection) => void;
   createNewCollection: (name: string, owners: string[]) => Promise<string>;
 }
@@ -201,10 +203,6 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
   // Compute isInitializing: true until auth is resolved AND we have loaded collections AND sets
   const isInitializing = authLoading || !collectionsInitialized || (activeCollection !== null && !setsInitialized);
 
-  // Surface whichever stream is currently failing; collections takes priority
-  // since the sets view depends on having a collection at all.
-  const loadError = collectionsError ?? setsError;
-
   const value = useMemo(
     () => ({
       collections,
@@ -213,11 +211,12 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       isInitializing,
       isSwitchingCollection,
       error,
-      loadError,
+      collectionsError,
+      setsError,
       setActiveCollection,
       createNewCollection,
     }),
-    [collections, activeCollection, sets, isInitializing, isSwitchingCollection, error, loadError, setActiveCollection, createNewCollection]
+    [collections, activeCollection, sets, isInitializing, isSwitchingCollection, error, collectionsError, setsError, setActiveCollection, createNewCollection]
   );
 
   return (

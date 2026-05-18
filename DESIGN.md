@@ -120,7 +120,7 @@ Eggo is a frame around a collection. Like a well-built shelf, the interface line
 sets up cleanly, holds them at a comfortable distance, and otherwise gets out of the
 way. Nothing on screen competes with a set's own photograph. The system runs **dark by
 default** on near-black surfaces, so each set image reads like an object lit on a dark
-wall, and the chrome, borders, controls, type, stays quiet enough to disappear.
+wall, and the chrome, borders, controls, and type stay quiet enough to disappear.
 
 The system is **monochrome by doctrine**. The canonical experience is the Mono UI theme:
 a neutral gray ramp, Instrument Serif for every heading, Inter for everything else. There

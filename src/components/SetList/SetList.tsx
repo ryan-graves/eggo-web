@@ -18,6 +18,8 @@ interface SetListProps {
   viewSettings?: PublicViewSettings;
   /** Empty state message when collection has no sets at all */
   emptyMessage?: string;
+  /** Mirror status/theme filters into the URL (the /all deep-link flow only). */
+  syncFiltersToUrl?: boolean;
 }
 
 type SortField = 'name' | 'dateReceived' | 'pieceCount' | 'setNumber';
@@ -45,6 +47,7 @@ export function SetList({
   linkPrefix,
   viewSettings,
   emptyMessage = 'No sets in your collection yet. Add your first set!',
+  syncFiltersToUrl = false,
 }: SetListProps): React.JSX.Element {
   // Initial status/theme filters can be deep-linked from the home "View All" links
   const searchParams = useSearchParams();
@@ -67,14 +70,16 @@ export function SetList({
 
   // Mirror the deep-linkable filters back into the URL so back navigation,
   // refresh, and sharing reflect the current filter rather than the original
-  // deep link. router.replace keeps it out of the history stack.
+  // deep link. router.replace keeps it out of the history stack. Gated to the
+  // /all route so it never rewrites the public share page's URL.
   useEffect(() => {
+    if (!syncFiltersToUrl) return;
     const params = new URLSearchParams();
     if (statusFilter !== 'all') params.set('status', statusFilter);
     if (themeFilter !== 'all') params.set('theme', themeFilter);
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  }, [statusFilter, themeFilter, pathname, router]);
+  }, [syncFiltersToUrl, statusFilter, themeFilter, pathname, router]);
 
   const hideOwner = viewSettings ? !viewSettings.showOwner : false;
   const hideStatus = viewSettings ? !(viewSettings.showStatus ?? true) : false;

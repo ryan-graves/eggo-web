@@ -64,8 +64,8 @@ function HomeSkeleton(): React.JSX.Element {
         </div>
       </div>
 
-      {/* Standard carousel sections */}
-      {Array.from({ length: 2 }).map((_, section) => (
+      {/* Standard carousel sections — matches the curated default's count */}
+      {Array.from({ length: 3 }).map((_, section) => (
         <div key={section} className={styles.skeletonSection}>
           <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
           <div className={styles.skeletonCarousel}>
@@ -156,7 +156,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
   const router = useRouter();
   const { navigateTo } = useNavigation();
   const { user } = useAuth();
-  const { collections, activeCollection, setActiveCollection, sets, isInitializing, loadError } = useCollection();
+  const { collections, activeCollection, setActiveCollection, sets, isInitializing, collectionsError, setsError } = useCollection();
   const [isPending, startTransition] = useTransition();
   const [pendingView, setPendingView] = useState<'home' | 'all' | null>(null);
 
@@ -255,7 +255,10 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     return <CollectionSkeleton isAllSets={pathname === '/all'} />;
   }
 
-  if (loadError) {
+  // A failed collections load leaves nothing to work with — show a full-page
+  // error. A failed sets load is handled inside the normal shell below, so the
+  // collection switcher stays available.
+  if (collectionsError) {
     return (
       <div className={styles.page}>
         <Header variant="main" rightContent={avatarLink} />
@@ -325,7 +328,9 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
           </button>
         </div>
 
-        {isPending ? (
+        {setsError ? (
+          <CollectionError />
+        ) : isPending ? (
           isAllSetsView ? <AllSetsSkeleton /> : <HomeSkeleton />
         ) : (
           children
