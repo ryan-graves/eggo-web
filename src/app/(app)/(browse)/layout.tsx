@@ -41,23 +41,40 @@ function SkeletonToolbar(): React.JSX.Element {
 function HomeSkeleton(): React.JSX.Element {
   return (
     <>
+      <div className={styles.skeletonCustomizeRow}>
+        <div className={`${styles.skeleton} ${styles.skeletonCustomizeButton}`} />
+      </div>
+
+      {/* Featured section — title, subtitle, and a pair of catalog plates */}
       <div className={styles.skeletonSection}>
-        <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
-        <div className={styles.skeletonCarousel}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <SetCardSkeleton key={i} compact />
+        <div className={`${styles.skeleton} ${styles.skeletonFeaturedTitle}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonSubtitle}`} />
+        <div className={styles.skeletonFeaturedGrid}>
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className={styles.skeletonPlate}>
+              <div className={`${styles.skeleton} ${styles.skeletonPlateImage}`} />
+              <div className={styles.skeletonPlateInfo}>
+                <div className={`${styles.skeleton} ${styles.skeletonPlateName}`} />
+                <div className={`${styles.skeleton} ${styles.skeletonPlateLine}`} />
+                <div className={`${styles.skeleton} ${styles.skeletonPlateLine}`} />
+                <div className={`${styles.skeleton} ${styles.skeletonPlateStatus}`} />
+              </div>
+            </div>
           ))}
         </div>
       </div>
 
-      <div className={styles.skeletonSection}>
-        <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
-        <div className={styles.skeletonCarousel}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <SetCardSkeleton key={i} compact />
-          ))}
+      {/* Standard carousel sections */}
+      {Array.from({ length: 2 }).map((_, section) => (
+        <div key={section} className={styles.skeletonSection}>
+          <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
+          <div className={styles.skeletonCarousel}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <SetCardSkeleton key={i} compact />
+            ))}
+          </div>
         </div>
-      </div>
+      ))}
     </>
   );
 }
