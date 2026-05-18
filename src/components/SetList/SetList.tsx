@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { SetCard } from '@/components/SetCard';
 import { FilterSheet } from '@/components/FilterSheet';
 import { FilterTags } from '@/components/FilterTags';
@@ -48,6 +48,8 @@ export function SetList({
 }: SetListProps): React.JSX.Element {
   // Initial status/theme filters can be deep-linked from the home "View All" links
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [statusFilter, setStatusFilter] = useState<SetStatus | 'all'>(() => {
     const param = searchParams.get('status');
     return STATUS_OPTIONS.some((o) => o.value === param)
@@ -62,6 +64,17 @@ export function SetList({
   const [sortField, setSortField] = useState<SortField>('dateReceived');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
+  // Mirror the deep-linkable filters back into the URL so back navigation,
+  // refresh, and sharing reflect the current filter rather than the original
+  // deep link. router.replace keeps it out of the history stack.
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (themeFilter !== 'all') params.set('theme', themeFilter);
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [statusFilter, themeFilter, pathname, router]);
 
   const hideOwner = viewSettings ? !viewSettings.showOwner : false;
   const hideStatus = viewSettings ? !(viewSettings.showStatus ?? true) : false;
@@ -100,9 +113,10 @@ export function SetList({
       result = result.filter((set) => set.owners.includes(ownerFilter));
     }
 
-    // Apply theme filter
+    // Apply theme filter (case-insensitive, matching how theme home sections resolve)
     if (themeFilter !== 'all') {
-      result = result.filter((set) => set.theme === themeFilter);
+      const theme = themeFilter.toLowerCase();
+      result = result.filter((set) => set.theme?.toLowerCase() === theme);
     }
 
     // Sort
