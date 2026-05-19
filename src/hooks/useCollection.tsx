@@ -26,7 +26,14 @@ interface CollectionContextValue {
   isInitializing: boolean;
   /** True while fetching sets for a new collection (after initial load) */
   isSwitchingCollection: boolean;
+  /** Set when creating a collection fails */
   error: string | null;
+  /** Set when loading the collections list fails */
+  collectionsError: string | null;
+  /** True once the collections list has loaded successfully at least once */
+  collectionsEverLoaded: boolean;
+  /** Set when loading the active collection's sets fails */
+  setsError: string | null;
   setActiveCollection: (collection: Collection) => void;
   createNewCollection: (name: string, owners: string[]) => Promise<string>;
 }
@@ -43,14 +50,22 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
   const [activeCollection, setActiveCollectionState] = useState<Collection | null>(null);
   const [sets, setSets] = useState<LegoSet[]>([]);
   const [error, setError] = useState<string | null>(null);
+  // The collections and sets streams fail independently, so each tracks its
+  // own error; the browse layout surfaces them separately.
+  const [collectionsError, setCollectionsError] = useState<string | null>(null);
+  const [setsError, setSetsError] = useState<string | null>(null);
 
   // Track initialization state separately from loading
   const [collectionsInitialized, setCollectionsInitialized] = useState(false);
   const [setsInitialized, setSetsInitialized] = useState(false);
   const [isSwitchingCollection, setIsSwitchingCollection] = useState(false);
+  // True once the collections list has loaded successfully at least once
+  const [collectionsEverLoaded, setCollectionsEverLoaded] = useState(false);
 
   // Track which collection's sets we currently have loaded
   const loadedCollectionIdRef = useRef<string | null>(null);
+  // Track which collection the sets subscription was last started for
+  const subscribedCollectionIdRef = useRef<string | null>(null);
 
   // Subscribe to user's collections
   useEffect(() => {
@@ -68,6 +83,8 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
 
     const unsubscribe = subscribeToCollectionsForUser(user.id, (userCollections) => {
       setCollections(userCollections);
+      setCollectionsError(null);
+      setCollectionsEverLoaded(true);
 
       // Auto-select first collection if none selected, or update active collection with fresh data
       setActiveCollectionState((current) => {
@@ -87,6 +104,9 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       });
 
       // Mark collections as initialized after first successful load
+      setCollectionsInitialized(true);
+    }, (err) => {
+      setCollectionsError(err.message || 'Failed to load collections');
       setCollectionsInitialized(true);
     });
 
@@ -108,11 +128,19 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       // No collection selected - clear sets but preserve initialized state
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state when no collection is intentional
       setSets([]);
+      setSetsError(null);
       loadedCollectionIdRef.current = null;
       return;
     }
 
     const isNewCollection = loadedCollectionIdRef.current !== activeCollection.id;
+
+    // Switching to a different collection: drop the prior collection's error so
+    // the new one shows a loading state, not the previous failure.
+    if (subscribedCollectionIdRef.current !== activeCollection.id) {
+      subscribedCollectionIdRef.current = activeCollection.id;
+      setSetsError(null);
+    }
 
     // Only show switching indicator after initial load and when changing collections
     if (isNewCollection && setsInitialized) {
@@ -121,7 +149,12 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
 
     const unsubscribe = subscribeToSetsForCollection(activeCollection.id, (collectionSets) => {
       setSets(collectionSets);
+      setSetsError(null);
       loadedCollectionIdRef.current = activeCollection.id;
+      setSetsInitialized(true);
+      setIsSwitchingCollection(false);
+    }, (err) => {
+      setSetsError(err.message || 'Failed to load sets');
       setSetsInitialized(true);
       setIsSwitchingCollection(false);
     });
@@ -192,10 +225,13 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       isInitializing,
       isSwitchingCollection,
       error,
+      collectionsError,
+      collectionsEverLoaded,
+      setsError,
       setActiveCollection,
       createNewCollection,
     }),
-    [collections, activeCollection, sets, isInitializing, isSwitchingCollection, error, setActiveCollection, createNewCollection]
+    [collections, activeCollection, sets, isInitializing, isSwitchingCollection, error, collectionsError, collectionsEverLoaded, setsError, setActiveCollection, createNewCollection]
   );
 
   return (

@@ -133,12 +133,17 @@ export function subscribeToSetsForCollection(
   onError?: (error: Error) => void
 ): () => void {
   const supabase = getSupabaseClient();
+  // Suppress callbacks from a refetch that's still in flight after unsubscribe,
+  // so a stale failure can't surface against a since-switched collection.
+  let cancelled = false;
 
   const refetch = async () => {
     try {
       const sets = await getSetsForCollection(collectionId);
+      if (cancelled) return;
       callback(sets);
     } catch (err) {
+      if (cancelled) return;
       console.error('[subscribeToSetsForCollection] refetch error:', err);
       onError?.(err as Error);
     }
@@ -163,6 +168,7 @@ export function subscribeToSetsForCollection(
     .subscribe();
 
   return () => {
+    cancelled = true;
     void supabase.removeChannel(channel);
   };
 }

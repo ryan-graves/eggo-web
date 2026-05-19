@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
@@ -41,23 +41,40 @@ function SkeletonToolbar(): React.JSX.Element {
 function HomeSkeleton(): React.JSX.Element {
   return (
     <>
+      <div className={styles.skeletonCustomizeRow}>
+        <div className={`${styles.skeleton} ${styles.skeletonCustomizeButton}`} />
+      </div>
+
+      {/* Featured section — title, subtitle, and a pair of catalog plates */}
       <div className={styles.skeletonSection}>
-        <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
-        <div className={styles.skeletonCarousel}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <SetCardSkeleton key={i} compact />
+        <div className={`${styles.skeleton} ${styles.skeletonFeaturedTitle}`} />
+        <div className={`${styles.skeleton} ${styles.skeletonSubtitle}`} />
+        <div className={styles.skeletonFeaturedGrid}>
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className={styles.skeletonPlate}>
+              <div className={`${styles.skeleton} ${styles.skeletonPlateImage}`} />
+              <div className={styles.skeletonPlateInfo}>
+                <div className={`${styles.skeleton} ${styles.skeletonPlateName}`} />
+                <div className={`${styles.skeleton} ${styles.skeletonPlateLine}`} />
+                <div className={`${styles.skeleton} ${styles.skeletonPlateLine}`} />
+                <div className={`${styles.skeleton} ${styles.skeletonPlateStatus}`} />
+              </div>
+            </div>
           ))}
         </div>
       </div>
 
-      <div className={styles.skeletonSection}>
-        <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
-        <div className={styles.skeletonCarousel}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <SetCardSkeleton key={i} compact />
-          ))}
+      {/* Standard carousel sections — matches the curated default's count */}
+      {Array.from({ length: 3 }).map((_, section) => (
+        <div key={section} className={styles.skeletonSection}>
+          <div className={`${styles.skeleton} ${styles.skeletonSectionTitle}`} />
+          <div className={styles.skeletonCarousel}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <SetCardSkeleton key={i} compact />
+            ))}
+          </div>
         </div>
-      </div>
+      ))}
     </>
   );
 }
@@ -115,12 +132,31 @@ function SuspenseFallback(): React.JSX.Element {
   return <CollectionSkeleton isAllSets={isAllSets} />;
 }
 
+function CollectionError(): React.JSX.Element {
+  return (
+    <div className={styles.errorState}>
+      <h2 className={styles.errorTitle}>We couldn’t load your collection</h2>
+      <p className={styles.errorBody}>
+        Something went wrong while loading. Check your connection and try again.
+      </p>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="btn-default btn-primary"
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
+
 function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX.Element {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { navigateTo } = useNavigation();
   const { user } = useAuth();
-  const { collections, activeCollection, setActiveCollection, sets, isInitializing } = useCollection();
+  const { collections, activeCollection, setActiveCollection, sets, isInitializing, collectionsError, collectionsEverLoaded, setsError } = useCollection();
   const [isPending, startTransition] = useTransition();
   const [pendingView, setPendingView] = useState<'home' | 'all' | null>(null);
 
@@ -128,10 +164,15 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
   // Use pending view during transition, fall back to actual path
   const isAllSetsView = isPending && pendingView !== null ? pendingView === 'all' : actualIsAllSets;
 
-  // Store the current browse path so set detail pages know where to return to
+  // Store the current browse path, including any active filter query, so set
+  // detail pages can return to the same filtered view.
   useEffect(() => {
-    sessionStorage.setItem(LAST_BROWSE_PATH_KEY, pathname);
-  }, [pathname]);
+    const query = searchParams.toString();
+    sessionStorage.setItem(
+      LAST_BROWSE_PATH_KEY,
+      query ? `${pathname}?${query}` : pathname
+    );
+  }, [pathname, searchParams]);
 
   // Restore scroll position when returning to this browse view
   useEffect(() => {
@@ -214,6 +255,19 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     return <CollectionSkeleton isAllSets={pathname === '/all'} />;
   }
 
+  // A collections load that has never succeeded leaves nothing to work with —
+  // show a full-page error. Once collections have loaded at least once, a later
+  // refetch failure falls through to the normal shell (or the create-collection
+  // screen). A failed sets load is likewise handled inside the shell.
+  if (collectionsError && !collectionsEverLoaded) {
+    return (
+      <div className={styles.page}>
+        <Header variant="main" rightContent={avatarLink} />
+        <CollectionError />
+      </div>
+    );
+  }
+
   if (collections.length === 0) {
     return (
       <div className={styles.page}>
@@ -275,7 +329,9 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
           </button>
         </div>
 
-        {isPending ? (
+        {setsError ? (
+          <CollectionError />
+        ) : isPending ? (
           isAllSetsView ? <AllSetsSkeleton /> : <HomeSkeleton />
         ) : (
           children

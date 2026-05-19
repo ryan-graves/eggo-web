@@ -72,6 +72,44 @@
   color: var(--text-tertiary);
 }
 
+/* Per-section display style picker (Standard / Featured / Gallery) */
+.displayControl {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-self: flex-start;
+  max-width: 100%;
+  gap: var(--space-0-5);
+  margin-top: var(--space-1);
+  padding: var(--space-0-5);
+  background-color: var(--surface-primary);
+  border-radius: var(--radius-full);
+}
+
+.displayOption {
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  background: none;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.displayOptionActive {
+  background-color: var(--surface-tertiary);
+  color: var(--text-primary);
+}
+
+@media (hover: hover) {
+  .displayOption:not(.displayOptionActive):hover {
+    color: var(--text-secondary);
+  }
+}
+
 .removeButton {
   width: var(--size-button-icon-xs);
   height: var(--size-button-icon-xs);

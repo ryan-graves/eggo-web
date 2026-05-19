@@ -10,5 +10,5 @@ export default function AllSetsPage(): React.JSX.Element | null {
     return null;
   }
 
-  return <SetList sets={sets} availableOwners={activeCollection.owners} />;
+  return <SetList sets={sets} availableOwners={activeCollection.owners} syncFiltersToUrl />;
 }

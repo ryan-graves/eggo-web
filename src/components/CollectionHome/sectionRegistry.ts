@@ -19,14 +19,31 @@ function formatDate(dateStr: string): string | undefined {
 }
 
 /**
- * Return a random sample of up to `count` items from the array.
- * Uses a partial Fisher-Yates shuffle to avoid shuffling the entire array.
+ * Small seeded PRNG (mulberry32). Lets a "random" sample stay stable for a
+ * given seed instead of reshuffling on every realtime refetch.
  */
-function randomSample<T>(array: T[], count: number): T[] {
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Return a random sample of up to `count` items from the array, using a
+ * partial Fisher-Yates shuffle. When `seed` is provided the sample is
+ * deterministic for that seed, so it stays stable across refetches.
+ */
+function randomSample<T>(array: T[], count: number, seed?: number): T[] {
+  const random =
+    seed === undefined ? Math.random : mulberry32(Math.floor(seed * 0xffffffff));
   const copy = [...array];
   const n = Math.min(count, copy.length);
   for (let i = 0; i < n; i++) {
-    const j = i + Math.floor(Math.random() * (copy.length - i));
+    const j = i + Math.floor(random() * (copy.length - i));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy.slice(0, n);
@@ -35,11 +52,10 @@ function randomSample<T>(array: T[], count: number): T[] {
 interface SmartSectionDefinition {
   title: string;
   description: string;
-  getSets: (sets: LegoSet[]) => LegoSet[];
+  /** `seed` makes random sections deterministic for a session; most ignore it. */
+  getSets: (sets: LegoSet[], seed?: number) => LegoSet[];
   emptyMessage: string;
   viewAllFilter?: string;
-  /** Max items to show in the carousel. Undefined means show all. */
-  maxItems?: number;
   /** Extract a detail string from a set for display on the card. */
   getDetail?: (set: LegoSet) => string | undefined;
 }
@@ -51,20 +67,21 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
     getSets: (sets) =>
       sets.filter((s) => s.status === 'in_progress' || s.status === 'rebuild_in_progress'),
     emptyMessage: 'No builds in progress',
-    viewAllFilter: 'status=in_progress',
+    // No viewAllFilter: this section spans two statuses (in_progress +
+    // rebuild_in_progress), which /all's single-status filter can't represent.
     getDetail: (set) =>
       set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
   discover: {
     title: 'Discover Something New',
     description: 'Random picks from your unopened or disassembled sets',
-    getSets: (sets) =>
+    getSets: (sets, seed) =>
       randomSample(
         sets.filter((s) => s.status === 'unopened' || s.status === 'disassembled'),
-        10
+        24,
+        seed
       ),
     emptyMessage: 'All sets have been built!',
-    maxItems: 10,
     getDetail: (set) =>
       set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
@@ -80,7 +97,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
           return dateB.localeCompare(dateA);
         }),
     emptyMessage: 'No sets with dates yet',
-    maxItems: 10,
     getDetail: (set) => formatDate(getDateString(set.dateReceived)),
   },
   largest: {
@@ -91,7 +107,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.pieceCount)
         .sort((a, b) => (b.pieceCount || 0) - (a.pieceCount || 0)),
     emptyMessage: 'No piece counts available',
-    maxItems: 10,
     getDetail: (set) =>
       set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
@@ -103,7 +118,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.pieceCount)
         .sort((a, b) => (a.pieceCount || 0) - (b.pieceCount || 0)),
     emptyMessage: 'No piece counts available',
-    maxItems: 10,
     getDetail: (set) =>
       set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : undefined,
   },
@@ -115,7 +129,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.year)
         .sort((a, b) => (b.year || 0) - (a.year || 0)),
     emptyMessage: 'No release years available',
-    maxItems: 10,
     getDetail: (set) => (set.year ? String(set.year) : undefined),
   },
   oldest_year: {
@@ -126,7 +139,6 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
         .filter((s) => s.year)
         .sort((a, b) => (a.year || 0) - (b.year || 0)),
     emptyMessage: 'No release years available',
-    maxItems: 10,
     getDetail: (set) => (set.year ? String(set.year) : undefined),
   },
   unopened: {
@@ -171,11 +183,11 @@ const ALL_SMART_TYPES: SmartSectionType[] = [
 export interface ResolvedSection {
   id: string;
   title: string;
-  getSets: (sets: LegoSet[]) => LegoSet[];
+  /** Short editorial description, surfaced as a subtitle in the featured display. */
+  description?: string;
+  getSets: (sets: LegoSet[], seed?: number) => LegoSet[];
   emptyMessage: string;
   viewAllFilter?: string;
-  /** Max items to show in the carousel. Undefined means show all. */
-  maxItems?: number;
   /** Extract a detail string from a set for display on the card. */
   getDetail?: (set: LegoSet) => string | undefined;
 }
@@ -207,10 +219,10 @@ export function resolveSection(config: HomeSectionConfig): ResolvedSection | nul
   return {
     id: config.type,
     title: def.title,
+    description: def.description,
     getSets: def.getSets,
     emptyMessage: def.emptyMessage,
     viewAllFilter: def.viewAllFilter,
-    maxItems: def.maxItems,
     getDetail: def.getDetail,
   };
 }
@@ -238,16 +250,10 @@ export function getSectionLabel(config: HomeSectionConfig): string {
 }
 
 export const DEFAULT_HOME_SECTIONS: HomeSectionConfig[] = [
-  { type: 'in_progress' },
-  { type: 'discover' },
-  { type: 'recently_added' },
-  { type: 'largest' },
-  { type: 'disassembled' },
-  { type: 'unopened' },
-  { type: 'assembled' },
-  { type: 'smallest' },
-  { type: 'newest_year' },
-  { type: 'oldest_year' },
+  { type: 'in_progress', display: 'featured' },
+  { type: 'recently_added', display: 'standard' },
+  { type: 'assembled', display: 'standard' },
+  { type: 'discover', display: 'standard' },
 ];
 
 /**

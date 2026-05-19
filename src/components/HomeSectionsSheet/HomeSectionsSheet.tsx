@@ -18,7 +18,7 @@ import {
   useSortable,
   arrayMove,
 } from '@dnd-kit/sortable';
-import type { HomeSectionConfig } from '@/types';
+import type { HomeSectionConfig, SectionDisplay } from '@/types';
 import {
   getSectionLabel,
   getSmartSectionTitle,
@@ -38,6 +38,12 @@ interface HomeSectionsSheetProps {
 }
 
 type SheetView = 'list' | 'add-smart' | 'add-theme';
+
+const DISPLAY_OPTIONS: { value: SectionDisplay; label: string }[] = [
+  { value: 'standard', label: 'Standard' },
+  { value: 'featured', label: 'Featured' },
+  { value: 'gallery', label: 'Gallery' },
+];
 
 const SECTION_ICON_PROPS = {
   width: 16,
@@ -140,11 +146,13 @@ function SectionIcon({ type }: { type: string }): React.JSX.Element {
 interface SortableSectionItemProps {
   config: HomeSectionConfig;
   onRemove: () => void;
+  onChangeDisplay: (display: SectionDisplay) => void;
 }
 
 function SortableSectionItem({
   config,
   onRemove,
+  onChangeDisplay,
 }: SortableSectionItemProps): React.JSX.Element {
   const {
     attributes,
@@ -200,6 +208,27 @@ function SortableSectionItem({
             ? 'Theme'
             : getSmartSectionDescription(config.type)}
         </span>
+        <div
+          className={styles.displayControl}
+          data-vaul-no-drag
+          role="group"
+          aria-label={`Display style for ${getSectionLabel(config)}`}
+        >
+          {DISPLAY_OPTIONS.map((option) => {
+            const isActive = (config.display ?? 'standard') === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                className={`${styles.displayOption} ${isActive ? styles.displayOptionActive : ''}`}
+                aria-pressed={isActive}
+                onClick={() => onChangeDisplay(option.value)}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
       <button
         type="button"
@@ -259,6 +288,12 @@ export function HomeSectionsSheet({
     setDraft((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const setSectionDisplay = (index: number, display: SectionDisplay): void => {
+    setDraft((prev) =>
+      prev.map((config, i) => (i === index ? { ...config, display } : config))
+    );
+  };
+
   const handleDragEnd = (event: DragEndEvent): void => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -296,7 +331,12 @@ export function HomeSectionsSheet({
 
   const isDefaultConfig =
     draft.length === DEFAULT_HOME_SECTIONS.length &&
-    draft.every((config, i) => sectionKey(config) === sectionKey(DEFAULT_HOME_SECTIONS[i]));
+    draft.every(
+      (config, i) =>
+        sectionKey(config) === sectionKey(DEFAULT_HOME_SECTIONS[i]) &&
+        (config.display ?? 'standard') ===
+          (DEFAULT_HOME_SECTIONS[i].display ?? 'standard')
+    );
 
   return (
     <Drawer.Root open={isOpen} onOpenChange={handleOpenChange} repositionInputs={false}>
@@ -366,6 +406,9 @@ export function HomeSectionsSheet({
                             key={sectionKey(config)}
                             config={config}
                             onRemove={() => removeSection(index)}
+                            onChangeDisplay={(display) =>
+                              setSectionDisplay(index, display)
+                            }
                           />
                         ))}
                       </ul>
@@ -429,7 +472,9 @@ export function HomeSectionsSheet({
                     <button
                       type="button"
                       className={styles.addListItem}
-                      onClick={() => addSection({ type: 'theme', themeName: theme })}
+                      onClick={() =>
+                        addSection({ type: 'theme', themeName: theme, display: 'gallery' })
+                      }
                     >
                       <span className={styles.addItemName}>{theme}</span>
                     </button>
