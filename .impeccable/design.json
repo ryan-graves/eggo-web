@@ -127,7 +127,7 @@
   ],
   "narrative": {
     "northStar": "The Display Shelf",
-    "overview": "Eggo is a frame around a collection. Like a well-built shelf, the interface lines the sets up cleanly, holds them at a comfortable distance, and otherwise gets out of the way. The system runs dark by default on near-black surfaces, so each set image reads like an object lit on a dark wall, and the chrome stays quiet enough to disappear. The system is monochrome by doctrine: a neutral gray ramp, Instrument Serif for every heading, Inter for everything else, and no decorative accent color. The only saturated colors are the four functional status signals. It explicitly rejects the generic SaaS dashboard, the childish toy-store look, the spreadsheet tool, and the cluttered marketplace.",
+    "overview": "Eggo is a frame around a collection. Like a well-built shelf, the interface lines the sets up cleanly, holds them at a comfortable distance, and otherwise gets out of the way. The system is dark-first, built on near-black surfaces so each set image reads like an object lit on a dark wall, and the chrome stays quiet enough to disappear (light is a fully supported mode; the default theme preference follows the OS). The system is monochrome by doctrine: a neutral gray ramp, Instrument Serif for every heading, Inter for everything else, and no decorative accent color. The only saturated colors are the four functional status signals. It explicitly rejects the generic SaaS dashboard, the childish toy-store look, the spreadsheet tool, and the cluttered marketplace.",
     "keyCharacteristics": [
       "Dark-first, monochrome neutrals; saturated color is functional only.",
       "Editorial pairing: Instrument Serif headings at normal weight, Inter body at 14px.",

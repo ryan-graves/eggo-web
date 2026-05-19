@@ -49,7 +49,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
   const [sets, setSets] = useState<LegoSet[]>([]);
   const [error, setError] = useState<string | null>(null);
   // The collections and sets streams fail independently, so each tracks its
-  // own error; loadError below is derived from both.
+  // own error; the browse layout surfaces them separately.
   const [collectionsError, setCollectionsError] = useState<string | null>(null);
   const [setsError, setSetsError] = useState<string | null>(null);
 

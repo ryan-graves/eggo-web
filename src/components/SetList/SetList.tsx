@@ -49,19 +49,21 @@ export function SetList({
   emptyMessage = 'No sets in your collection yet. Add your first set!',
   syncFiltersToUrl = false,
 }: SetListProps): React.JSX.Element {
-  // Initial status/theme filters can be deep-linked from the home "View All" links
+  // Status/theme filters are deep-linked from the home "View All" links — only
+  // when syncFiltersToUrl is set (the /all route), never on public share pages.
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const [statusFilter, setStatusFilter] = useState<SetStatus | 'all'>(() => {
+    if (!syncFiltersToUrl) return 'all';
     const param = searchParams.get('status');
     return STATUS_OPTIONS.some((o) => o.value === param)
       ? (param as SetStatus | 'all')
       : 'all';
   });
   const [ownerFilter, setOwnerFilter] = useState<string>('all');
-  const [themeFilter, setThemeFilter] = useState<string>(
-    () => searchParams.get('theme') ?? 'all'
+  const [themeFilter, setThemeFilter] = useState<string>(() =>
+    syncFiltersToUrl ? (searchParams.get('theme') ?? 'all') : 'all'
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('dateReceived');
