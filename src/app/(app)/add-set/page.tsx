@@ -17,14 +17,6 @@ type Step = 'lookup' | 'details';
 
 type ImageProcessingStage = 'idle' | 'fetching' | 'removing' | 'done' | 'error';
 
-const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
-  { value: 'unopened', label: 'Unopened' },
-  { value: 'in_progress', label: 'Building' },
-  { value: 'rebuild_in_progress', label: 'Rebuilding' },
-  { value: 'assembled', label: 'Assembled' },
-  { value: 'disassembled', label: 'Disassembled' },
-];
-
 const STATUS_LABELS: Record<SetStatus, string> = {
   unopened: 'Unopened',
   in_progress: 'In Progress',
@@ -32,6 +24,16 @@ const STATUS_LABELS: Record<SetStatus, string> = {
   assembled: 'Assembled',
   disassembled: 'Disassembled',
 };
+
+// Status chip order; labels come from STATUS_LABELS so they read the same
+// here as everywhere else in the app.
+const STATUS_ORDER: SetStatus[] = [
+  'unopened',
+  'in_progress',
+  'rebuild_in_progress',
+  'assembled',
+  'disassembled',
+];
 
 const STAGE_LABELS: Record<ImageProcessingStage, string> = {
   idle: '',
@@ -71,7 +73,6 @@ function AddSetContent(): React.JSX.Element {
   const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [imageProcessingStage, setImageProcessingStage] = useState<ImageProcessingStage | null>(null);
-  const imageProcessingPromise = useRef<Promise<void> | null>(null);
 
   // Form fields
   const [status, setStatus] = useState<SetStatus>('unopened');
@@ -178,11 +179,14 @@ function AddSetContent(): React.JSX.Element {
     }
   };
 
-  const startImageProcessing = useCallback((imageUrl: string) => {
+  // Runs background removal, driving the progress stages. Resolves with the
+  // processed image URL (or null). The caller uses the resolved value rather
+  // than the processedImageUrl state, which won't be visible in its closure yet.
+  const startImageProcessing = useCallback((imageUrl: string): Promise<string | null> => {
     setIsProcessingImage(true);
     setImageProcessingStage('idle');
 
-    const promise = (async () => {
+    return (async (): Promise<string | null> => {
       const advanceStage = async (
         nextStage: ImageProcessingStage,
         currentStage: ImageProcessingStage,
@@ -216,23 +220,21 @@ function AddSetContent(): React.JSX.Element {
 
         if (bgResult.processedImageUrl) {
           setProcessedImageUrl(bgResult.processedImageUrl);
+          return bgResult.processedImageUrl;
         }
+        return null;
       } catch (err) {
         console.error('[AddSet] Background removal error:', err);
         await advanceStage('error', 'removing', stageStart);
+        return null;
       } finally {
         setIsProcessingImage(false);
       }
     })();
-
-    imageProcessingPromise.current = promise;
   }, []);
 
   const handleNext = () => {
     transitionStep(() => setStep('details'), 'forward');
-    if (lookupResult?.imageUrl) {
-      startImageProcessing(lookupResult.imageUrl);
-    }
   };
 
   const handleBack = () => {
@@ -247,8 +249,11 @@ function AddSetContent(): React.JSX.Element {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    if (imageProcessingPromise.current) {
-      await imageProcessingPromise.current;
+    // Background removal runs here, on commit, so a reconsidered set never
+    // spends a rembg call. The resolved URL is used directly.
+    let customImageUrl: string | undefined;
+    if (lookupResult.imageUrl) {
+      customImageUrl = (await startImageProcessing(lookupResult.imageUrl)) ?? undefined;
     }
 
     try {
@@ -261,7 +266,7 @@ function AddSetContent(): React.JSX.Element {
         theme: lookupResult.theme || null,
         subtheme: lookupResult.subtheme || null,
         imageUrl: lookupResult.imageUrl || null,
-        customImageUrl: processedImageUrl || undefined,
+        customImageUrl,
         status,
         hasBeenAssembled: status === 'assembled' || status === 'disassembled',
         owners: selectedOwners,
@@ -274,7 +279,9 @@ function AddSetContent(): React.JSX.Element {
 
       router.back();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Failed to add set');
+      const message = err instanceof Error ? err.message : 'Failed to add set';
+      setSubmitError('Could not add the set. Please try again.');
+      toast.error('Failed to add set', { description: message });
     } finally {
       setIsSubmitting(false);
     }
@@ -319,17 +326,7 @@ function AddSetContent(): React.JSX.Element {
         variant="detail"
         title="Add Set"
         backHref="/home"
-        rightContent={
-          step === 'details' ? (
-            <button
-              type="button"
-              onClick={handleBack}
-              className={styles.stepBackButton}
-            >
-              Back
-            </button>
-          ) : undefined
-        }
+        onBack={step === 'details' ? handleBack : undefined}
       />
 
       <main className={styles.main}>
@@ -438,7 +435,7 @@ function AddSetContent(): React.JSX.Element {
                       />
                     </div>
                   )}
-                  <h3 className={styles.detailName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h3>
+                  <h2 className={styles.detailName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h2>
                   <div className={styles.detailStats}>
                     <span className={styles.detailStat}>#{lookupResult.setNumber}</span>
                     {lookupResult.pieceCount && (
@@ -486,7 +483,7 @@ function AddSetContent(): React.JSX.Element {
                 </div>
                 <div className={styles.compactInfo}>
                   <span className={styles.compactSetNumber}>#{lookupResult.setNumber}</span>
-                  <h3 className={styles.compactName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h3>
+                  <h2 className={styles.compactName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h2>
                   <div className={styles.compactMeta}>
                     {lookupResult.pieceCount && (
                       <span>
@@ -533,14 +530,14 @@ function AddSetContent(): React.JSX.Element {
                 <div className="form-field">
                   <label className="form-label">Status</label>
                   <div className="form-chip-row">
-                    {STATUS_OPTIONS.map((opt) => (
+                    {STATUS_ORDER.map((value) => (
                       <button
-                        key={opt.value}
+                        key={value}
                         type="button"
-                        className={`form-chip ${status === opt.value ? 'form-chip-selected' : ''}`}
-                        onClick={() => setStatus(opt.value)}
+                        className={`form-chip ${status === value ? 'form-chip-selected' : ''}`}
+                        onClick={() => setStatus(value)}
                       >
-                        {opt.label}
+                        {STATUS_LABELS[value]}
                       </button>
                     ))}
                   </div>
