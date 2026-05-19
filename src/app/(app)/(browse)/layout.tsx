@@ -156,7 +156,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
   const router = useRouter();
   const { navigateTo } = useNavigation();
   const { user } = useAuth();
-  const { collections, activeCollection, setActiveCollection, sets, isInitializing, collectionsError, setsError } = useCollection();
+  const { collections, activeCollection, setActiveCollection, sets, isInitializing, collectionsError, collectionsEverLoaded, setsError } = useCollection();
   const [isPending, startTransition] = useTransition();
   const [pendingView, setPendingView] = useState<'home' | 'all' | null>(null);
 
@@ -255,11 +255,11 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     return <CollectionSkeleton isAllSets={pathname === '/all'} />;
   }
 
-  // A failed collections load with no collections to fall back on leaves
-  // nothing to work with — show a full-page error. If collections did load
-  // (a later refetch failed), keep the normal shell. A failed sets load is
-  // likewise handled inside the shell, so the collection switcher stays usable.
-  if (collectionsError && collections.length === 0) {
+  // A collections load that has never succeeded leaves nothing to work with —
+  // show a full-page error. Once collections have loaded at least once, a later
+  // refetch failure falls through to the normal shell (or the create-collection
+  // screen). A failed sets load is likewise handled inside the shell.
+  if (collectionsError && !collectionsEverLoaded) {
     return (
       <div className={styles.page}>
         <Header variant="main" rightContent={avatarLink} />

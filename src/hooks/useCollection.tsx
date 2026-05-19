@@ -30,6 +30,8 @@ interface CollectionContextValue {
   error: string | null;
   /** Set when loading the collections list fails */
   collectionsError: string | null;
+  /** True once the collections list has loaded successfully at least once */
+  collectionsEverLoaded: boolean;
   /** Set when loading the active collection's sets fails */
   setsError: string | null;
   setActiveCollection: (collection: Collection) => void;
@@ -57,9 +59,13 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
   const [collectionsInitialized, setCollectionsInitialized] = useState(false);
   const [setsInitialized, setSetsInitialized] = useState(false);
   const [isSwitchingCollection, setIsSwitchingCollection] = useState(false);
+  // True once the collections list has loaded successfully at least once
+  const [collectionsEverLoaded, setCollectionsEverLoaded] = useState(false);
 
   // Track which collection's sets we currently have loaded
   const loadedCollectionIdRef = useRef<string | null>(null);
+  // Track which collection the sets subscription was last started for
+  const subscribedCollectionIdRef = useRef<string | null>(null);
 
   // Subscribe to user's collections
   useEffect(() => {
@@ -78,6 +84,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
     const unsubscribe = subscribeToCollectionsForUser(user.id, (userCollections) => {
       setCollections(userCollections);
       setCollectionsError(null);
+      setCollectionsEverLoaded(true);
 
       // Auto-select first collection if none selected, or update active collection with fresh data
       setActiveCollectionState((current) => {
@@ -127,6 +134,13 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
     }
 
     const isNewCollection = loadedCollectionIdRef.current !== activeCollection.id;
+
+    // Switching to a different collection: drop the prior collection's error so
+    // the new one shows a loading state, not the previous failure.
+    if (subscribedCollectionIdRef.current !== activeCollection.id) {
+      subscribedCollectionIdRef.current = activeCollection.id;
+      setSetsError(null);
+    }
 
     // Only show switching indicator after initial load and when changing collections
     if (isNewCollection && setsInitialized) {
@@ -212,11 +226,12 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       isSwitchingCollection,
       error,
       collectionsError,
+      collectionsEverLoaded,
       setsError,
       setActiveCollection,
       createNewCollection,
     }),
-    [collections, activeCollection, sets, isInitializing, isSwitchingCollection, error, collectionsError, setsError, setActiveCollection, createNewCollection]
+    [collections, activeCollection, sets, isInitializing, isSwitchingCollection, error, collectionsError, collectionsEverLoaded, setsError, setActiveCollection, createNewCollection]
   );
 
   return (

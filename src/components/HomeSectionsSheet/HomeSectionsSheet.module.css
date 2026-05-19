@@ -75,7 +75,9 @@
 /* Per-section display style picker (Standard / Featured / Gallery) */
 .displayControl {
   display: inline-flex;
+  flex-wrap: wrap;
   align-self: flex-start;
+  max-width: 100%;
   gap: var(--space-0-5);
   margin-top: var(--space-1);
   padding: var(--space-0-5);
