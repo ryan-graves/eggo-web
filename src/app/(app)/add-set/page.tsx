@@ -73,6 +73,7 @@ function AddSetContent(): React.JSX.Element {
   const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [imageProcessingStage, setImageProcessingStage] = useState<ImageProcessingStage | null>(null);
+  const imageProcessingPromise = useRef<Promise<void> | null>(null);
 
   // Form fields
   const [status, setStatus] = useState<SetStatus>('unopened');
@@ -179,14 +180,14 @@ function AddSetContent(): React.JSX.Element {
     }
   };
 
-  // Runs background removal, driving the progress stages. Resolves with the
-  // processed image URL (or null). The caller uses the resolved value rather
-  // than the processedImageUrl state, which won't be visible in its closure yet.
-  const startImageProcessing = useCallback((imageUrl: string): Promise<string | null> => {
+  // Kicks off background removal as soon as the user enters step 2, so the
+  // paced progress bar runs in parallel with form-filling. The promise is
+  // stored on a ref; handleSubmit awaits it (usually a no-op by then).
+  const startImageProcessing = useCallback((imageUrl: string) => {
     setIsProcessingImage(true);
     setImageProcessingStage('idle');
 
-    return (async (): Promise<string | null> => {
+    const promise = (async () => {
       const advanceStage = async (
         nextStage: ImageProcessingStage,
         currentStage: ImageProcessingStage,
@@ -220,21 +221,23 @@ function AddSetContent(): React.JSX.Element {
 
         if (bgResult.processedImageUrl) {
           setProcessedImageUrl(bgResult.processedImageUrl);
-          return bgResult.processedImageUrl;
         }
-        return null;
       } catch (err) {
         console.error('[AddSet] Background removal error:', err);
         await advanceStage('error', 'removing', stageStart);
-        return null;
       } finally {
         setIsProcessingImage(false);
       }
     })();
+
+    imageProcessingPromise.current = promise;
   }, []);
 
   const handleNext = () => {
     transitionStep(() => setStep('details'), 'forward');
+    if (lookupResult?.imageUrl) {
+      startImageProcessing(lookupResult.imageUrl);
+    }
   };
 
   const handleBack = () => {
@@ -249,11 +252,10 @@ function AddSetContent(): React.JSX.Element {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    // Background removal runs here, on commit, so a reconsidered set never
-    // spends a rembg call. The resolved URL is used directly.
-    let customImageUrl: string | undefined;
-    if (lookupResult.imageUrl) {
-      customImageUrl = (await startImageProcessing(lookupResult.imageUrl)) ?? undefined;
+    // Wait for the background-removal job that started on the step transition.
+    // Usually finished by now since it ran in parallel with form filling.
+    if (imageProcessingPromise.current) {
+      await imageProcessingPromise.current;
     }
 
     try {
@@ -266,7 +268,7 @@ function AddSetContent(): React.JSX.Element {
         theme: lookupResult.theme || null,
         subtheme: lookupResult.subtheme || null,
         imageUrl: lookupResult.imageUrl || null,
-        customImageUrl,
+        customImageUrl: processedImageUrl || undefined,
         status,
         hasBeenAssembled: status === 'assembled' || status === 'disassembled',
         owners: selectedOwners,
