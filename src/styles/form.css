@@ -154,3 +154,10 @@
   background-color: var(--status-error-bg);
   border-radius: var(--radius-md);
 }
+
+/* Touch-target minimum on mobile so chips reach the recommended 44px hit box */
+@media (max-width: 640px) {
+  .form-chip {
+    min-height: var(--size-touch-target);
+  }
+}

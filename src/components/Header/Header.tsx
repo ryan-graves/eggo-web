@@ -11,6 +11,9 @@ interface HeaderProps {
   title?: string;
   /** Fallback URL for back navigation (detail variant only) */
   backHref?: string;
+  /** Overrides the detail back button's action — e.g. a step transition
+   *  within a flow. When set, backHref/history navigation is bypassed. */
+  onBack?: () => void;
   /** Content to render on the left side (main variant: after logo, detail variant: not used) */
   leftContent?: React.ReactNode;
   /** Content to render on the right side */
@@ -21,6 +24,7 @@ export function Header({
   variant = 'main',
   title,
   backHref = '/home',
+  onBack,
   leftContent,
   rightContent,
 }: HeaderProps): React.JSX.Element {
@@ -28,6 +32,10 @@ export function Header({
   const { pendingHref, startNavigation } = useNavigationLoading();
 
   const handleBack = (): void => {
+    if (onBack) {
+      onBack();
+      return;
+    }
     startNavigation(backHref);
     goBack(backHref);
   };

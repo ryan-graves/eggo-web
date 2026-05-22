@@ -31,18 +31,6 @@
   color: var(--text-secondary);
 }
 
-/* Step back button in header */
-.stepBackButton {
-  padding: var(--space-1) var(--space-3);
-  background: none;
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
 /* Step Content */
 .stepContent {
   display: flex;
@@ -101,7 +89,7 @@
 
 .lookupError {
   font-size: var(--font-size-sm);
-  color: var(--status-warning);
+  color: var(--status-error);
 }
 
 /* Duplicate warning */
@@ -203,7 +191,8 @@
   aspect-ratio: 1 / 1;
 }
 
-.detailName {
+/* Parent-scoped so the size holds against the mono theme's h2 rule */
+.detailPreview .detailName {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
@@ -280,8 +269,9 @@
   letter-spacing: var(--letter-spacing-wider);
 }
 
-.compactName {
-  font-size: var(--font-size-base);
+/* Parent-scoped so the size holds against the mono theme's h2 rule */
+.compactInfo .compactName {
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   line-height: var(--line-height-tight);
@@ -319,9 +309,12 @@
 
 .progressBar {
   height: 100%;
+  width: 100%;
   background-color: var(--interactive-primary);
   border-radius: var(--radius-full);
-  transition: width var(--transition-progress);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform var(--transition-progress);
 }
 
 .progressDone {

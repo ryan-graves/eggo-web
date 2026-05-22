@@ -138,3 +138,17 @@
   background-color: var(--status-error);
   color: var(--text-inverse);
 }
+
+/* ==========================================================================
+ * Mobile touch targets
+ * Default-size text buttons get bumped to the recommended 44px hit box on
+ * mobile. The small size (`.btn-small`) is used in compact contexts and
+ * stays at 32px on purpose, and icon-only buttons (`.btn-icon`, at both
+ * sizes) keep their square dimensions.
+ * ========================================================================== */
+
+@media (max-width: 640px) {
+  .btn-default:not(.btn-icon) {
+    min-height: var(--size-touch-target);
+  }
+}

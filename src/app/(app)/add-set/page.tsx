@@ -17,14 +17,6 @@ type Step = 'lookup' | 'details';
 
 type ImageProcessingStage = 'idle' | 'fetching' | 'removing' | 'done' | 'error';
 
-const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
-  { value: 'unopened', label: 'Unopened' },
-  { value: 'in_progress', label: 'Building' },
-  { value: 'rebuild_in_progress', label: 'Rebuilding' },
-  { value: 'assembled', label: 'Assembled' },
-  { value: 'disassembled', label: 'Disassembled' },
-];
-
 const STATUS_LABELS: Record<SetStatus, string> = {
   unopened: 'Unopened',
   in_progress: 'In Progress',
@@ -32,6 +24,16 @@ const STATUS_LABELS: Record<SetStatus, string> = {
   assembled: 'Assembled',
   disassembled: 'Disassembled',
 };
+
+// Status chip order; labels come from STATUS_LABELS so they read the same
+// here as everywhere else in the app.
+const STATUS_ORDER: SetStatus[] = [
+  'unopened',
+  'in_progress',
+  'rebuild_in_progress',
+  'assembled',
+  'disassembled',
+];
 
 const STAGE_LABELS: Record<ImageProcessingStage, string> = {
   idle: '',
@@ -72,6 +74,13 @@ function AddSetContent(): React.JSX.Element {
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [imageProcessingStage, setImageProcessingStage] = useState<ImageProcessingStage | null>(null);
   const imageProcessingPromise = useRef<Promise<void> | null>(null);
+  // Per-run token (mirrors lookupIdRef) so a stale background-removal job
+  // from a previous step-2 visit can't update state for the wrong set.
+  const imageProcessingIdRef = useRef(0);
+
+  // Refs for focus management across step transitions
+  const lookupInputRef = useRef<HTMLInputElement>(null);
+  const firstStatusChipRef = useRef<HTMLButtonElement>(null);
 
   // Form fields
   const [status, setStatus] = useState<SetStatus>('unopened');
@@ -93,10 +102,49 @@ function AddSetContent(): React.JSX.Element {
     }
   }, [availableOwners]);
 
+  // Invalidate any in-flight image processing on unmount so its captured id
+  // no longer matches and its setters no-op. Also drop the promise ref so a
+  // hypothetical remount can't await a dead job. The ref-in-cleanup warning
+  // doesn't apply: these refs hold a counter and a Promise, not a DOM node.
+  useEffect(() => {
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- counter ref, intentionally read at cleanup time
+      imageProcessingIdRef.current++;
+      imageProcessingPromise.current = null;
+    };
+  }, []);
+
+  // Move focus across step transitions so keyboard/SR users land on the next
+  // interactive element rather than document.body. Guarded on form visibility:
+  // the loading and no-collection branches don't mount the refs, so without
+  // this gate the effect would no-op on first mount and never re-fire (step
+  // doesn't change when isInitializing flips to false). Depending on
+  // `collectionId` (not `activeCollection`) avoids spurious re-focus when a
+  // realtime refetch swaps the object reference but keeps the same id.
+  useEffect(() => {
+    if (isInitializing || !collectionId) return;
+    if (step === 'lookup') {
+      lookupInputRef.current?.focus();
+    } else if (step === 'details') {
+      firstStatusChipRef.current?.focus();
+    }
+  }, [step, isInitializing, collectionId]);
+
   const toggleOwner = (ownerName: string) => {
     setSelectedOwners((prev) =>
       prev.includes(ownerName) ? prev.filter((o) => o !== ownerName) : [...prev, ownerName]
     );
+  };
+
+  // Editing the set-number after a successful lookup must drop the preview
+  // and duplicate warning so the user can't advance with mismatched state.
+  // Hiding lookupResult also disables Next (the footer only renders it when
+  // lookupResult is truthy), nudging the user to re-look-up.
+  const handleSetNumberChange = (next: string) => {
+    setSetNumber(next);
+    if (lookupResult) setLookupResult(null);
+    if (existingSets.length > 0) setExistingSets([]);
+    if (lookupError) setLookupError(null);
   };
 
   const handleClose = () => {
@@ -124,6 +172,11 @@ function AddSetContent(): React.JSX.Element {
     }
 
     const currentLookupId = ++lookupIdRef.current;
+    // Invalidate any in-flight image processing from a prior step-2 visit so
+    // its resolved state can't leak into this new lookup, and drop the
+    // promise so handleSubmit doesn't wait on an unrelated stale job.
+    imageProcessingIdRef.current++;
+    imageProcessingPromise.current = null;
 
     setIsLookingUp(true);
     setLookupError(null);
@@ -178,7 +231,13 @@ function AddSetContent(): React.JSX.Element {
     }
   };
 
+  // Kicks off background removal as soon as the user enters step 2, so the
+  // paced progress bar runs in parallel with form-filling. The promise is
+  // stored on a ref; handleSubmit awaits it (usually a no-op by then). Every
+  // state write is guarded by `currentId` so a stale run from a previous
+  // step-2 visit can't update the new lookup's processed URL/stage.
   const startImageProcessing = useCallback((imageUrl: string) => {
+    const currentId = ++imageProcessingIdRef.current;
     setIsProcessingImage(true);
     setImageProcessingStage('idle');
 
@@ -193,6 +252,7 @@ function AddSetContent(): React.JSX.Element {
         if (elapsed < minDuration) {
           await new Promise((r) => setTimeout(r, minDuration - elapsed));
         }
+        if (currentId !== imageProcessingIdRef.current) return Date.now();
         setImageProcessingStage(nextStage);
         return Date.now();
       };
@@ -207,6 +267,7 @@ function AddSetContent(): React.JSX.Element {
 
       try {
         const bgResult = await bgResultPromise;
+        if (currentId !== imageProcessingIdRef.current) return;
 
         await advanceStage(
           bgResult.processedImageUrl || bgResult.skipped ? 'done' : 'error',
@@ -214,14 +275,18 @@ function AddSetContent(): React.JSX.Element {
           stageStart
         );
 
-        if (bgResult.processedImageUrl) {
+        if (bgResult.processedImageUrl && currentId === imageProcessingIdRef.current) {
           setProcessedImageUrl(bgResult.processedImageUrl);
         }
       } catch (err) {
         console.error('[AddSet] Background removal error:', err);
-        await advanceStage('error', 'removing', stageStart);
+        if (currentId === imageProcessingIdRef.current) {
+          await advanceStage('error', 'removing', stageStart);
+        }
       } finally {
-        setIsProcessingImage(false);
+        if (currentId === imageProcessingIdRef.current) {
+          setIsProcessingImage(false);
+        }
       }
     })();
 
@@ -247,6 +312,8 @@ function AddSetContent(): React.JSX.Element {
     setIsSubmitting(true);
     setSubmitError(null);
 
+    // Wait for the background-removal job that started on the step transition.
+    // Usually finished by now since it ran in parallel with form filling.
     if (imageProcessingPromise.current) {
       await imageProcessingPromise.current;
     }
@@ -254,7 +321,9 @@ function AddSetContent(): React.JSX.Element {
     try {
       await createSet({
         collectionId,
-        setNumber: setNumber.trim(),
+        // Persist the canonical normalized number from the provider (with the
+        // -1 suffix etc.) so it always matches the rest of the metadata.
+        setNumber: lookupResult.setNumber,
         name: lookupResult.name,
         pieceCount: lookupResult.pieceCount || null,
         year: lookupResult.year || null,
@@ -274,7 +343,9 @@ function AddSetContent(): React.JSX.Element {
 
       router.back();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Failed to add set');
+      const message = err instanceof Error ? err.message : 'Failed to add set';
+      setSubmitError('Could not add the set. Please try again.');
+      toast.error('Failed to add set', { description: message });
     } finally {
       setIsSubmitting(false);
     }
@@ -319,17 +390,7 @@ function AddSetContent(): React.JSX.Element {
         variant="detail"
         title="Add Set"
         backHref="/home"
-        rightContent={
-          step === 'details' ? (
-            <button
-              type="button"
-              onClick={handleBack}
-              className={styles.stepBackButton}
-            >
-              Back
-            </button>
-          ) : undefined
-        }
+        onBack={step === 'details' ? handleBack : undefined}
       />
 
       <main className={styles.main}>
@@ -337,38 +398,45 @@ function AddSetContent(): React.JSX.Element {
           {/* Step 1: Lookup + Preview */}
           {step === 'lookup' && (
             <div className={styles.stepContent} key="lookup">
-              <div className={styles.lookupSection}>
+              <form
+                className={styles.lookupSection}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleLookup();
+                }}
+              >
                 <label htmlFor="setNumber" className="form-label">
                   Set Number
                 </label>
                 <div className={styles.lookupRow}>
                   <input
+                    ref={lookupInputRef}
                     id="setNumber"
                     type="text"
+                    inputMode="numeric"
+                    enterKeyHint="search"
                     value={setNumber}
-                    onChange={(e) => setSetNumber(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleLookup();
-                      }
-                    }}
+                    onChange={(e) => handleSetNumberChange(e.target.value)}
                     placeholder="e.g., 75192"
                     className="form-input"
                     disabled={isLookingUp}
-                    autoFocus
+                    aria-invalid={lookupError ? true : undefined}
+                    aria-describedby={lookupError ? 'lookup-error' : undefined}
                   />
                   <button
-                    type="button"
-                    onClick={handleLookup}
+                    type="submit"
                     className="btn-default btn-primary"
                     disabled={isLookingUp || !setNumber.trim()}
                   >
                     {isLookingUp ? 'Looking up\u2026' : 'Lookup'}
                   </button>
                 </div>
-                {lookupError && <p className={styles.lookupError}>{lookupError}</p>}
-              </div>
+                {lookupError && (
+                  <p id="lookup-error" role="alert" className={styles.lookupError}>
+                    {lookupError}
+                  </p>
+                )}
+              </form>
 
               {/* Duplicate warning */}
               {existingSets.length > 0 && !isLookingUp && (
@@ -414,7 +482,12 @@ function AddSetContent(): React.JSX.Element {
 
               {/* Skeleton loading state */}
               {isLookingUp && (
-                <div className={styles.detailPreview}>
+                <div
+                  className={styles.detailPreview}
+                  role="status"
+                  aria-busy="true"
+                  aria-label="Looking up set"
+                >
                   <div className={`${styles.skeletonImage} skeleton-shimmer`} />
                   <div className={styles.skeletonInfo}>
                     <div className={`${styles.skeletonLine} ${styles.skeletonLineName} skeleton-shimmer`} />
@@ -438,9 +511,14 @@ function AddSetContent(): React.JSX.Element {
                       />
                     </div>
                   )}
-                  <h3 className={styles.detailName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h3>
+                  <h2 className={styles.detailName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h2>
                   <div className={styles.detailStats}>
-                    <span className={styles.detailStat}>#{lookupResult.setNumber}</span>
+                    <span
+                      className={styles.detailStat}
+                      aria-label={`Set number ${lookupResult.setNumber}`}
+                    >
+                      #{lookupResult.setNumber}
+                    </span>
                     {lookupResult.pieceCount && (
                       <span className={styles.detailStat}>
                         <strong>{lookupResult.pieceCount.toLocaleString()}</strong> pieces
@@ -485,8 +563,13 @@ function AddSetContent(): React.JSX.Element {
                   )}
                 </div>
                 <div className={styles.compactInfo}>
-                  <span className={styles.compactSetNumber}>#{lookupResult.setNumber}</span>
-                  <h3 className={styles.compactName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h3>
+                  <span
+                    className={styles.compactSetNumber}
+                    aria-label={`Set number ${lookupResult.setNumber}`}
+                  >
+                    #{lookupResult.setNumber}
+                  </span>
+                  <h2 className={styles.compactName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h2>
                   <div className={styles.compactMeta}>
                     {lookupResult.pieceCount && (
                       <span>
@@ -507,18 +590,26 @@ function AddSetContent(): React.JSX.Element {
               {/* Image processing progress bar */}
               {imageProcessingStage && (
                 <div className={styles.progressSection}>
-                  <div className={styles.progressTrack}>
+                  <div
+                    className={styles.progressTrack}
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={progressPercent}
+                    aria-label="Image processing"
+                  >
                     <div
                       className={`${styles.progressBar} ${imageProcessingStage === 'error' ? styles.progressError : ''} ${imageProcessingStage === 'done' ? styles.progressDone : ''}`}
-                      style={{ width: `${progressPercent}%` }}
+                      style={{ transform: `scaleX(${progressPercent / 100})` }}
                     />
                   </div>
                   {imageProcessingStage !== 'idle' && (
                     <span
                       className={`${styles.progressLabel} ${imageProcessingStage === 'error' ? styles.progressLabelError : ''} ${imageProcessingStage === 'done' ? styles.progressLabelDone : ''}`}
+                      aria-live="polite"
                     >
                       {imageProcessingStage === 'done' && (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -531,16 +622,18 @@ function AddSetContent(): React.JSX.Element {
               {/* Form fields */}
               <div className={styles.fields}>
                 <div className="form-field">
-                  <label className="form-label">Status</label>
-                  <div className="form-chip-row">
-                    {STATUS_OPTIONS.map((opt) => (
+                  <span id="status-label" className="form-label">Status</span>
+                  <div className="form-chip-row" role="group" aria-labelledby="status-label">
+                    {STATUS_ORDER.map((value, index) => (
                       <button
-                        key={opt.value}
+                        key={value}
+                        ref={index === 0 ? firstStatusChipRef : undefined}
                         type="button"
-                        className={`form-chip ${status === opt.value ? 'form-chip-selected' : ''}`}
-                        onClick={() => setStatus(opt.value)}
+                        aria-pressed={status === value}
+                        className={`form-chip ${status === value ? 'form-chip-selected' : ''}`}
+                        onClick={() => setStatus(value)}
                       >
-                        {opt.label}
+                        {STATUS_LABELS[value]}
                       </button>
                     ))}
                   </div>
@@ -548,23 +641,27 @@ function AddSetContent(): React.JSX.Element {
 
                 {availableOwners.length > 1 && (
                   <div className="form-field">
-                    <label className="form-label">Owner</label>
-                    <div className="form-chip-row">
-                      {availableOwners.map((ownerName) => (
-                        <button
-                          key={ownerName}
-                          type="button"
-                          className={`form-chip ${selectedOwners.includes(ownerName) ? 'form-chip-selected' : ''}`}
-                          onClick={() => toggleOwner(ownerName)}
-                        >
-                          {selectedOwners.includes(ownerName) && (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                          {ownerName}
-                        </button>
-                      ))}
+                    <span id="owner-label" className="form-label">Owner</span>
+                    <div className="form-chip-row" role="group" aria-labelledby="owner-label">
+                      {availableOwners.map((ownerName) => {
+                        const isSelected = selectedOwners.includes(ownerName);
+                        return (
+                          <button
+                            key={ownerName}
+                            type="button"
+                            aria-pressed={isSelected}
+                            className={`form-chip ${isSelected ? 'form-chip-selected' : ''}`}
+                            onClick={() => toggleOwner(ownerName)}
+                          >
+                            {isSelected && (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                            {ownerName}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -606,7 +703,11 @@ function AddSetContent(): React.JSX.Element {
                 </div>
               </div>
 
-              {submitError && <p className="form-error">{submitError}</p>}
+              {submitError && (
+                <p className="form-error" role="alert">
+                  {submitError}
+                </p>
+              )}
             </form>
           )}
         </div>
