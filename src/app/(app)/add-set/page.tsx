@@ -102,6 +102,18 @@ function AddSetContent(): React.JSX.Element {
     }
   }, [availableOwners]);
 
+  // Invalidate any in-flight image processing on unmount so its captured id
+  // no longer matches and its setters no-op. Also drop the promise ref so a
+  // hypothetical remount can't await a dead job. The ref-in-cleanup warning
+  // doesn't apply: these refs hold a counter and a Promise, not a DOM node.
+  useEffect(() => {
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- counter ref, intentionally read at cleanup time
+      imageProcessingIdRef.current++;
+      imageProcessingPromise.current = null;
+    };
+  }, []);
+
   // Move focus across step transitions so keyboard/SR users land on the next
   // interactive element rather than document.body. Guarded on form visibility:
   // the loading and no-collection branches don't mount the refs, so without
@@ -122,6 +134,17 @@ function AddSetContent(): React.JSX.Element {
     setSelectedOwners((prev) =>
       prev.includes(ownerName) ? prev.filter((o) => o !== ownerName) : [...prev, ownerName]
     );
+  };
+
+  // Editing the set-number after a successful lookup must drop the preview
+  // and duplicate warning so the user can't advance with mismatched state.
+  // Hiding lookupResult also disables Next (the footer only renders it when
+  // lookupResult is truthy), nudging the user to re-look-up.
+  const handleSetNumberChange = (next: string) => {
+    setSetNumber(next);
+    if (lookupResult) setLookupResult(null);
+    if (existingSets.length > 0) setExistingSets([]);
+    if (lookupError) setLookupError(null);
   };
 
   const handleClose = () => {
@@ -150,8 +173,10 @@ function AddSetContent(): React.JSX.Element {
 
     const currentLookupId = ++lookupIdRef.current;
     // Invalidate any in-flight image processing from a prior step-2 visit so
-    // its resolved state can't leak into this new lookup.
+    // its resolved state can't leak into this new lookup, and drop the
+    // promise so handleSubmit doesn't wait on an unrelated stale job.
     imageProcessingIdRef.current++;
+    imageProcessingPromise.current = null;
 
     setIsLookingUp(true);
     setLookupError(null);
@@ -296,7 +321,9 @@ function AddSetContent(): React.JSX.Element {
     try {
       await createSet({
         collectionId,
-        setNumber: setNumber.trim(),
+        // Persist the canonical normalized number from the provider (with the
+        // -1 suffix etc.) so it always matches the rest of the metadata.
+        setNumber: lookupResult.setNumber,
         name: lookupResult.name,
         pieceCount: lookupResult.pieceCount || null,
         year: lookupResult.year || null,
@@ -389,7 +416,7 @@ function AddSetContent(): React.JSX.Element {
                     inputMode="numeric"
                     enterKeyHint="search"
                     value={setNumber}
-                    onChange={(e) => setSetNumber(e.target.value)}
+                    onChange={(e) => handleSetNumberChange(e.target.value)}
                     placeholder="e.g., 75192"
                     className="form-input"
                     disabled={isLookingUp}
