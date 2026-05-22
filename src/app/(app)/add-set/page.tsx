@@ -74,6 +74,9 @@ function AddSetContent(): React.JSX.Element {
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [imageProcessingStage, setImageProcessingStage] = useState<ImageProcessingStage | null>(null);
   const imageProcessingPromise = useRef<Promise<void> | null>(null);
+  // Per-run token (mirrors lookupIdRef) so a stale background-removal job
+  // from a previous step-2 visit can't update state for the wrong set.
+  const imageProcessingIdRef = useRef(0);
 
   // Refs for focus management across step transitions
   const lookupInputRef = useRef<HTMLInputElement>(null);
@@ -100,14 +103,20 @@ function AddSetContent(): React.JSX.Element {
   }, [availableOwners]);
 
   // Move focus across step transitions so keyboard/SR users land on the next
-  // interactive element rather than document.body.
+  // interactive element rather than document.body. Guarded on form visibility:
+  // the loading and no-collection branches don't mount the refs, so without
+  // this gate the effect would no-op on first mount and never re-fire (step
+  // doesn't change when isInitializing flips to false). Depending on
+  // `collectionId` (not `activeCollection`) avoids spurious re-focus when a
+  // realtime refetch swaps the object reference but keeps the same id.
   useEffect(() => {
+    if (isInitializing || !collectionId) return;
     if (step === 'lookup') {
       lookupInputRef.current?.focus();
     } else if (step === 'details') {
       firstStatusChipRef.current?.focus();
     }
-  }, [step]);
+  }, [step, isInitializing, collectionId]);
 
   const toggleOwner = (ownerName: string) => {
     setSelectedOwners((prev) =>
@@ -140,6 +149,9 @@ function AddSetContent(): React.JSX.Element {
     }
 
     const currentLookupId = ++lookupIdRef.current;
+    // Invalidate any in-flight image processing from a prior step-2 visit so
+    // its resolved state can't leak into this new lookup.
+    imageProcessingIdRef.current++;
 
     setIsLookingUp(true);
     setLookupError(null);
@@ -196,8 +208,11 @@ function AddSetContent(): React.JSX.Element {
 
   // Kicks off background removal as soon as the user enters step 2, so the
   // paced progress bar runs in parallel with form-filling. The promise is
-  // stored on a ref; handleSubmit awaits it (usually a no-op by then).
+  // stored on a ref; handleSubmit awaits it (usually a no-op by then). Every
+  // state write is guarded by `currentId` so a stale run from a previous
+  // step-2 visit can't update the new lookup's processed URL/stage.
   const startImageProcessing = useCallback((imageUrl: string) => {
+    const currentId = ++imageProcessingIdRef.current;
     setIsProcessingImage(true);
     setImageProcessingStage('idle');
 
@@ -212,6 +227,7 @@ function AddSetContent(): React.JSX.Element {
         if (elapsed < minDuration) {
           await new Promise((r) => setTimeout(r, minDuration - elapsed));
         }
+        if (currentId !== imageProcessingIdRef.current) return Date.now();
         setImageProcessingStage(nextStage);
         return Date.now();
       };
@@ -226,6 +242,7 @@ function AddSetContent(): React.JSX.Element {
 
       try {
         const bgResult = await bgResultPromise;
+        if (currentId !== imageProcessingIdRef.current) return;
 
         await advanceStage(
           bgResult.processedImageUrl || bgResult.skipped ? 'done' : 'error',
@@ -233,14 +250,18 @@ function AddSetContent(): React.JSX.Element {
           stageStart
         );
 
-        if (bgResult.processedImageUrl) {
+        if (bgResult.processedImageUrl && currentId === imageProcessingIdRef.current) {
           setProcessedImageUrl(bgResult.processedImageUrl);
         }
       } catch (err) {
         console.error('[AddSet] Background removal error:', err);
-        await advanceStage('error', 'removing', stageStart);
+        if (currentId === imageProcessingIdRef.current) {
+          await advanceStage('error', 'removing', stageStart);
+        }
       } finally {
-        setIsProcessingImage(false);
+        if (currentId === imageProcessingIdRef.current) {
+          setIsProcessingImage(false);
+        }
       }
     })();
 
