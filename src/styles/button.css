@@ -141,9 +141,10 @@
 
 /* ==========================================================================
  * Mobile touch targets
- * Ensure default buttons reach the recommended 44px hit box on mobile.
- * Icon-only sizes (btn-icon, btn-small) keep their compact dimensions on
- * purpose; only text/default buttons are bumped.
+ * Default-size text buttons get bumped to the recommended 44px hit box on
+ * mobile. The small size (`.btn-small`) is used in compact contexts and
+ * stays at 32px on purpose, and icon-only buttons (`.btn-icon`, at both
+ * sizes) keep their square dimensions.
  * ========================================================================== */
 
 @media (max-width: 640px) {
