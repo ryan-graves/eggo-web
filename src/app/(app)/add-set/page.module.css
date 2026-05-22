@@ -89,7 +89,7 @@
 
 .lookupError {
   font-size: var(--font-size-sm);
-  color: var(--status-warning);
+  color: var(--status-error);
 }
 
 /* Duplicate warning */
@@ -309,9 +309,12 @@
 
 .progressBar {
   height: 100%;
+  width: 100%;
   background-color: var(--interactive-primary);
   border-radius: var(--radius-full);
-  transition: width var(--transition-progress);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform var(--transition-progress);
 }
 
 .progressDone {

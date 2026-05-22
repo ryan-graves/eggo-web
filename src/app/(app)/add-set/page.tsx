@@ -75,6 +75,10 @@ function AddSetContent(): React.JSX.Element {
   const [imageProcessingStage, setImageProcessingStage] = useState<ImageProcessingStage | null>(null);
   const imageProcessingPromise = useRef<Promise<void> | null>(null);
 
+  // Refs for focus management across step transitions
+  const lookupInputRef = useRef<HTMLInputElement>(null);
+  const firstStatusChipRef = useRef<HTMLButtonElement>(null);
+
   // Form fields
   const [status, setStatus] = useState<SetStatus>('unopened');
   const [selectedOwners, setSelectedOwners] = useState<string[]>(
@@ -94,6 +98,16 @@ function AddSetContent(): React.JSX.Element {
       setSelectedOwners((prev) => (prev.length === 0 ? [availableOwners[0]] : prev));
     }
   }, [availableOwners]);
+
+  // Move focus across step transitions so keyboard/SR users land on the next
+  // interactive element rather than document.body.
+  useEffect(() => {
+    if (step === 'lookup') {
+      lookupInputRef.current?.focus();
+    } else if (step === 'details') {
+      firstStatusChipRef.current?.focus();
+    }
+  }, [step]);
 
   const toggleOwner = (ownerName: string) => {
     setSelectedOwners((prev) =>
@@ -336,38 +350,45 @@ function AddSetContent(): React.JSX.Element {
           {/* Step 1: Lookup + Preview */}
           {step === 'lookup' && (
             <div className={styles.stepContent} key="lookup">
-              <div className={styles.lookupSection}>
+              <form
+                className={styles.lookupSection}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleLookup();
+                }}
+              >
                 <label htmlFor="setNumber" className="form-label">
                   Set Number
                 </label>
                 <div className={styles.lookupRow}>
                   <input
+                    ref={lookupInputRef}
                     id="setNumber"
                     type="text"
+                    inputMode="numeric"
+                    enterKeyHint="search"
                     value={setNumber}
                     onChange={(e) => setSetNumber(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleLookup();
-                      }
-                    }}
                     placeholder="e.g., 75192"
                     className="form-input"
                     disabled={isLookingUp}
-                    autoFocus
+                    aria-invalid={lookupError ? true : undefined}
+                    aria-describedby={lookupError ? 'lookup-error' : undefined}
                   />
                   <button
-                    type="button"
-                    onClick={handleLookup}
+                    type="submit"
                     className="btn-default btn-primary"
                     disabled={isLookingUp || !setNumber.trim()}
                   >
                     {isLookingUp ? 'Looking up\u2026' : 'Lookup'}
                   </button>
                 </div>
-                {lookupError && <p className={styles.lookupError}>{lookupError}</p>}
-              </div>
+                {lookupError && (
+                  <p id="lookup-error" role="alert" className={styles.lookupError}>
+                    {lookupError}
+                  </p>
+                )}
+              </form>
 
               {/* Duplicate warning */}
               {existingSets.length > 0 && !isLookingUp && (
@@ -413,7 +434,12 @@ function AddSetContent(): React.JSX.Element {
 
               {/* Skeleton loading state */}
               {isLookingUp && (
-                <div className={styles.detailPreview}>
+                <div
+                  className={styles.detailPreview}
+                  role="status"
+                  aria-busy="true"
+                  aria-label="Looking up set"
+                >
                   <div className={`${styles.skeletonImage} skeleton-shimmer`} />
                   <div className={styles.skeletonInfo}>
                     <div className={`${styles.skeletonLine} ${styles.skeletonLineName} skeleton-shimmer`} />
@@ -439,7 +465,12 @@ function AddSetContent(): React.JSX.Element {
                   )}
                   <h2 className={styles.detailName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h2>
                   <div className={styles.detailStats}>
-                    <span className={styles.detailStat}>#{lookupResult.setNumber}</span>
+                    <span
+                      className={styles.detailStat}
+                      aria-label={`Set number ${lookupResult.setNumber}`}
+                    >
+                      #{lookupResult.setNumber}
+                    </span>
                     {lookupResult.pieceCount && (
                       <span className={styles.detailStat}>
                         <strong>{lookupResult.pieceCount.toLocaleString()}</strong> pieces
@@ -484,7 +515,12 @@ function AddSetContent(): React.JSX.Element {
                   )}
                 </div>
                 <div className={styles.compactInfo}>
-                  <span className={styles.compactSetNumber}>#{lookupResult.setNumber}</span>
+                  <span
+                    className={styles.compactSetNumber}
+                    aria-label={`Set number ${lookupResult.setNumber}`}
+                  >
+                    #{lookupResult.setNumber}
+                  </span>
                   <h2 className={styles.compactName} style={{ viewTransitionName: 'add-set-name' }}>{lookupResult.name}</h2>
                   <div className={styles.compactMeta}>
                     {lookupResult.pieceCount && (
@@ -506,18 +542,26 @@ function AddSetContent(): React.JSX.Element {
               {/* Image processing progress bar */}
               {imageProcessingStage && (
                 <div className={styles.progressSection}>
-                  <div className={styles.progressTrack}>
+                  <div
+                    className={styles.progressTrack}
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={progressPercent}
+                    aria-label="Image processing"
+                  >
                     <div
                       className={`${styles.progressBar} ${imageProcessingStage === 'error' ? styles.progressError : ''} ${imageProcessingStage === 'done' ? styles.progressDone : ''}`}
-                      style={{ width: `${progressPercent}%` }}
+                      style={{ transform: `scaleX(${progressPercent / 100})` }}
                     />
                   </div>
                   {imageProcessingStage !== 'idle' && (
                     <span
                       className={`${styles.progressLabel} ${imageProcessingStage === 'error' ? styles.progressLabelError : ''} ${imageProcessingStage === 'done' ? styles.progressLabelDone : ''}`}
+                      aria-live="polite"
                     >
                       {imageProcessingStage === 'done' && (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -530,12 +574,14 @@ function AddSetContent(): React.JSX.Element {
               {/* Form fields */}
               <div className={styles.fields}>
                 <div className="form-field">
-                  <label className="form-label">Status</label>
-                  <div className="form-chip-row">
-                    {STATUS_ORDER.map((value) => (
+                  <span id="status-label" className="form-label">Status</span>
+                  <div className="form-chip-row" role="group" aria-labelledby="status-label">
+                    {STATUS_ORDER.map((value, index) => (
                       <button
                         key={value}
+                        ref={index === 0 ? firstStatusChipRef : undefined}
                         type="button"
+                        aria-pressed={status === value}
                         className={`form-chip ${status === value ? 'form-chip-selected' : ''}`}
                         onClick={() => setStatus(value)}
                       >
@@ -547,23 +593,27 @@ function AddSetContent(): React.JSX.Element {
 
                 {availableOwners.length > 1 && (
                   <div className="form-field">
-                    <label className="form-label">Owner</label>
-                    <div className="form-chip-row">
-                      {availableOwners.map((ownerName) => (
-                        <button
-                          key={ownerName}
-                          type="button"
-                          className={`form-chip ${selectedOwners.includes(ownerName) ? 'form-chip-selected' : ''}`}
-                          onClick={() => toggleOwner(ownerName)}
-                        >
-                          {selectedOwners.includes(ownerName) && (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                          {ownerName}
-                        </button>
-                      ))}
+                    <span id="owner-label" className="form-label">Owner</span>
+                    <div className="form-chip-row" role="group" aria-labelledby="owner-label">
+                      {availableOwners.map((ownerName) => {
+                        const isSelected = selectedOwners.includes(ownerName);
+                        return (
+                          <button
+                            key={ownerName}
+                            type="button"
+                            aria-pressed={isSelected}
+                            className={`form-chip ${isSelected ? 'form-chip-selected' : ''}`}
+                            onClick={() => toggleOwner(ownerName)}
+                          >
+                            {isSelected && (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                            {ownerName}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -605,7 +655,11 @@ function AddSetContent(): React.JSX.Element {
                 </div>
               </div>
 
-              {submitError && <p className="form-error">{submitError}</p>}
+              {submitError && (
+                <p className="form-error" role="alert">
+                  {submitError}
+                </p>
+              )}
             </form>
           )}
         </div>
