@@ -23,36 +23,41 @@ beforeEach(() => {
 });
 
 describe('StatusControl', () => {
-  it('renders the current status as the badge label', () => {
+  it('renders the current status as the badge label and is closed by default', () => {
     render(<StatusControl setId="set-1" currentStatus="assembled" />);
 
     const badge = screen.getByRole('button', { name: /change status, currently assembled/i });
     expect(badge).toHaveTextContent('Assembled');
-    // No radiogroup is in the DOM until the badge is clicked.
-    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(badge).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
-  it('expands into a chip row when the badge is clicked', () => {
+  it('opens a menu of all five statuses when the badge is clicked', () => {
     render(<StatusControl setId="set-1" currentStatus="unopened" />);
 
     fireEvent.click(screen.getByRole('button', { name: /change status/i }));
 
-    expect(screen.getByRole('radiogroup', { name: /set status/i })).toBeInTheDocument();
-    expect(screen.getAllByRole('radio')).toHaveLength(5);
-    expect(screen.getByRole('radio', { name: 'Unopened' })).toHaveAttribute(
+    expect(screen.getByRole('menu', { name: /set status/i })).toBeInTheDocument();
+    const rows = screen.getAllByRole('menuitemradio');
+    expect(rows).toHaveLength(5);
+    expect(screen.getByRole('menuitemradio', { name: /unopened/i })).toHaveAttribute(
       'aria-checked',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: /change status/i })).toHaveAttribute(
+      'aria-expanded',
       'true'
     );
   });
 
-  it('optimistically updates the badge label and persists via updateSet on pick', async () => {
+  it('optimistically updates the badge and persists via updateSet on pick', async () => {
     mockUpdateSet.mockResolvedValue();
     render(<StatusControl setId="set-1" currentStatus="in_progress" />);
 
     fireEvent.click(screen.getByRole('button', { name: /change status/i }));
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('radio', { name: 'Assembled' }));
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Assembled' }));
     });
 
     expect(mockUpdateSet).toHaveBeenCalledWith('set-1', {
@@ -62,6 +67,8 @@ describe('StatusControl', () => {
     expect(
       screen.getByRole('button', { name: /change status, currently assembled/i })
     ).toBeInTheDocument();
+    // Menu closes on pick.
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('reverts the badge and fires a toast when updateSet fails', async () => {
@@ -71,7 +78,7 @@ describe('StatusControl', () => {
     fireEvent.click(screen.getByRole('button', { name: /change status/i }));
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('radio', { name: 'Assembled' }));
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Assembled' }));
     });
 
     expect(mockToastError).toHaveBeenCalledWith(
@@ -83,20 +90,19 @@ describe('StatusControl', () => {
     ).toBeInTheDocument();
   });
 
-  it('closes the chip row without saving when the same status is picked', async () => {
+  it('closes the menu without saving when the same status is picked', async () => {
     render(<StatusControl setId="set-1" currentStatus="assembled" />);
 
     fireEvent.click(screen.getByRole('button', { name: /change status/i }));
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('radio', { name: 'Assembled' }));
+      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Assembled' }));
     });
 
     expect(mockUpdateSet).not.toHaveBeenCalled();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /change status, currently assembled/i })
-    ).toBeInTheDocument();
-    // Chip row is gone after collapsing.
-    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    ).toHaveAttribute('aria-expanded', 'false');
   });
 });

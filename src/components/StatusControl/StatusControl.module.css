@@ -1,10 +1,16 @@
 /*
- * StatusControl — inline-expanding status control for the Set detail page.
- * Badge and chip-row are conditionally rendered (one or the other), so
- * each is content-sized and doesn't inherit width from a sibling.
+ * StatusControl — status badge with an anchored dropdown menu. The badge
+ * stays put; the panel is `position: absolute` so it floats above content
+ * without pushing surrounding layout.
  */
 
-/* ----- Badge (read mode) ---------------------------------------------- */
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ----- Badge (trigger) ------------------------------------------------ */
 
 .badge {
   display: inline-flex;
@@ -14,9 +20,9 @@
   cursor: pointer;
   font-family: inherit;
 
-  /* Color, font, padding, radius come from the global .status-badge
-     classes in status.css so the read state matches every other badge
-     across the app. */
+  /* Color, padding, radius, weight come from the global .status-badge
+     classes in status.css so the badge looks consistent with the badges
+     rendered on cards and elsewhere. */
 }
 
 .badge:disabled {
@@ -29,43 +35,71 @@
   opacity: var(--opacity-active);
 }
 
-/* ----- Expanded (chip row) -------------------------------------------- */
+/* ----- Panel (dropdown) ----------------------------------------------- */
 
-.expanded {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+/* Anchored below the badge, left-edge-aligned, with a touch of breathing
+   above. Dropdowns are one of the three things in DESIGN.md allowed to
+   actually float — they earn the dropdown shadow. */
+.panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: var(--space-2);
+  min-width: 180px;
+  padding: var(--space-1) 0;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+  z-index: var(--z-dropdown);
+  display: flex;
+  flex-direction: column;
 }
 
-.chip {
-  display: inline-flex;
+.item {
+  display: flex;
   align-items: center;
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--surface-secondary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-full);
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-radius: 0;
   font-family: inherit;
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
+  text-align: left;
   cursor: pointer;
   transition:
     background-color var(--transition-fast),
-    color var(--transition-fast),
-    border-color var(--transition-fast);
+    color var(--transition-fast);
 }
 
-.chip:hover {
-  background-color: var(--surface-tertiary);
+.item:hover,
+.item:focus-visible {
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
+  outline: none;
 }
 
-.chipActive {
-  background-color: var(--interactive-primary-bg);
-  border-color: var(--interactive-primary);
-  color: var(--interactive-primary);
+.itemActive {
+  color: var(--text-primary);
 }
 
+.itemLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemCheck {
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+/* Mobile: items reach the recommended 44px hit box. */
 @media (max-width: 640px) {
-  .chip {
+  .item {
     min-height: var(--size-touch-target);
   }
 }

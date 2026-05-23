@@ -12,66 +12,77 @@ interface StatusControlProps {
 }
 
 /**
- * Inline-expanding status control for the Set detail page. In its default
- * (read) state it renders as a small status badge; tapping the badge
- * replaces it in place with a horizontal chip row of the five statuses;
- * tapping a chip optimistically updates the set and the badge returns
- * with the new status.
+ * Status badge with an anchored dropdown menu. Tap the badge to open a
+ * floating panel of the five status options; pick a row to update. The
+ * panel is `position: absolute` so it doesn't push surrounding content;
+ * surrounding layout stays still through the interaction.
  *
- * Badge XOR chip row — only one is mounted at a time, so each renders at
- * its natural content size and never inherits sizing from the other.
+ * Optimistic update: the badge label flips immediately, `updateSet` fires
+ * in the background, failure reverts the badge and emits a toast.
  */
 export function StatusControl({ setId, currentStatus }: StatusControlProps): React.JSX.Element {
   const [optimisticStatus, setOptimisticStatus] = useState<SetStatus>(currentStatus);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const rootRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLButtonElement>(null);
-  const expandedRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  // Keep optimistic state in sync when the parent's status prop changes
-  // (e.g. realtime echo from another client). A successful local save
-  // arrives as a matching `currentStatus` and is a no-op.
+  // Sync optimistic state when the parent's status prop changes (e.g. a
+  // realtime echo). A successful local save arrives as a matching value
+  // and is a no-op.
   useEffect(() => {
     setOptimisticStatus(currentStatus);
   }, [currentStatus]);
 
-  // Move focus back to the badge after collapsing (the badge has just
-  // re-mounted, so its ref is freshly populated by the time this fires).
-  // Skip the first run so initial mount doesn't grab focus from elsewhere.
-  const wasExpandedRef = useRef(false);
+  // Focus the active row on open; return focus to the badge on close.
+  // wasOpenRef means we skip the initial mount so we don't grab focus.
+  const wasOpenRef = useRef(false);
   useEffect(() => {
-    if (!isExpanded && wasExpandedRef.current) {
+    if (isOpen && !wasOpenRef.current) {
+      const active = panelRef.current?.querySelector<HTMLButtonElement>(
+        '[data-active="true"]'
+      );
+      active?.focus();
+    } else if (!isOpen && wasOpenRef.current) {
       badgeRef.current?.focus();
     }
-    wasExpandedRef.current = isExpanded;
-  }, [isExpanded]);
+    wasOpenRef.current = isOpen;
+  }, [isOpen]);
 
-  // Outside-click closes without change.
+  // Close on outside pointerdown / escape.
   useEffect(() => {
-    if (!isExpanded) return undefined;
+    if (!isOpen) return undefined;
     const onPointerDown = (e: PointerEvent) => {
-      if (expandedRef.current?.contains(e.target as Node)) return;
-      setIsExpanded(false);
+      if (rootRef.current?.contains(e.target as Node)) return;
+      setIsOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsOpen(false);
+      }
     };
     document.addEventListener('pointerdown', onPointerDown);
-    return () => document.removeEventListener('pointerdown', onPointerDown);
-  }, [isExpanded]);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isOpen]);
 
   const pick = async (next: SetStatus) => {
-    if (next === optimisticStatus) {
-      setIsExpanded(false);
-      return;
-    }
+    setIsOpen(false);
+    if (next === optimisticStatus) return;
 
     const previous = optimisticStatus;
     setOptimisticStatus(next);
-    setIsExpanded(false);
     setIsSaving(true);
 
     try {
-      // Newly assembled / disassembled sets should also flip hasBeenAssembled
-      // so other surfaces (badges, filters) reflect the build history. The
+      // Newly assembled / disassembled sets also flip hasBeenAssembled so
+      // other surfaces (badges, filters) reflect the build history — the
       // edit page applies the same rule.
       const hasBeenAssembled = next === 'assembled' || next === 'disassembled';
       await updateSet(setId, { status: next, hasBeenAssembled });
@@ -84,79 +95,105 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
     }
   };
 
-  const onKeyDownChipRow = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      setIsExpanded(false);
+  // Up / Down move focus between rows; Home / End jump to extremes.
+  const onPanelKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') {
       return;
     }
-    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
-    const dir = e.key === 'ArrowRight' ? 1 : -1;
-    const currentIdx = STATUS_ORDER.indexOf(optimisticStatus);
-    const nextIdx = (currentIdx + dir + STATUS_ORDER.length) % STATUS_ORDER.length;
-    setOptimisticStatus(STATUS_ORDER[nextIdx]);
+
+    const rows = Array.from(
+      panelRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]') ?? []
+    );
+    if (rows.length === 0) return;
+
+    const activeEl = document.activeElement;
+    const currentIdx = rows.findIndex((row) => row === activeEl);
+
+    let nextIdx: number;
+    if (e.key === 'Home') nextIdx = 0;
+    else if (e.key === 'End') nextIdx = rows.length - 1;
+    else if (e.key === 'ArrowDown') nextIdx = currentIdx < 0 ? 0 : (currentIdx + 1) % rows.length;
+    else nextIdx = currentIdx <= 0 ? rows.length - 1 : currentIdx - 1;
+
+    rows[nextIdx].focus();
   };
 
-  if (isExpanded) {
-    return (
-      <div
-        ref={expandedRef}
-        className={styles.expanded}
-        role="radiogroup"
-        aria-label="Set status"
-        onKeyDown={onKeyDownChipRow}
-      >
-        {STATUS_ORDER.map((value) => {
-          const isActive = value === optimisticStatus;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={isActive}
-              tabIndex={isActive ? 0 : -1}
-              // autoFocus on the active chip moves focus into the row on
-              // mount — there's no badge to keep focus on at that point.
-              autoFocus={isActive}
-              className={`${styles.chip} ${isActive ? styles.chipActive : ''}`}
-              onClick={() => pick(value)}
-            >
-              {STATUS_LABELS[value]}
-            </button>
-          );
-        })}
-      </div>
-    );
-  }
-
   return (
-    <button
-      ref={badgeRef}
-      type="button"
-      className={`${styles.badge} status-badge status-${optimisticStatus}`}
-      aria-label={`Change status, currently ${STATUS_LABELS[optimisticStatus]}`}
-      onClick={() => setIsExpanded(true)}
-      disabled={isSaving}
-    >
-      {STATUS_LABELS[optimisticStatus]}
-      <svg
-        className={styles.badgeCaret}
-        width="10"
-        height="10"
-        viewBox="0 0 10 10"
-        fill="none"
-        aria-hidden="true"
+    <div ref={rootRef} className={styles.root}>
+      <button
+        ref={badgeRef}
+        type="button"
+        className={`${styles.badge} status-badge status-${optimisticStatus}`}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        aria-label={`Change status, currently ${STATUS_LABELS[optimisticStatus]}`}
+        onClick={() => setIsOpen((open) => !open)}
+        disabled={isSaving}
       >
-        <path
-          d="M2 4l3 3 3-3"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </button>
+        {STATUS_LABELS[optimisticStatus]}
+        <svg
+          className={styles.badgeCaret}
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M2 4l3 3 3-3"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div
+          ref={panelRef}
+          className={styles.panel}
+          role="menu"
+          aria-label="Set status"
+          onKeyDown={onPanelKeyDown}
+        >
+          {STATUS_ORDER.map((value) => {
+            const isActive = value === optimisticStatus;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="menuitemradio"
+                aria-checked={isActive}
+                tabIndex={isActive ? 0 : -1}
+                data-active={isActive || undefined}
+                className={`${styles.item} ${isActive ? styles.itemActive : ''}`}
+                onClick={() => pick(value)}
+              >
+                <span className={styles.itemLabel}>{STATUS_LABELS[value]}</span>
+                {isActive && (
+                  <svg
+                    className={styles.itemCheck}
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
