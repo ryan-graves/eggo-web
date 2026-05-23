@@ -14,12 +14,12 @@ interface StatusControlProps {
 /**
  * Inline-expanding status control for the Set detail page. In its default
  * (read) state it renders as a small status badge; tapping the badge
- * transforms it into a horizontal chip row of the five statuses; tapping a
- * chip optimistically updates the set and collapses back to the new badge.
+ * replaces it in place with a horizontal chip row of the five statuses;
+ * tapping a chip optimistically updates the set and the badge returns
+ * with the new status.
  *
- * The component is responsible for: focus management (focus moves to the
- * active chip on expand and returns to the badge on collapse), outside-click
- * and Esc-to-cancel, optimistic updates, and revert + toast on failure.
+ * Badge XOR chip row — only one is mounted at a time, so each renders at
+ * its natural content size and never inherits sizing from the other.
  */
 export function StatusControl({ setId, currentStatus }: StatusControlProps): React.JSX.Element {
   const [optimisticStatus, setOptimisticStatus] = useState<SetStatus>(currentStatus);
@@ -28,24 +28,20 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
 
   const badgeRef = useRef<HTMLButtonElement>(null);
   const expandedRef = useRef<HTMLDivElement>(null);
-  const activeChipRef = useRef<HTMLButtonElement>(null);
 
   // Keep optimistic state in sync when the parent's status prop changes
-  // (e.g. realtime update from another client). Depending only on
-  // `currentStatus` means a successful local save doesn't trigger a revert
-  // when `isSaving` flips back to false — the eventual realtime echo of our
-  // own write arrives as a (matching) `currentStatus` and is a no-op.
+  // (e.g. realtime echo from another client). A successful local save
+  // arrives as a matching `currentStatus` and is a no-op.
   useEffect(() => {
     setOptimisticStatus(currentStatus);
   }, [currentStatus]);
 
-  // Move focus to the active chip when the row expands, and back to the
-  // badge when it collapses. Skip on initial mount.
+  // Move focus back to the badge after collapsing (the badge has just
+  // re-mounted, so its ref is freshly populated by the time this fires).
+  // Skip the first run so initial mount doesn't grab focus from elsewhere.
   const wasExpandedRef = useRef(false);
   useEffect(() => {
-    if (isExpanded && !wasExpandedRef.current) {
-      activeChipRef.current?.focus();
-    } else if (!isExpanded && wasExpandedRef.current) {
+    if (!isExpanded && wasExpandedRef.current) {
       badgeRef.current?.focus();
     }
     wasExpandedRef.current = isExpanded;
@@ -102,50 +98,13 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
     setOptimisticStatus(STATUS_ORDER[nextIdx]);
   };
 
-  return (
-    <div className={styles.root}>
-      {/* Badge (read mode). Visually hidden when expanded so the chip row
-          can take its space without a layout jump. */}
-      <button
-        ref={badgeRef}
-        type="button"
-        className={`${styles.badge} status-badge status-${optimisticStatus} ${
-          isExpanded ? styles.badgeHidden : ''
-        }`}
-        aria-label={`Change status, currently ${STATUS_LABELS[optimisticStatus]}`}
-        aria-expanded={isExpanded}
-        aria-haspopup="true"
-        onClick={() => setIsExpanded(true)}
-        disabled={isSaving}
-      >
-        {STATUS_LABELS[optimisticStatus]}
-        <svg
-          className={styles.badgeCaret}
-          width="10"
-          height="10"
-          viewBox="0 0 10 10"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M2 4l3 3 3-3"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      {/* Chip row (expanded mode). The row is always rendered so its width
-          contributes to layout sizing; visibility + interactivity flip on
-          isExpanded. */}
+  if (isExpanded) {
+    return (
       <div
         ref={expandedRef}
-        className={`${styles.expanded} ${isExpanded ? styles.expandedOpen : ''}`}
+        className={styles.expanded}
         role="radiogroup"
         aria-label="Set status"
-        aria-hidden={!isExpanded}
         onKeyDown={onKeyDownChipRow}
       >
         {STATUS_ORDER.map((value) => {
@@ -153,11 +112,13 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
           return (
             <button
               key={value}
-              ref={isActive ? activeChipRef : undefined}
               type="button"
               role="radio"
               aria-checked={isActive}
-              tabIndex={isExpanded ? (isActive ? 0 : -1) : -1}
+              tabIndex={isActive ? 0 : -1}
+              // autoFocus on the active chip moves focus into the row on
+              // mount — there's no badge to keep focus on at that point.
+              autoFocus={isActive}
               className={`${styles.chip} ${isActive ? styles.chipActive : ''}`}
               onClick={() => pick(value)}
             >
@@ -166,7 +127,36 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
           );
         })}
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <button
+      ref={badgeRef}
+      type="button"
+      className={`${styles.badge} status-badge status-${optimisticStatus}`}
+      aria-label={`Change status, currently ${STATUS_LABELS[optimisticStatus]}`}
+      onClick={() => setIsExpanded(true)}
+      disabled={isSaving}
+    >
+      {STATUS_LABELS[optimisticStatus]}
+      <svg
+        className={styles.badgeCaret}
+        width="10"
+        height="10"
+        viewBox="0 0 10 10"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M2 4l3 3 3-3"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
   );
 }
 

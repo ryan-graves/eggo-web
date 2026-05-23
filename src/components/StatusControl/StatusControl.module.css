@@ -1,25 +1,8 @@
 /*
  * StatusControl — inline-expanding status control for the Set detail page.
- * The badge defines the in-flow size of the control; the chip row is
- * absolutely positioned on top of it so the surrounding layout doesn't
- * react to the badge's collapsed/expanded width. The chip row may overflow
- * the badge's width when open; that's the expansion effect.
+ * Badge and chip-row are conditionally rendered (one or the other), so
+ * each is content-sized and doesn't inherit width from a sibling.
  */
-
-.root {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  width: max-content;
-  max-width: 100%;
-}
-
-.badge,
-.expanded {
-  transition:
-    opacity var(--transition-fast),
-    visibility 0s linear var(--duration-fast);
-}
 
 /* ----- Badge (read mode) ---------------------------------------------- */
 
@@ -46,33 +29,12 @@
   opacity: var(--opacity-active);
 }
 
-.badgeHidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition-delay: 0s;
-}
-
 /* ----- Expanded (chip row) -------------------------------------------- */
 
 .expanded {
-  position: absolute;
-  top: 0;
-  left: 0;
   display: inline-flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.expandedOpen {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition: opacity var(--transition-fast);
-  transition-delay: 0s;
 }
 
 .chip {

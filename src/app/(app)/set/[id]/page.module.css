@@ -169,10 +169,10 @@
   border-bottom-color: var(--text-primary);
 }
 
+/* align-self: flex-start keeps this wrapper from stretching across the
+   heading column (a column flex container stretches cross-axis by default).
+   The StatusControl inside is content-sized. */
 .statusRow {
-  /* align-self prevents this wrapper from stretching across the column
-     (the heading is a column flex container, so direct children otherwise
-     stretch in the cross axis). The StatusControl inside is content-sized. */
   align-self: flex-start;
   margin-top: var(--space-3);
 }

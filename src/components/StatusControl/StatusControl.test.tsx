@@ -28,7 +28,8 @@ describe('StatusControl', () => {
 
     const badge = screen.getByRole('button', { name: /change status, currently assembled/i });
     expect(badge).toHaveTextContent('Assembled');
-    expect(badge).toHaveAttribute('aria-expanded', 'false');
+    // No radiogroup is in the DOM until the badge is clicked.
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
   });
 
   it('expands into a chip row when the badge is clicked', () => {
@@ -94,6 +95,8 @@ describe('StatusControl', () => {
     expect(mockUpdateSet).not.toHaveBeenCalled();
     expect(
       screen.getByRole('button', { name: /change status, currently assembled/i })
-    ).toHaveAttribute('aria-expanded', 'false');
+    ).toBeInTheDocument();
+    // Chip row is gone after collapsing.
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
   });
 });
