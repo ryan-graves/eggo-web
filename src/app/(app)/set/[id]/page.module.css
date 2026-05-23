@@ -32,10 +32,14 @@
   width: 100%;
 }
 
-/* Two-column grid on desktop, single column on mobile (see media query). */
+/* Two-column grid on desktop, single column on mobile (see media query).
+   Asymmetric: the image takes its capped width, the info column fills the
+   remainder. A 50/50 grid made the image well too dominant and left the
+   info column with too much horizontal room for what's usually a single
+   short sentence. */
 .content {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-8);
   align-items: start;
 }
@@ -46,7 +50,8 @@
 .imageSection {
   position: sticky;
   top: calc(var(--space-6) + var(--layout-header-height));
-  width: 100%;
+  width: var(--max-width-image-mobile);
+  max-width: 100%;
 }
 
 .imageContainer {
@@ -165,6 +170,10 @@
 }
 
 .statusRow {
+  /* align-self prevents this wrapper from stretching across the column
+     (the heading is a column flex container, so direct children otherwise
+     stretch in the cross axis). The StatusControl inside is content-sized. */
+  align-self: flex-start;
   margin-top: var(--space-3);
 }
 

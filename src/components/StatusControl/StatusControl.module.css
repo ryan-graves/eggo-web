@@ -1,18 +1,21 @@
 /*
  * StatusControl — inline-expanding status control for the Set detail page.
- * The badge and chip row occupy the same grid cell; flipping visibility +
- * opacity between them avoids a layout jump while preserving keyboard focus.
+ * The badge defines the in-flow size of the control; the chip row is
+ * absolutely positioned on top of it so the surrounding layout doesn't
+ * react to the badge's collapsed/expanded width. The chip row may overflow
+ * the badge's width when open; that's the expansion effect.
  */
 
 .root {
-  display: inline-grid;
-  grid-template-areas: 'control';
+  position: relative;
+  display: inline-flex;
   align-items: center;
+  width: max-content;
+  max-width: 100%;
 }
 
 .badge,
 .expanded {
-  grid-area: control;
   transition:
     opacity var(--transition-fast),
     visibility 0s linear var(--duration-fast);
@@ -53,6 +56,9 @@
 /* ----- Expanded (chip row) -------------------------------------------- */
 
 .expanded {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: inline-flex;
   flex-wrap: wrap;
   gap: var(--space-2);
