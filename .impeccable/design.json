@@ -127,16 +127,16 @@
   ],
   "narrative": {
     "northStar": "The Display Shelf",
-    "overview": "Eggo is a frame around a collection. Like a well-built shelf, the interface lines the sets up cleanly, holds them at a comfortable distance, and otherwise gets out of the way. The system is dark-first, built on near-black surfaces so each set image reads like an object lit on a dark wall, and the chrome stays quiet enough to disappear (light is a fully supported mode; the default theme preference follows the OS). The system is monochrome by doctrine: a neutral gray ramp, Instrument Serif for every heading, Inter for everything else, and no decorative accent color. The only saturated colors are the four functional status signals. It explicitly rejects the generic SaaS dashboard, the childish toy-store look, the spreadsheet tool, and the cluttered marketplace.",
+    "overview": "Eggo is a frame around a collection. Like a well-built shelf, the interface lines the sets up cleanly, holds them at a comfortable distance, and otherwise gets out of the way. Nothing on screen competes with a set's own photograph; the interface stays neutral enough that each set image reads like an object on display. The system supports two themes (Mono and Baseplate), each with both light and dark color modes; the user's color mode preference follows the OS by default. Mono is the canonical brand expression: a neutral gray ramp, Instrument Serif for every heading, Inter for everything else, no decorative accent color. Baseplate is a parallel variant that carries a small accent hue and shares the same semantic-token structure; both themes may be evolved together. The only saturated colors in either theme are the four functional status signals. The system explicitly rejects the generic SaaS dashboard, the childish toy-store look, the spreadsheet tool, and the cluttered marketplace.",
     "keyCharacteristics": [
-      "Dark-first, monochrome neutrals; saturated color is functional only.",
+      "Mono theme (canonical) uses monochrome neutrals; saturated color is functional only (status signals).",
       "Editorial pairing: Instrument Serif headings at normal weight, Inter body at 14px.",
       "Flat at rest; depth comes from tonal layering, with shadow reserved for hover.",
       "Tactile, confident controls: solid fills, capsule buttons, clear hover response.",
       "The set image is always the loudest element on screen."
     ],
     "rules": [
-      { "name": "The Monochrome Rule", "body": "The interface has no accent hue. If a color other than the gray ramp appears, it is a status signal carrying specific meaning, or it is a bug. The legacy orange (#f97316) is not the brand and must not be reintroduced as decoration.", "section": "colors" },
+      { "name": "The Monochrome Rule", "body": "Within the Mono theme, the interface has no accent hue. If a color other than the gray ramp appears in Mono, it is a status signal carrying specific meaning, or it is a bug. The orange accent is the Baseplate theme's signature and must not appear inside Mono.", "section": "colors" },
       { "name": "The Image-Is-The-Color Rule", "body": "Color on screen comes from the set photographs. The UI stays neutral so those photographs are never out-shouted.", "section": "colors" },
       { "name": "The Light-Serif Rule", "body": "Headings are serif at normal weight (400). A bold serif heading is forbidden; emphasis comes from size, never from weighting the serif.", "section": "typography" },
       { "name": "The Capped-Measure Rule", "body": "Body copy never runs wider than 75ch. Eggo's content is short by nature, so a stray full-width paragraph reads as a mistake.", "section": "typography" },
