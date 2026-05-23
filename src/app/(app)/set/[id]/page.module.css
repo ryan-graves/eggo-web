@@ -11,26 +11,6 @@
   background-color: var(--surface-background);
 }
 
-.editButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: var(--size-button-icon);
-  height: var(--size-button-icon);
-  padding: 0;
-  background-color: var(--interactive-primary);
-  border: none;
-  border-radius: var(--radius-md);
-  color: var(--text-inverse);
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-}
-
-.editButton:hover {
-  background-color: var(--interactive-primary-hover);
-}
-
 .main {
   max-width: var(--max-width-detail);
   margin: 0 auto;
@@ -98,42 +78,6 @@
   gap: var(--space-6);
 }
 
-.imageBanner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background-color: var(--status-error-bg);
-  border-radius: var(--radius-md);
-}
-
-.imageBannerText {
-  font-size: var(--font-size-sm);
-  color: var(--status-error);
-}
-
-.imageBannerButton {
-  padding: var(--space-1) var(--space-3);
-  background: none;
-  border: 1px solid var(--status-error);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--status-error);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.imageBannerButton:hover:not(:disabled) {
-  background-color: var(--status-error-bg-hover);
-}
-
-.imageBannerButton:disabled {
-  opacity: var(--opacity-muted);
-  cursor: not-allowed;
-}
-
 .titleSection {
   display: flex;
   flex-wrap: wrap;
@@ -143,7 +87,6 @@
 
 .name {
   font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);
@@ -204,9 +147,9 @@
   border-radius: var(--radius-lg);
 }
 
+/* Font-family / size / weight are owned by the mono theme's h2 rule so the
+   serif Headline treatment lines up with the rest of the section heads. */
 .notesTitle {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
   margin: 0 0 var(--space-3) 0;
 }
@@ -292,9 +235,5 @@
   .imageContainer {
     max-width: var(--max-width-image-mobile);
     margin: 0 auto;
-  }
-
-  .name {
-    font-size: var(--font-size-xl);
   }
 }

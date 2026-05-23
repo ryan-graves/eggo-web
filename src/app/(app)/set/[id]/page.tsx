@@ -4,12 +4,9 @@ import { Suspense, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { formatDateForDisplay } from '@/lib/date';
-import { removeImageBackground } from '@/lib/image';
-import { updateSet } from '@/lib/supabase';
 import { LAST_BROWSE_PATH_KEY, useNavigation } from '@/hooks/useNavigation';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';
@@ -36,30 +33,8 @@ function SetDetailContent(): React.JSX.Element {
   const { sets, isInitializing } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const [isRetryingImage, setIsRetryingImage] = useState(false);
-
   const setId = params.id as string;
   const set = sets.find((s) => s.id === setId);
-
-  const handleRetryBackgroundRemoval = async () => {
-    if (!set?.imageUrl) return;
-    setIsRetryingImage(true);
-    try {
-      const result = await removeImageBackground(set.imageUrl, set.id);
-      if (result.processedImageUrl) {
-        await updateSet(set.id, { customImageUrl: result.processedImageUrl });
-      } else if (result.error) {
-        toast.error('Background removal failed', { description: result.error });
-      } else if (result.skipped) {
-        toast.error('Background removal not configured');
-      }
-    } catch (err) {
-      console.error('[SetDetail] Retry background removal error:', err);
-      toast.error('Background removal failed');
-    } finally {
-      setIsRetryingImage(false);
-    }
-  };
 
   // Prefetch the back navigation target for instant return
   useEffect(() => {
@@ -97,7 +72,12 @@ function SetDetailContent(): React.JSX.Element {
   const imageUrl = set.customImageUrl || set.imageUrl;
 
   const editButton = (
-    <button type="button" onClick={openEdit} className={styles.editButton} aria-label="Edit set">
+    <button
+      type="button"
+      onClick={openEdit}
+      className="btn-default btn-icon btn-primary"
+      aria-label="Edit set"
+    >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path
           d="M11.5 2.5L13.5 4.5M10 14H14M2 10L10.5 1.5C11.3284 0.671573 12.6716 0.671573 13.5 1.5C14.3284 2.32843 14.3284 3.67157 13.5 4.5L5 13L1 14L2 10Z"
@@ -138,22 +118,6 @@ function SetDetailContent(): React.JSX.Element {
           </div>
 
           <div className={styles.details}>
-            {set.imageUrl && !set.customImageUrl && (
-              <div className={styles.imageBanner}>
-                <span className={styles.imageBannerText}>
-                  Processed image unavailable
-                </span>
-                <button
-                  type="button"
-                  onClick={handleRetryBackgroundRemoval}
-                  className={styles.imageBannerButton}
-                  disabled={isRetryingImage}
-                >
-                  {isRetryingImage ? 'Processing\u2026' : 'Retry'}
-                </button>
-              </div>
-            )}
-
             <div className={styles.titleSection}>
               <h1 className={styles.name}>{set.name}</h1>
               <span className={`status-badge status-${set.status}`}>
@@ -163,7 +127,12 @@ function SetDetailContent(): React.JSX.Element {
 
             {/* Set Info - compact horizontal stats */}
             <div className={styles.setStats}>
-              <span className={styles.stat}>#{set.setNumber}</span>
+              <span
+                className={styles.stat}
+                aria-label={`Set number ${set.setNumber}`}
+              >
+                #{set.setNumber}
+              </span>
               {set.pieceCount && (
                 <span className={styles.stat}>
                   <strong>{set.pieceCount.toLocaleString()}</strong> pieces
