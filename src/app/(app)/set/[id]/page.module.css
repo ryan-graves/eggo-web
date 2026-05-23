@@ -1,3 +1,17 @@
+/*
+ * Set detail page.
+ *
+ * Layout reads as a scaled-up SetPlate: a generous image well on the left and
+ * an editorial info column on the right, with narrative + notes trailing
+ * underneath in the same column. The image well and name carry view-
+ * transition-names that match the source SetPlate / SetCard so the browser
+ * morphs them across the navigation. Mobile collapses to a single vertical
+ * flow (image first, then info).
+ *
+ * No card surfaces on the narrative or notes; the rhythm of vertical space
+ * carries the hierarchy so the photograph stays the loudest thing on screen.
+ */
+
 .page {
   min-height: 100vh;
   min-height: 100dvh;
@@ -14,25 +28,33 @@
 .main {
   max-width: var(--max-width-detail);
   margin: 0 auto;
-  padding: var(--space-6);
+  padding: var(--space-6) var(--space-6) var(--space-8);
+  width: 100%;
 }
 
+/* Two-column grid on desktop, single column on mobile (see media query). */
 .content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-8);
   align-items: start;
 }
 
+/* Image section sticks at the top of the left column so the photograph
+   stays in view as the narrative + notes scroll past — the Display Shelf
+   reading of an object held while you read about it. */
 .imageSection {
   position: sticky;
   top: calc(var(--space-6) + var(--layout-header-height));
+  width: 100%;
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -54,6 +76,7 @@
 
 .image {
   object-fit: contain;
+  padding: var(--space-4);
   opacity: 0;
   transition: opacity var(--transition-normal);
 }
@@ -68,23 +91,38 @@
   justify-content: center;
   width: 100%;
   height: 100%;
+
+  /* Match the empty-state tone of the rest of the catalog: Instrument Serif
+     headline rather than a plain-text label. */
+  font-family: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  font-size: var(--font-size-xl);
   color: var(--text-tertiary);
-  font-size: var(--font-size-lg);
 }
+
+/* ---- Details column -------------------------------------------------- */
 
 .details {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-8);
+  min-width: 0;
 }
 
-.titleSection {
+.heading {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
+.setNumber {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  letter-spacing: var(--letter-spacing-wider);
+  margin: 0;
+}
+
+/* h1 — mono theme owns font-family + weight via the global h1 rule.
+   Local override only on size + line-height + letter-spacing. */
 .name {
   font-size: var(--font-size-3xl);
   color: var(--text-primary);
@@ -93,65 +131,83 @@
   margin: 0;
 }
 
-/* Status badges use global .status-badge / .status-* classes from status.css */
-
-/* Set Stats - horizontal wrapping tags */
-.setStats {
+.metadata {
   display: flex;
   flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: var(--space-1) 0 0;
+}
+
+.metadataItem {
+  display: inline-flex;
+  align-items: baseline;
   gap: var(--space-2);
 }
 
-.stat {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--surface-primary);
-  border-radius: var(--radius-full);
+.metadataSep {
+  color: var(--text-tertiary);
+  user-select: none;
 }
 
-.stat strong {
+.themeLink {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-secondary);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.themeLink:hover {
   color: var(--text-primary);
-  font-weight: var(--font-weight-semibold);
+  border-bottom-color: var(--text-primary);
 }
 
-/* Collection Story Card */
-.storyCard {
+.statusRow {
+  margin-top: var(--space-3);
+}
+
+/* ---- Story (narrative + built-before badge) -------------------------- */
+
+.story {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-4);
-  background-color: var(--surface-primary);
-  border-radius: var(--radius-lg);
+}
+
+.storyText {
+  font-family: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 60ch;
 }
 
 .builtBadge {
   align-self: flex-start;
   font-size: var(--font-size-xs);
   padding: var(--space-1) var(--space-2);
-  background-color: var(--surface-tertiary);
+  background-color: var(--surface-secondary);
   color: var(--text-tertiary);
   border-radius: var(--radius-full);
 }
 
-.storyText {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
-  line-height: var(--line-height-relaxed);
-  margin: 0;
-}
+/* ---- Notes ---------------------------------------------------------- */
 
 .notesSection {
-  padding: var(--space-5);
-  background-color: var(--surface-primary);
-  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
-/* Font-family / size / weight are owned by the mono theme's h2 rule so the
-   serif Headline treatment lines up with the rest of the section heads. */
+/* h2 — font-family / size / weight come from the mono theme's h2 rule
+   (Instrument Serif at the headline size). Only color is local. */
 .notesTitle {
   color: var(--text-primary);
-  margin: 0 0 var(--space-3) 0;
+  margin: 0;
 }
 
 .notesContent {
@@ -159,8 +215,11 @@
   color: var(--text-secondary);
   line-height: var(--line-height-relaxed);
   margin: 0;
+  max-width: 65ch;
   white-space: pre-wrap;
 }
+
+/* ---- States -------------------------------------------------------- */
 
 .loading {
   display: flex;
@@ -208,7 +267,7 @@
   background-color: var(--interactive-primary-hover);
 }
 
-/* Dark mode for status badges handled by global status.css */
+/* ---- Mobile -------------------------------------------------------- */
 
 @media (max-width: 768px) {
   .page {
@@ -220,7 +279,7 @@
   }
 
   .main {
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-4) var(--space-8);
   }
 
   .content {
@@ -230,10 +289,15 @@
 
   .imageSection {
     position: static;
-  }
-
-  .imageContainer {
     max-width: var(--max-width-image-mobile);
     margin: 0 auto;
+  }
+
+  .details {
+    gap: var(--space-6);
+  }
+
+  .storyText {
+    font-size: var(--font-size-lg);
   }
 }

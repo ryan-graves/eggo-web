@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { PublicCollectionProvider, usePublicCollection } from '@/hooks/usePublicCollection';
 import { PublicBanner } from '@/components/PublicBanner';
 import { formatDateForDisplay } from '@/lib/date';
+import { SET_IMAGE_VT_NAME, SET_NAME_VT_NAME } from '@/lib/viewTransitions';
 import type { LegoSet } from '@/types';
 import styles from './page.module.css';
 
@@ -122,7 +123,10 @@ function PublicSetDetailContent(): React.JSX.Element {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          <div className={styles.imageSection}>
+          <div
+            className={styles.imageSection}
+            style={{ viewTransitionName: SET_IMAGE_VT_NAME }}
+          >
             <div className={styles.imageContainer}>
               {imageUrl ? (
                 <Image
@@ -141,7 +145,12 @@ function PublicSetDetailContent(): React.JSX.Element {
 
           <div className={styles.details}>
             <div className={styles.titleSection}>
-              <h1 className={styles.name}>{set.name}</h1>
+              <h1
+                className={styles.name}
+                style={{ viewTransitionName: SET_NAME_VT_NAME }}
+              >
+                {set.name}
+              </h1>
               <span className={`status-badge status-${set.status}`}>
                 {STATUS_LABELS[set.status]}
               </span>
