@@ -1,0 +1,107 @@
+/*
+ * StatusControl — status badge with an anchored dropdown menu. The badge
+ * stays put; the panel is `position: absolute` so it floats above content
+ * without pushing surrounding layout.
+ */
+
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ----- Badge (trigger) ------------------------------------------------ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+
+  /* Color, padding, radius, weight come from the global .status-badge
+     classes in status.css so the badge looks consistent with the badges
+     rendered on cards and elsewhere. */
+}
+
+/* aria-disabled (not native :disabled) so the badge stays focusable while a
+   save is in flight — see the comment in StatusControl.tsx. */
+.badge[aria-disabled='true'] {
+  opacity: var(--opacity-muted);
+  cursor: progress;
+}
+
+.badgeCaret {
+  flex-shrink: 0;
+  opacity: var(--opacity-active);
+}
+
+/* ----- Panel (dropdown) ----------------------------------------------- */
+
+/* Anchored below the badge, left-edge-aligned, with a touch of breathing
+   above. Dropdowns are one of the three things in DESIGN.md allowed to
+   actually float — they earn the dropdown shadow. */
+.panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: var(--space-2);
+  min-width: 180px;
+  padding: var(--space-1) 0;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+  z-index: var(--z-dropdown);
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-radius: 0;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.item:hover,
+.item:focus-visible {
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.itemActive {
+  color: var(--text-primary);
+}
+
+.itemLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemCheck {
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+/* Mobile: items reach the recommended 44px hit box. */
+@media (max-width: 640px) {
+  .item {
+    min-height: var(--size-touch-target);
+  }
+}

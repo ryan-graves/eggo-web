@@ -1,9 +1,12 @@
 'use client';
 
+import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { LegoSet } from '@/types';
 import { useNavigationLoading } from '@/hooks/useNavigationLoading';
+import { navigateWithSetMorph } from '@/lib/viewTransitions';
 import styles from './SetPlate.module.css';
 
 interface SetPlateProps {
@@ -35,6 +38,18 @@ export function SetPlate({
   const href = linkPrefix ? `${linkPrefix}/${set.id}` : `/set/${set.id}`;
   const { pendingHref } = useNavigationLoading();
   const isLoading = pendingHref === href;
+  const router = useRouter();
+  const linkRef = useRef<HTMLAnchorElement>(null);
+
+  // Intercept primary-button click to morph the image + name into the
+  // detail-page hero via View Transitions. Modifier-key / non-primary clicks
+  // fall through to the default Link behavior (open in new tab, etc.).
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    if (!linkRef.current) return;
+    e.preventDefault();
+    navigateWithSetMorph(linkRef.current, () => router.push(href));
+  };
 
   const spec = [
     set.pieceCount ? `${set.pieceCount.toLocaleString()} pieces` : null,
@@ -46,10 +61,12 @@ export function SetPlate({
 
   return (
     <Link
+      ref={linkRef}
       href={href}
+      onClick={handleClick}
       className={`${styles.plate} ${isLoading ? styles.plateLoading : ''}`.trim()}
     >
-      <div className={styles.imageWrap}>
+      <div className={styles.imageWrap} data-vt-image>
         <div className={styles.imageInner}>
           {imageUrl ? (
             <Image
@@ -69,7 +86,9 @@ export function SetPlate({
       </div>
 
       <div className={styles.info}>
-        <h3 className={styles.name}>{set.name}</h3>
+        <h3 className={styles.name} data-vt-name>
+          {set.name}
+        </h3>
         <p className={styles.setNumber}>#{set.setNumber}</p>
         {spec && <p className={styles.spec}>{spec}</p>}
         {!hideStatus && (

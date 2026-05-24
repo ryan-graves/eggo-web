@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { SetCard } from './SetCard';
 import type { LegoSet } from '@/types';
@@ -11,19 +12,28 @@ jest.mock('next/image', () => ({
   },
 }));
 
-// Mock Next.js Link component
+// Mock Next.js Link (forwardRef so the SetCard's linkRef populates)
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: function MockLink({
-    children,
-    href,
-  }: {
-    children: React.ReactNode;
-    href: string;
-    className?: string;
-  }) {
-    return <a href={href}>{children}</a>;
-  },
+  default: forwardRef<
+    HTMLAnchorElement,
+    {
+      children: React.ReactNode;
+      href: string;
+      className?: string;
+      onClick?: (e: React.MouseEvent) => void;
+    }
+  >(function MockLink({ children, href, onClick }, ref) {
+    return (
+      <a ref={ref} href={href} onClick={onClick}>
+        {children}
+      </a>
+    );
+  }),
+}));
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn(), prefetch: jest.fn() }),
 }));
 
 const mockSet: LegoSet = {

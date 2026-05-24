@@ -118,17 +118,23 @@ components:
 
 Eggo is a frame around a collection. Like a well-built shelf, the interface lines the
 sets up cleanly, holds them at a comfortable distance, and otherwise gets out of the
-way. Nothing on screen competes with a set's own photograph. The system is
-**dark-first**, built on near-black surfaces so each set image reads like an object lit
-on a dark wall, and the chrome, borders, controls, and type stay quiet enough to
-disappear. Light is a fully supported mode; the default theme preference follows the OS.
+way. Nothing on screen competes with a set's own photograph; the interface stays neutral
+enough that each set image reads like an object on display, with chrome, borders,
+controls, and type quiet enough to disappear.
 
-The system is **monochrome by doctrine**. The canonical experience is the Mono UI theme:
-a neutral gray ramp, Instrument Serif for every heading, Inter for everything else. There
-is no decorative accent color. The only saturated colors in the entire system are the
-four functional status signals (success, warning, error, info), and they appear only on
-status badges, never as decoration. A legacy "Baseplate" theme with an orange accent
-exists in the codebase but is not the brand; treat Mono as the one true system.
+The system supports two themes (**Mono** and **Baseplate**), each with both **light and
+dark color modes**. The user's color mode preference follows the OS by default.
+Components reference the semantic aliases in `theme.css`
+(`--surface-primary`, `--text-secondary`, `--interactive-primary`, etc.) so a single
+component adapts cleanly across every theme + mode combination.
+
+The canonical brand expression is the **Mono theme**: a neutral gray ramp, Instrument
+Serif for every heading, Inter for everything else, no decorative accent color. The
+**Baseplate theme** is a parallel variant that carries a small accent hue rather than the
+strict monochrome palette; it shares the same semantic-token structure and may be evolved
+alongside Mono. The only saturated colors in either theme are the four functional status
+signals (success, warning, error, info), and they appear only on status badges, never as
+decoration.
 
 This system explicitly rejects the **generic SaaS dashboard** (no hero-metric blocks, no
 gradient accents, no identical icon-card grids), the **childish toy-store** look (no
@@ -138,7 +144,7 @@ visually noisy listings).
 
 **Key Characteristics:**
 
-- Dark-first, monochrome neutrals; saturated color is functional only.
+- Mono theme (canonical) uses monochrome neutrals; saturated color is functional only (status signals).
 - Editorial pairing: Instrument Serif headings at normal weight, Inter body at 14px.
 - Flat at rest; depth comes from tonal layering, with shadow reserved for hover.
 - Tactile, confident controls: solid fills, capsule buttons, clear hover response.
@@ -310,8 +316,8 @@ response to hover and focus. They feel clickable without resorting to decoration
 
 ### Don't:
 
-- **Don't** reintroduce the legacy orange (`#f97316`) or any decorative accent hue. The
-  Monochrome Rule is the brand.
+- **Don't** introduce a decorative accent hue in the Mono theme. Orange is the
+  Baseplate theme's signature, not Mono's. The Monochrome Rule applies inside Mono.
 - **Don't** build a **generic SaaS dashboard**: no hero-metric blocks, no gradient text
   or gradient accents, no identical icon-card grids.
 - **Don't** make it a **childish toy-store**: no primary-color overload, no bubbly or

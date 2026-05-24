@@ -4,23 +4,13 @@ import { Suspense, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
+import { StatusControl } from '@/components/StatusControl';
 import { formatDateForDisplay } from '@/lib/date';
-import { removeImageBackground } from '@/lib/image';
-import { updateSet } from '@/lib/supabase';
 import { LAST_BROWSE_PATH_KEY, useNavigation } from '@/hooks/useNavigation';
-import type { LegoSet } from '@/types';
+import { SET_IMAGE_VT_NAME, SET_NAME_VT_NAME } from '@/lib/viewTransitions';
 import styles from './page.module.css';
-
-const STATUS_LABELS: Record<LegoSet['status'], string> = {
-  unopened: 'Unopened',
-  in_progress: 'In Progress',
-  rebuild_in_progress: 'Rebuilding',
-  assembled: 'Assembled',
-  disassembled: 'Disassembled',
-};
 
 function SetDetailLoading(): React.JSX.Element {
   return (
@@ -36,30 +26,8 @@ function SetDetailContent(): React.JSX.Element {
   const { sets, isInitializing } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const [isRetryingImage, setIsRetryingImage] = useState(false);
-
   const setId = params.id as string;
   const set = sets.find((s) => s.id === setId);
-
-  const handleRetryBackgroundRemoval = async () => {
-    if (!set?.imageUrl) return;
-    setIsRetryingImage(true);
-    try {
-      const result = await removeImageBackground(set.imageUrl, set.id);
-      if (result.processedImageUrl) {
-        await updateSet(set.id, { customImageUrl: result.processedImageUrl });
-      } else if (result.error) {
-        toast.error('Background removal failed', { description: result.error });
-      } else if (result.skipped) {
-        toast.error('Background removal not configured');
-      }
-    } catch (err) {
-      console.error('[SetDetail] Retry background removal error:', err);
-      toast.error('Background removal failed');
-    } finally {
-      setIsRetryingImage(false);
-    }
-  };
 
   // Prefetch the back navigation target for instant return
   useEffect(() => {
@@ -96,8 +64,31 @@ function SetDetailContent(): React.JSX.Element {
 
   const imageUrl = set.customImageUrl || set.imageUrl;
 
+  // Distilled metadata line: skip missing fields and collapse separators.
+  const metadataParts: React.ReactNode[] = [];
+  if (set.pieceCount) {
+    metadataParts.push(
+      <span key="pieces">{set.pieceCount.toLocaleString()} pieces</span>
+    );
+  }
+  if (set.year) metadataParts.push(<span key="year">{set.year}</span>);
+  if (set.theme) {
+    const themeLabel = set.subtheme ? `${set.theme} › ${set.subtheme}` : set.theme;
+    const themeHref = `/all?theme=${encodeURIComponent(set.theme)}`;
+    metadataParts.push(
+      <Link key="theme" href={themeHref} className={styles.themeLink}>
+        {themeLabel}
+      </Link>
+    );
+  }
+
   const editButton = (
-    <button type="button" onClick={openEdit} className={styles.editButton} aria-label="Edit set">
+    <button
+      type="button"
+      onClick={openEdit}
+      className="btn-default btn-icon btn-primary"
+      aria-label="Edit set"
+    >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path
           d="M11.5 2.5L13.5 4.5M10 14H14M2 10L10.5 1.5C11.3284 0.671573 12.6716 0.671573 13.5 1.5C14.3284 2.32843 14.3284 3.67157 13.5 4.5L5 13L1 14L2 10Z"
@@ -116,7 +107,10 @@ function SetDetailContent(): React.JSX.Element {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          <div className={styles.imageSection}>
+          <div
+            className={styles.imageSection}
+            style={{ viewTransitionName: SET_IMAGE_VT_NAME }}
+          >
             <div className={styles.imageContainer}>
               {imageUrl ? (
                 <>
@@ -138,53 +132,41 @@ function SetDetailContent(): React.JSX.Element {
           </div>
 
           <div className={styles.details}>
-            {set.imageUrl && !set.customImageUrl && (
-              <div className={styles.imageBanner}>
-                <span className={styles.imageBannerText}>
-                  Processed image unavailable
-                </span>
-                <button
-                  type="button"
-                  onClick={handleRetryBackgroundRemoval}
-                  className={styles.imageBannerButton}
-                  disabled={isRetryingImage}
-                >
-                  {isRetryingImage ? 'Processing\u2026' : 'Retry'}
-                </button>
+            <div className={styles.heading}>
+              <p
+                className={styles.setNumber}
+                aria-label={`Set number ${set.setNumber}`}
+              >
+                #{set.setNumber}
+              </p>
+              <h1
+                className={styles.name}
+                style={{ viewTransitionName: SET_NAME_VT_NAME }}
+              >
+                {set.name}
+              </h1>
+              {metadataParts.length > 0 && (
+                <p className={styles.metadata}>
+                  {metadataParts.map((node, idx) => (
+                    <span key={idx} className={styles.metadataItem}>
+                      {idx > 0 && (
+                        <span className={styles.metadataSep} aria-hidden="true">
+                          {'·'}
+                        </span>
+                      )}
+                      {node}
+                    </span>
+                  ))}
+                </p>
+              )}
+              <div className={styles.statusRow}>
+                <StatusControl setId={set.id} currentStatus={set.status} />
               </div>
-            )}
-
-            <div className={styles.titleSection}>
-              <h1 className={styles.name}>{set.name}</h1>
-              <span className={`status-badge status-${set.status}`}>
-                {STATUS_LABELS[set.status]}
-              </span>
             </div>
 
-            {/* Set Info - compact horizontal stats */}
-            <div className={styles.setStats}>
-              <span className={styles.stat}>#{set.setNumber}</span>
-              {set.pieceCount && (
-                <span className={styles.stat}>
-                  <strong>{set.pieceCount.toLocaleString()}</strong> pieces
-                </span>
-              )}
-              {set.year && (
-                <span className={styles.stat}>
-                  Released <strong>{set.year}</strong>
-                </span>
-              )}
-              {set.theme && (
-                <span className={styles.stat}>
-                  {set.theme}
-                  {set.subtheme && ` / ${set.subtheme}`}
-                </span>
-              )}
-            </div>
-
-            {/* Collection Story */}
+            {/* Collection Story — narrative engine unchanged per design direction. */}
             {(set.owners.length > 0 || set.dateReceived || set.hasBeenAssembled) && (
-              <div className={styles.storyCard}>
+              <div className={styles.story}>
                 <p className={styles.storyText}>
                   {set.owners.length > 0 && set.dateReceived ? (
                     <>
@@ -194,7 +176,7 @@ function SetDetailContent(): React.JSX.Element {
                   ) : set.owners.length > 0 ? (
                     <>
                       Belongs to {set.owners.join(' & ')}
-                      {set.occasion && <> — {set.occasion}</>}
+                      {set.occasion && <> {'—'} {set.occasion}</>}
                     </>
                   ) : set.dateReceived ? (
                     <>
@@ -210,10 +192,10 @@ function SetDetailContent(): React.JSX.Element {
             )}
 
             {set.notes && (
-              <div className={styles.notesSection}>
+              <section className={styles.notesSection}>
                 <h2 className={styles.notesTitle}>Notes</h2>
                 <p className={styles.notesContent}>{set.notes}</p>
-              </div>
+              </section>
             )}
           </div>
         </div>

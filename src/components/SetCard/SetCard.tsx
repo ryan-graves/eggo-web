@@ -1,9 +1,12 @@
 'use client';
 
+import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { LegoSet } from '@/types';
 import { useNavigationLoading } from '@/hooks/useNavigationLoading';
+import { navigateWithSetMorph } from '@/lib/viewTransitions';
 import styles from './SetCard.module.css';
 
 interface SetCardProps {
@@ -30,10 +33,21 @@ export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = 
   const { pendingHref } = useNavigationLoading();
   const isLoading = pendingHref === href;
   const cardClassName = `${styles.card} ${isLoading ? styles.cardLoading : ''}`;
+  const router = useRouter();
+  const linkRef = useRef<HTMLAnchorElement>(null);
+
+  // Same morph hook as SetPlate: only the clicked card's image + name get a
+  // view-transition-name (assigned on click) to morph into the detail hero.
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    if (!linkRef.current) return;
+    e.preventDefault();
+    navigateWithSetMorph(linkRef.current, () => router.push(href));
+  };
 
   return (
-    <Link href={href} className={cardClassName}>
-      <div className={styles.imageContainer}>
+    <Link ref={linkRef} href={href} onClick={handleClick} className={cardClassName}>
+      <div className={styles.imageContainer} data-vt-image>
         <div className={styles.imageInner}>
           {imageUrl ? (
             <Image
@@ -53,7 +67,9 @@ export function SetCard({ set, compact = false, detail, linkPrefix, hideOwner = 
       </div>
 
       <div className={styles.content}>
-        <h3 className={styles.name}>{set.name}</h3>
+        <h3 className={styles.name} data-vt-name>
+          {set.name}
+        </h3>
         <p className={styles.setNumber}>#{set.setNumber}</p>
 
         {!compact && (
