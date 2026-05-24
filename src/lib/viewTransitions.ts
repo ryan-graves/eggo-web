@@ -29,8 +29,12 @@ export const SET_NAME_VT_NAME = 'active-set-name';
 export function navigateWithSetMorph(root: HTMLElement, navigate: () => void): void {
   // The View Transitions API is feature-detected at runtime; older browsers
   // (and any user that has `prefers-reduced-motion: reduce`) fall through to
-  // a plain navigation with no morph.
-  const supportsViewTransitions = 'startViewTransition' in document;
+  // a plain navigation with no morph. Checking that the property is actually
+  // a function (not just present) guards against partial / experimental
+  // implementations — same guard pattern as add-set/page.tsx.
+  const supportsViewTransitions =
+    'startViewTransition' in document &&
+    typeof document.startViewTransition === 'function';
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (!supportsViewTransitions || prefersReducedMotion) {

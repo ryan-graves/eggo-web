@@ -25,7 +25,9 @@
      rendered on cards and elsewhere. */
 }
 
-.badge:disabled {
+/* aria-disabled (not native :disabled) so the badge stays focusable while a
+   save is in flight — see the comment in StatusControl.tsx. */
+.badge[aria-disabled='true'] {
   opacity: var(--opacity-muted);
   cursor: progress;
 }

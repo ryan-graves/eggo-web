@@ -130,9 +130,16 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
         type="button"
         className={`${styles.badge} status-badge status-${optimisticStatus}`}
         aria-expanded={isOpen}
+        aria-disabled={isSaving}
         aria-label={`Change status, currently ${STATUS_LABELS[optimisticStatus]}`}
-        onClick={() => setIsOpen((open) => !open)}
-        disabled={isSaving}
+        // Manual click guard rather than native `disabled` so the badge stays
+        // focusable while a save is in flight — otherwise `setIsOpen(false)`
+        // + `setIsSaving(true)` flip in the same render and the focus-restore
+        // effect would try to focus a disabled (non-focusable) element.
+        onClick={() => {
+          if (isSaving) return;
+          setIsOpen((open) => !open);
+        }}
       >
         {STATUS_LABELS[optimisticStatus]}
         <svg
