@@ -81,11 +81,15 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
     setIsSaving(true);
 
     try {
-      // Newly assembled / disassembled sets also flip hasBeenAssembled so
-      // other surfaces (badges, filters) reflect the build history — the
-      // edit page applies the same rule.
-      const hasBeenAssembled = next === 'assembled' || next === 'disassembled';
-      await updateSet(setId, { status: next, hasBeenAssembled });
+      // Only WRITE hasBeenAssembled when transitioning into a status that
+      // implies the set has been built — never clear it from this control.
+      // Otherwise moving an already-built set from `assembled` to
+      // `rebuild_in_progress` would erase the build history. The edit page
+      // does the same kind of preservation (`hasBeenAssembled || status === …`).
+      const becomingBuilt = next === 'assembled' || next === 'disassembled';
+      const update: Parameters<typeof updateSet>[1] = { status: next };
+      if (becomingBuilt) update.hasBeenAssembled = true;
+      await updateSet(setId, update);
     } catch (err) {
       setOptimisticStatus(previous);
       const message = err instanceof Error ? err.message : 'Please try again';
@@ -103,7 +107,7 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
     e.preventDefault();
 
     const rows = Array.from(
-      panelRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]') ?? []
+      panelRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]') ?? []
     );
     if (rows.length === 0) return;
 
@@ -125,7 +129,6 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
         ref={badgeRef}
         type="button"
         className={`${styles.badge} status-badge status-${optimisticStatus}`}
-        aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-label={`Change status, currently ${STATUS_LABELS[optimisticStatus]}`}
         onClick={() => setIsOpen((open) => !open)}
@@ -154,7 +157,7 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
         <div
           ref={panelRef}
           className={styles.panel}
-          role="menu"
+          role="radiogroup"
           aria-label="Set status"
           onKeyDown={onPanelKeyDown}
         >
@@ -164,7 +167,7 @@ export function StatusControl({ setId, currentStatus }: StatusControlProps): Rea
               <button
                 key={value}
                 type="button"
-                role="menuitemradio"
+                role="radio"
                 aria-checked={isActive}
                 tabIndex={isActive ? 0 : -1}
                 data-active={isActive || undefined}

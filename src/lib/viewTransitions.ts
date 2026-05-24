@@ -38,13 +38,40 @@ export function navigateWithSetMorph(root: HTMLElement, navigate: () => void): v
     return;
   }
 
+  // Defensive pre-sweep: clear any leftover sentinel names from a previous
+  // morph. Next.js's client cache can restore a grid's DOM (with the
+  // previously-clicked card's inline styles intact) when the user goes
+  // back. Without this sweep the next click assigns the same name to a
+  // different card, the browser sees duplicates, and refuses the transition.
+  document
+    .querySelectorAll<HTMLElement>('[style*="view-transition-name"]')
+    .forEach((el) => {
+      const current = el.style.viewTransitionName;
+      if (current === SET_IMAGE_VT_NAME || current === SET_NAME_VT_NAME) {
+        el.style.viewTransitionName = '';
+      }
+    });
+
   const image = root.querySelector<HTMLElement>('[data-vt-image]');
   const name = root.querySelector<HTMLElement>('[data-vt-name]');
 
   if (image) image.style.viewTransitionName = SET_IMAGE_VT_NAME;
   if (name) name.style.viewTransitionName = SET_NAME_VT_NAME;
 
-  document.startViewTransition(() => {
+  const transition = document.startViewTransition(() => {
     navigate();
+  });
+
+  // Post-transition cleanup mirrors the `vt.finished.finally(...)` pattern
+  // in add-set/page.tsx. Clears the sentinel names we just set so they
+  // don't persist on this source element if it survives the navigation
+  // (e.g. cached grid DOM on back-nav).
+  transition.finished.finally(() => {
+    if (image && image.style.viewTransitionName === SET_IMAGE_VT_NAME) {
+      image.style.viewTransitionName = '';
+    }
+    if (name && name.style.viewTransitionName === SET_NAME_VT_NAME) {
+      name.style.viewTransitionName = '';
+    }
   });
 }

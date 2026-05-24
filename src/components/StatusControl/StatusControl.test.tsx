@@ -29,18 +29,18 @@ describe('StatusControl', () => {
     const badge = screen.getByRole('button', { name: /change status, currently assembled/i });
     expect(badge).toHaveTextContent('Assembled');
     expect(badge).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
   });
 
-  it('opens a menu of all five statuses when the badge is clicked', () => {
+  it('opens a radiogroup of all five statuses when the badge is clicked', () => {
     render(<StatusControl setId="set-1" currentStatus="unopened" />);
 
     fireEvent.click(screen.getByRole('button', { name: /change status/i }));
 
-    expect(screen.getByRole('menu', { name: /set status/i })).toBeInTheDocument();
-    const rows = screen.getAllByRole('menuitemradio');
+    expect(screen.getByRole('radiogroup', { name: /set status/i })).toBeInTheDocument();
+    const rows = screen.getAllByRole('radio');
     expect(rows).toHaveLength(5);
-    expect(screen.getByRole('menuitemradio', { name: /unopened/i })).toHaveAttribute(
+    expect(screen.getByRole('radio', { name: 'Unopened' })).toHaveAttribute(
       'aria-checked',
       'true'
     );
@@ -57,7 +57,7 @@ describe('StatusControl', () => {
     fireEvent.click(screen.getByRole('button', { name: /change status/i }));
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Assembled' }));
+      fireEvent.click(screen.getByRole('radio', { name: 'Assembled' }));
     });
 
     expect(mockUpdateSet).toHaveBeenCalledWith('set-1', {
@@ -68,7 +68,7 @@ describe('StatusControl', () => {
       screen.getByRole('button', { name: /change status, currently assembled/i })
     ).toBeInTheDocument();
     // Menu closes on pick.
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
   });
 
   it('reverts the badge and fires a toast when updateSet fails', async () => {
@@ -78,7 +78,7 @@ describe('StatusControl', () => {
     fireEvent.click(screen.getByRole('button', { name: /change status/i }));
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Assembled' }));
+      fireEvent.click(screen.getByRole('radio', { name: 'Assembled' }));
     });
 
     expect(mockToastError).toHaveBeenCalledWith(
@@ -96,13 +96,30 @@ describe('StatusControl', () => {
     fireEvent.click(screen.getByRole('button', { name: /change status/i }));
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('menuitemradio', { name: 'Assembled' }));
+      fireEvent.click(screen.getByRole('radio', { name: 'Assembled' }));
     });
 
     expect(mockUpdateSet).not.toHaveBeenCalled();
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /change status, currently assembled/i })
     ).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('does not erase hasBeenAssembled history when picking a non-built status', async () => {
+    mockUpdateSet.mockResolvedValue();
+    render(<StatusControl setId="set-1" currentStatus="assembled" />);
+
+    fireEvent.click(screen.getByRole('button', { name: /change status/i }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('radio', { name: 'Rebuilding' }));
+    });
+
+    // hasBeenAssembled must be OMITTED from the update payload so the
+    // existing flag in Supabase is preserved (we only ever set it to true,
+    // never reset to false from here).
+    expect(mockUpdateSet).toHaveBeenCalledWith('set-1', { status: 'rebuild_in_progress' });
+    expect(mockUpdateSet.mock.calls[0][1]).not.toHaveProperty('hasBeenAssembled');
   });
 });

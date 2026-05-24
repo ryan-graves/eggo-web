@@ -149,7 +149,11 @@ function SetDetailContent(): React.JSX.Element {
                 <p className={styles.metadata}>
                   {metadataParts.map((node, idx) => (
                     <span key={idx} className={styles.metadataItem}>
-                      {idx > 0 && <span className={styles.metadataSep}>{'·'}</span>}
+                      {idx > 0 && (
+                        <span className={styles.metadataSep} aria-hidden="true">
+                          {'·'}
+                        </span>
+                      )}
                       {node}
                     </span>
                   ))}
