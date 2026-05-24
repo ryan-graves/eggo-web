@@ -298,6 +298,11 @@
 
   .imageSection {
     position: static;
+
+    /* Fill the column up to the mobile image cap. Without an explicit
+       width:100% here, the desktop's `width: 400px` cascades through and
+       overflows narrow viewports (e.g. iPhone SE at 375px). */
+    width: 100%;
     max-width: var(--max-width-image-mobile);
     margin: 0 auto;
   }
