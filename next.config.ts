@@ -31,6 +31,23 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: getAppVersion(),
   },
+  /**
+   * `/sign-in` used to be the standalone auth surface, but the landing
+   * page now doubles as both marketing and sign-in (CTA triggers Google
+   * OAuth directly via useAuth). This 308 preserves any bookmarks /
+   * stale external links that still point at /sign-in and forwards
+   * query strings so `?error=…` from OAuth callbacks still reaches the
+   * landing page's error display.
+   */
+  async redirects() {
+    return [
+      {
+        source: '/sign-in',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

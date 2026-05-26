@@ -11,13 +11,14 @@ import { NextRequest, NextResponse } from 'next/server';
  * from the URL automatically and persists the session.
  *
  * For OAuth errors returned by the provider, surface the error param to
- * the sign-in page so the user sees a meaningful message.
+ * the landing page (the new sign-in surface) so the user sees a
+ * meaningful message next to the CTA.
  */
 export function GET(request: NextRequest): NextResponse {
   const url = new URL(request.url);
   const error = url.searchParams.get('error_description') ?? url.searchParams.get('error');
   if (error) {
-    const target = new URL('/sign-in', request.url);
+    const target = new URL('/', request.url);
     target.searchParams.set('error', error);
     return NextResponse.redirect(target);
   }

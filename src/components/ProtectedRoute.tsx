@@ -14,7 +14,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps): React.JSX.Ele
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/sign-in');
+      // Send anonymous visitors to the landing page, which doubles as
+      // the sign-in surface — its CTA triggers Google OAuth directly.
+      router.push('/');
     }
   }, [user, loading, router]);
 

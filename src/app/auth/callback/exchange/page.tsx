@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase';
 
@@ -62,7 +63,7 @@ export default function AuthCallbackExchangePage() {
     return (
       <main style={{ padding: '2rem', textAlign: 'center' }}>
         <p>Sign-in failed: {error}</p>
-        <a href="/sign-in">Return to sign in</a>
+        <Link href="/">Return to Eggo</Link>
       </main>
     );
   }

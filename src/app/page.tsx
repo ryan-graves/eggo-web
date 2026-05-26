@@ -120,13 +120,31 @@ const FEATURES = [
  * users is an acceptable trade for keeping the page statically prerendered.
  */
 export default function HomePage(): React.JSX.Element {
-  const { user, loading, error, signInWithGoogle } = useAuth();
+  const { user, loading, error: contextError, signInWithGoogle } = useAuth();
   const router = useRouter();
+
+  // Two error sources both end up next to the CTA:
+  //   1. `contextError` — failures from the in-page signInWithGoogle call
+  //      (e.g. Supabase rejects the redirect request).
+  //   2. `?error=` query param — set by /auth/callback when the provider
+  //      returns an OAuth error and bounces back to /. Without surfacing
+  //      it here that message would silently disappear after the redirect.
+  // contextError wins when both are present (it's the more recent signal).
+  // Read on the client only (via useEffect) rather than next/navigation's
+  // useSearchParams, since that requires a Suspense boundary to allow
+  // the rest of this page to statically prerender.
+  const [urlError, setUrlError] = useState<string | null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot client-only read of the OAuth error param
+    setUrlError(params.get('error'));
+  }, []);
+  const ctaError = contextError ?? urlError;
 
   // OAuth handler kicked off from the landing CTA. signInWithGoogle does
   // the Supabase redirect; on return the useEffect below routes to /home.
-  // Errors are surfaced through the auth context's `error` state — the
-  // inline catch here only stops the unhandled-promise warning.
+  // The inline catch only suppresses the unhandled-promise warning; the
+  // actual error is set on `contextError` by the auth provider.
   const handleSignIn = async (): Promise<void> => {
     try {
       await signInWithGoogle();
@@ -180,9 +198,9 @@ export default function HomePage(): React.JSX.Element {
             <GoogleIcon />
             {ctaReady ? 'Get started with Google' : user ? 'Redirecting…' : 'Loading…'}
           </button>
-          {error && (
+          {ctaError && (
             <p className={styles.ctaError} role="alert">
-              {error}
+              {ctaError}
             </p>
           )}
         </div>

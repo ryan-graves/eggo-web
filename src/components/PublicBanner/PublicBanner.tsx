@@ -63,7 +63,7 @@ export function PublicBanner(): React.JSX.Element | null {
     <div className={styles.banner}>
       <div className={styles.content}>
         <span className={styles.text}>Start tracking your own Lego collection</span>
-        <Link href="/sign-in" className={styles.button}>
+        <Link href="/" className={styles.button}>
           Sign up free
         </Link>
         <button
