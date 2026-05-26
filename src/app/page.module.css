@@ -87,19 +87,28 @@
   }
 }
 
-/* Wordmark and tagline share one display scale — the brand mark is the
-   title of the page, not a kicker. Both clamp fluidly. The tagline has
-   no max-width so it wraps at the natural column edge (rather than at a
-   forced character measure) and reads as a full headline. */
+/* Wordmark and tagline share family + weight + line-height, but the
+   wordmark is the small brand-mark above the headline (kicker scale) and
+   the tagline is the primary display element. The tagline has no
+   max-width so it wraps at the natural column edge rather than at a
+   forced character measure. */
 .wordmark,
 .tagline {
   margin: 0;
   font-family: var(--font-instrument-serif), Georgia, serif;
-  font-size: clamp(var(--font-size-4xl), 5.5vw, var(--font-size-6xl));
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tighter);
   color: var(--text-primary);
+}
+
+.wordmark {
+  font-size: var(--font-size-3xl);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.tagline {
+  font-size: clamp(var(--font-size-5xl), 7vw, var(--font-size-7xl));
 }
 
 .prose {
