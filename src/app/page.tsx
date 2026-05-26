@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -124,11 +124,30 @@ export default function HomePage(): React.JSX.Element {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  // State starts as HERO_SETS in declared order so SSR + first hydration
+  // render match (no React hydration mismatch). Then a useEffect shuffles
+  // once on mount so each visit gets a fresh-feeling catalog.
+  const [heroSets, setHeroSets] = useState<LegoSet[]>(HERO_SETS);
+
   useEffect(() => {
     if (!loading && user) {
       router.replace('/home');
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    // Fisher–Yates shuffle, in-place on a fresh copy. Math.random isn't
+    // SSR-safe (server and client would diverge and warn on hydrate), so
+    // the shuffle runs on the client after first paint. Matches the
+    // localStorage-hydration pattern in useUserPreferences.
+    const next = [...HERO_SETS];
+    for (let i = next.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [next[i], next[j]] = [next[j], next[i]];
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot client-only seed
+    setHeroSets(next);
+  }, []);
 
   return (
     <div className={styles.page}>
@@ -153,7 +172,7 @@ export default function HomePage(): React.JSX.Element {
             pointer-events:none (in CSS) keeps it presentational. */}
         <div className={styles.heroCatalog} aria-hidden="true">
           <div className={styles.heroCatalogGrid}>
-            {HERO_SETS.map((set) => (
+            {heroSets.map((set) => (
               <MarketingSetTile key={set.id} set={set} />
             ))}
           </div>
