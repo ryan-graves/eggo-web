@@ -146,11 +146,13 @@ h1.tagline {
 
 /* Capsule CTA — matches the system's primary-button signature (tonal
    inversion + full pill radius). Spelled out here rather than reaching
-   for a shared Button so the landing page stays self-contained. */
+   for a shared Button so the landing page stays self-contained.
+   `gap` carries the space between the Google G and the label. */
 .cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-2);
   margin-top: var(--space-1);
   padding: var(--space-3) var(--space-6);
   min-height: var(--size-touch-target);
@@ -164,7 +166,7 @@ h1.tagline {
   transition: background-color var(--transition-fast);
 }
 
-.cta:hover {
+.cta:hover:not(:disabled) {
   background-color: var(--interactive-primary-hover);
 }
 
@@ -173,8 +175,22 @@ h1.tagline {
   outline-offset: var(--outline-offset);
 }
 
-.cta:active {
+.cta:active:not(:disabled) {
   opacity: var(--opacity-active);
+}
+
+.cta:disabled {
+  opacity: var(--opacity-muted);
+  cursor: progress;
+}
+
+/* OAuth error message, sits just below the CTA. Kept quiet — small
+   font, muted status color, no surrounding chip. The button itself
+   re-enables for retry on any auth context refresh. */
+.ctaError {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--status-error);
 }
 
 /* ----- Hero catalog mockup -------------------------------------------- */
@@ -438,13 +454,42 @@ h2.featureHeading {
 
 /* ----- Footer --------------------------------------------------------- */
 
+/* Two-row at mobile (wordmark, then credit). Two-column at ≥640px
+   (wordmark left, credit right, baseline-aligned) so the page closes
+   on a clean editorial line rather than a single afterthought. */
 .footer {
   margin-top: auto;
   padding-block: var(--space-6);
   border-top: 1px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.footerLine {
+@media (min-width: 640px) {
+  .footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-6);
+  }
+}
+
+/* Smaller Instrument-Serif wordmark, half the hero scale — recognizable
+   without competing with the hero. Mirrors the type treatment of the
+   .wordmark above. */
+.footerWordmark {
+  margin: 0;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text-primary);
+}
+
+/* Single-line colophon (project description + © + version). Tertiary
+   text color so it sits quietly under the wordmark. */
+.footerCredit {
   margin: 0;
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);

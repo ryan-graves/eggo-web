@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -95,8 +94,8 @@ const HERO_SETS: LegoSet[] = [
  */
 const FEATURES = [
   {
-    heading: 'Type a number, get a set.',
-    body: 'Brickset has every set’s photo, theme, and piece count. Enter the number and Eggo pulls the rest in.',
+    heading: 'Just the number.',
+    body: 'Type a set’s number and Eggo fills in the rest: name, theme, piece count, year, and a clean cutout of the box photo.',
   },
   {
     heading: 'Remember when and how you got it.',
@@ -121,8 +120,22 @@ const FEATURES = [
  * users is an acceptable trade for keeping the page statically prerendered.
  */
 export default function HomePage(): React.JSX.Element {
-  const { user, loading } = useAuth();
+  const { user, loading, error, signInWithGoogle } = useAuth();
   const router = useRouter();
+
+  // OAuth handler kicked off from the landing CTA. signInWithGoogle does
+  // the Supabase redirect; on return the useEffect below routes to /home.
+  // Errors are surfaced through the auth context's `error` state — the
+  // inline catch here only stops the unhandled-promise warning.
+  const handleSignIn = async (): Promise<void> => {
+    try {
+      await signInWithGoogle();
+    } catch {
+      // captured by auth context
+    }
+  };
+
+  const ctaReady = !loading && !user;
 
   // State starts as HERO_SETS in declared order so SSR + first hydration
   // render match (no React hydration mismatch). Then a useEffect shuffles
@@ -158,9 +171,20 @@ export default function HomePage(): React.JSX.Element {
           <p className={styles.prose}>
             Easily add and track your sets, with the story behind each one.
           </p>
-          <Link href="/sign-in" className={styles.cta}>
-            Sign in with Google
-          </Link>
+          <button
+            type="button"
+            onClick={handleSignIn}
+            className={styles.cta}
+            disabled={!ctaReady}
+          >
+            <GoogleIcon />
+            {ctaReady ? 'Get started with Google' : user ? 'Redirecting…' : 'Loading…'}
+          </button>
+          {error && (
+            <p className={styles.ctaError} role="alert">
+              {error}
+            </p>
+          )}
         </div>
 
         {/* Decorative catalog mockup. Uses MarketingSetTile (defined
@@ -189,9 +213,42 @@ export default function HomePage(): React.JSX.Element {
       </section>
 
       <footer className={styles.footer}>
-        <p className={styles.footerLine}>Built by Ryan{APP_VERSION ? ` · v${APP_VERSION}` : ''}</p>
+        <p className={styles.footerWordmark}>Eggo</p>
+        <p className={styles.footerCredit}>
+          A small project by Ryan Graves · © {new Date().getFullYear()}
+          {APP_VERSION ? ` · v${APP_VERSION}` : ''}
+        </p>
       </footer>
     </div>
+  );
+}
+
+/**
+ * Multi-color Google "G" mark for the OAuth CTA. Same SVG used on
+ * the sign-in page; kept inline here so the landing page stays
+ * self-contained. If a third use case appears, lift to a shared
+ * `components/GoogleIcon/` per the project's component pattern.
+ */
+function GoogleIcon(): React.JSX.Element {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path
+        d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"
+        fill="#4285F4"
+      />
+      <path
+        d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332A8.997 8.997 0 0 0 9.003 18z"
+        fill="#34A853"
+      />
+      <path
+        d="M3.964 10.712A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.96A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.96 4.042l3.004-2.33z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0A8.997 8.997 0 0 0 .96 4.958l3.004 2.332c.708-2.127 2.692-3.71 5.036-3.71z"
+        fill="#EA4335"
+      />
+    </svg>
   );
 }
 
