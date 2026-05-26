@@ -57,15 +57,19 @@
     flex-direction: row;
 
     /* align-items: stretch lets .heroCatalog fill the full row height,
-       which is hard-capped at 80vh so the features section peeks above
-       the bottom of the first fold. */
+       which is min-80vh so the features section peeks above the bottom
+       of the first fold on typical desktops. No max-height: short
+       viewports (notably iPhone-in-landscape at ~393px tall, where
+       80vh = 314px and the heroText column needs more than that) grow
+       the hero to fit the text rather than clipping it. On tall
+       viewports the text content fits inside 80vh and the hero stops
+       at exactly 80vh, so the "features peek above fold" guarantee
+       holds where it matters. */
     align-items: stretch;
     gap: var(--space-10);
     padding-top: var(--space-16);
     padding-bottom: var(--space-16);
     min-height: 80vh;
-    max-height: 80vh;
-    overflow: hidden;
   }
 }
 
@@ -256,14 +260,15 @@ h1.tagline {
   }
 }
 
-/* Mobile: cap visible catalog height at ~50vh + 56px so the catalog
+/* Mobile: cap visible catalog height at ~50vh + 96px so the catalog
    acts as a visual accent without dominating the page. The extra
-   ~56px lifts the top and bottom mask fades off the tile edges,
-   revealing the surrounding rows of tiles more clearly instead of
-   the fade landing flush against the visible row boundary. */
+   ~96px lifts the top and bottom mask fades well off the tile edges,
+   revealing about 60% of the rows that fade in/out at the boundary
+   so the "catalog continues beyond" effect reads more strongly than
+   it would with the fade landing closer to the visible row edge. */
 @media (max-width: 767px) {
   .heroCatalog {
-    max-height: calc(50vh + 56px);
+    max-height: calc(50vh + 96px);
   }
 }
 
@@ -291,12 +296,12 @@ h1.tagline {
 
 @media (max-width: 767px) {
   .heroCatalogGrid {
-    /* 12px wider than the prior 100px to give the "#10307 • 10001pc"
-       row enough room to render without text-overflow ellipsis on
-       5-digit piece counts. Two left-center and right-center columns
-       still both render fully inside the 390px-ish iPhone viewport;
-       the extra 72px of total grid width spills off the edges and
-       fades under the side mask gradients as before. */
+    /* 12px wider than the prior 100px to give the "#10307 • 10001 pcs"
+       row enough room to render without text-overflow ellipsis at the
+       longest 5-digit piece counts. Two left-center and right-center
+       columns still both render fully inside the 390px-ish iPhone
+       viewport; the extra 72px of total grid width spills off the
+       edges and fades under the side mask gradients as before. */
     grid-template-columns: repeat(6, 112px);
   }
 }
@@ -365,7 +370,7 @@ h1.tagline {
   min-height: 2lh;
 }
 
-/* "#10307 • 10001pc" — number + piece count on one line. Truncates
+/* "#10307 • 10001 pcs" — number + piece count on one line. Truncates
    with an ellipsis rather than wrapping so the row stays exactly one
    line tall (uniformity with the always-2-line name above). */
 .tileNumber {
