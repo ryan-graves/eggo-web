@@ -52,24 +52,29 @@
   align-items: stretch;
 }
 
-@media (min-width: 768px) {
+/* Desktop two-column hero gated on BOTH width AND height. The width
+   threshold (768px) is the usual phone/tablet boundary. The height
+   threshold (500px) catches landscape phones (~390–430px tall) where
+   the row layout breaks down: heroText is vertically centered in its
+   column, and the catalog mockup's grid is taller than the viewport,
+   so the row stretches to ~850px and the text scrolls off-screen.
+   Below 500px tall, the hero stays in the single-column mobile layout
+   regardless of width — text on top, catalog below, user can scroll. */
+@media (min-width: 768px) and (min-height: 500px) {
   .hero {
     flex-direction: row;
-
-    /* align-items: stretch lets .heroCatalog fill the full row height,
-       which is min-80vh so the features section peeks above the bottom
-       of the first fold on typical desktops. No max-height: short
-       viewports (notably iPhone-in-landscape at ~393px tall, where
-       80vh = 314px and the heroText column needs more than that) grow
-       the hero to fit the text rather than clipping it. On tall
-       viewports the text content fits inside 80vh and the hero stops
-       at exactly 80vh, so the "features peek above fold" guarantee
-       holds where it matters. */
     align-items: stretch;
     gap: var(--space-10);
     padding-top: var(--space-16);
     padding-bottom: var(--space-16);
+
+    /* min-height: 80vh + overflow: hidden keeps the features section
+       peeking above the fold on typical desktops. The combination of
+       the min-height threshold above and the explicit clip below
+       means we can rely on the cap without worrying about short
+       viewports losing text — those fall through to column layout. */
     min-height: 80vh;
+    overflow: hidden;
   }
 }
 
@@ -82,10 +87,11 @@
   min-width: 0;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 768px) and (min-height: 500px) {
   .heroText {
     /* Vertically centered inside the now-stretch row so the text reads
-       as the anchor of the hero, not a top-aligned label. */
+       as the anchor of the hero, not a top-aligned label. Scoped to
+       the same width+height window as the row layout — see .hero. */
     justify-content: center;
     gap: var(--space-6);
   }
@@ -251,8 +257,9 @@ h1.tagline {
 /* On desktop the catalog fills the hero's right column and the second
    axis of the row layout. flex:1 only at the desktop row layout — on
    mobile (column flex with no parent height) flex-basis:0 against a
-   0-sized parent + overflow:hidden would clip the catalog to 0 height. */
-@media (min-width: 768px) {
+   0-sized parent + overflow:hidden would clip the catalog to 0 height.
+   Gated on the same width+height window as the .hero row layout. */
+@media (min-width: 768px) and (min-height: 500px) {
   .heroCatalog {
     flex: 1 1 0;
     align-self: stretch;
@@ -260,13 +267,15 @@ h1.tagline {
   }
 }
 
-/* Mobile: cap visible catalog height at ~50vh + 96px so the catalog
-   acts as a visual accent without dominating the page. The extra
-   ~96px lifts the top and bottom mask fades well off the tile edges,
-   revealing about 60% of the rows that fade in/out at the boundary
-   so the "catalog continues beyond" effect reads more strongly than
-   it would with the fade landing closer to the visible row edge. */
-@media (max-width: 767px) {
+/* Mobile / short-viewport: cap visible catalog height at ~50vh + 96px
+   so the catalog acts as a visual accent without dominating the page.
+   The extra ~96px lifts the top and bottom mask fades off the tile
+   edges, revealing about 60% of the rows that fade in/out at the
+   boundary. Applies on narrow viewports (typical mobile) AND on any
+   short viewport (landscape phones), where the hero falls back to the
+   single-column layout — without this cap the grid would drive the
+   container to its full 620px natural height. */
+@media (max-width: 767px), (max-height: 499px) {
   .heroCatalog {
     max-height: calc(50vh + 96px);
   }
@@ -294,14 +303,16 @@ h1.tagline {
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 499px) {
   .heroCatalogGrid {
     /* 12px wider than the prior 100px to give the "#10307 • 10001 pcs"
        row enough room to render without text-overflow ellipsis at the
        longest 5-digit piece counts. Two left-center and right-center
        columns still both render fully inside the 390px-ish iPhone
        viewport; the extra 72px of total grid width spills off the
-       edges and fades under the side mask gradients as before. */
+       edges and fades under the side mask gradients as before.
+       Applied to landscape phones too via the height clause — they
+       use the same column-stacked layout as portrait mobile. */
     grid-template-columns: repeat(6, 112px);
   }
 }
