@@ -72,7 +72,10 @@
   opacity: var(--opacity-active);
 }
 
-.title {
+/* h1.title (not .title) so the selector ties theme.css's
+   [data-ui-theme='mono'] h1 rule on specificity. Same header-style
+   page-title pattern as Header.module.css. [[theme-h1-override-gotcha]]. */
+h1.title {
   margin: 0;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
@@ -196,7 +199,8 @@
   border-radius: var(--radius-lg);
 }
 
-.notesTitle {
+/* h2.notesTitle so the selector ties theme.css h2 default. [[theme-h1-override-gotcha]]. */
+h2.notesTitle {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);

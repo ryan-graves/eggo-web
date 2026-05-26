@@ -86,7 +86,11 @@
   flex: 1;
 }
 
-.name {
+/* h3.name (not .name) so the selector ties theme.css's
+   [data-ui-theme='mono'] h3 rule on specificity and wins on source
+   order. DESIGN.md card spec: name is Inter bold, 2-line clamp —
+   plain .name (0,0,1,0) silently loses to the theme default. */
+h3.name {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);

@@ -91,7 +91,8 @@
   letter-spacing: var(--letter-spacing-wider);
 }
 
-.apiName {
+/* h3.apiName ties theme.css h3 default on specificity. [[theme-h1-override-gotcha]]. */
+h3.apiName {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);

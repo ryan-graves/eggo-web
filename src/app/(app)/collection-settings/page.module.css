@@ -59,7 +59,8 @@
   border-top: 1px solid var(--border-primary);
 }
 
-.dangerTitle {
+/* h3.dangerTitle ties theme.css h3 default on specificity. [[theme-h1-override-gotcha]]. */
+h3.dangerTitle {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--status-error);

@@ -22,7 +22,10 @@
   margin-bottom: var(--space-8);
 }
 
-.sectionTitle {
+/* h2.sectionTitle / h3.settingGroupTitle below — tag-prefixed so the
+   selectors tie theme.css's h2/h3 defaults on specificity.
+   [[theme-h1-override-gotcha]]. */
+h2.sectionTitle {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
@@ -94,7 +97,7 @@
   border-bottom: none;
 }
 
-.settingGroupTitle {
+h3.settingGroupTitle {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);

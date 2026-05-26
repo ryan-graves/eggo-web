@@ -15,7 +15,10 @@
   width: 100%;
 }
 
-.title {
+/* h2.title (not .title) so the selector ties theme.css's
+   [data-ui-theme='mono'] h2 rule on specificity and wins on source
+   order. See [[theme-h1-override-gotcha]]. */
+h2.title {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);

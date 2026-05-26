@@ -27,7 +27,18 @@
   flex-shrink: 0;
 }
 
-.title {
+/* h1.title (not .title) so the selector ties theme.css's
+   [data-ui-theme='mono'] h1 default on specificity and wins on
+   source order. DESIGN.md header spec: page title is Inter semibold,
+   truncated — plain .title (0,0,1,0) silently loses to the theme.
+   See [[theme-h1-override-gotcha]].
+
+   `.logo` (the Eggo wordmark variant above) is deliberately left as
+   a plain class — the theme default (Instrument Serif at normal
+   weight) is closer to the DESIGN.md wordmark spec than this file's
+   stated Inter-bold intent, so the override happens to produce the
+   right visual. Restyling the .logo wordmark is a separate task. */
+h1.title {
   margin: 0;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
