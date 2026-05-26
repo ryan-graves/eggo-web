@@ -58,15 +58,15 @@ function demoSet(
  * so the catalog grid stays editorial without leaning on the real
  * SetCard's app-scale tokens.
  *
- * 25 sets in a 5×5 grid — the odd row count is intentional: it puts the
- * grid's midpoint on row 3, so `align-items: center` produces a clean
- * top-half-clipped / middle-full / bottom-half-clipped pattern on
- * mobile (which depends on container height + tile height to look
- * right; see .heroCatalog styles).
+ * 24 sets in a 6×4 grid — the even column count is intentional: it
+ * puts the grid's horizontal midpoint between columns 3 and 4, so
+ * `justify-content: center` produces a layout with no single tile
+ * centered on mobile (a left-center and right-center column instead),
+ * which reads as more catalog-like than a centered-single-column hero.
  *
  * Owners are placeholder names (not real users). Status mix skews toward
  * built (~70%) so the catalog reads as a lived-in collection. Themes
- * deliberately mixed (Icons, Ideas, Technic, Star Wars, Architecture).
+ * deliberately mixed (Icons, Ideas, Technic, Star Wars).
  *
  * Stop-gap until a proper public demo collection lives in Supabase
  * (tracked at https://github.com/ryan-graves/eggo-web/issues/56).
@@ -96,7 +96,6 @@ const HERO_SETS: LegoSet[] = [
   demoSet('10314', 'Dried Flower Centerpiece', 'Icons', 812, 2023, 'assembled', 'Nora'),
   demoSet('21344', 'The Orient Express Train', 'Ideas', 2540, 2023, 'in_progress', 'Jules'),
   demoSet('10302', 'Optimus Prime', 'Icons', 1508, 2022, 'assembled', 'Sam'),
-  demoSet('21054', 'The Empire State Building', 'Architecture', 1767, 2019, 'unopened', 'Mae'),
 ];
 
 /**

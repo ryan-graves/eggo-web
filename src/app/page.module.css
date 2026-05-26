@@ -250,12 +250,14 @@ h1.tagline {
   }
 }
 
-/* Mobile: cap visible catalog height to ~50vh so it acts as a visual
-   accent without dominating the page. The mask top/bottom fades hide
-   the clipped overflow gracefully. */
+/* Mobile: cap visible catalog height at ~50vh + 56px so the catalog
+   acts as a visual accent without dominating the page. The extra
+   ~56px lifts the top and bottom mask fades off the tile edges,
+   revealing the surrounding rows of tiles more clearly instead of
+   the fade landing flush against the visible row boundary. */
 @media (max-width: 767px) {
   .heroCatalog {
-    max-height: 50vh;
+    max-height: calc(50vh + 56px);
   }
 }
 
@@ -266,24 +268,24 @@ h1.tagline {
    proportions are correct without relying on `zoom` or `transform`. */
 .heroCatalogGrid {
   display: grid;
-  grid-template-columns: repeat(5, 115px);
+  grid-template-columns: repeat(6, 115px);
   grid-auto-rows: max-content;
   gap: var(--space-2);
   flex-shrink: 0;
 }
 
-/* Wider viewports — keep the clean 5×5 grid (25 sets, no partial rows),
-   grow each tile slightly so the catalog scales with the right-hand
-   column. */
+/* Wider viewports — keep the clean 6×4 grid (24 sets, no partial
+   rows), grow each tile slightly so the catalog scales with the
+   right-hand column. */
 @media (min-width: 1280px) {
   .heroCatalogGrid {
-    grid-template-columns: repeat(5, 130px);
+    grid-template-columns: repeat(6, 130px);
   }
 }
 
 @media (max-width: 767px) {
   .heroCatalogGrid {
-    grid-template-columns: repeat(5, 100px);
+    grid-template-columns: repeat(6, 100px);
   }
 }
 
