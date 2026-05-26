@@ -309,16 +309,16 @@ function MarketingSetTile({ set }: { set: LegoSet }): React.JSX.Element {
       </div>
       <div className={styles.tileContent}>
         <p className={styles.tileName}>{set.name}</p>
-        <p className={styles.tileNumber}>#{set.setNumber}</p>
+        <p className={styles.tileNumber}>
+          #{set.setNumber}
+          {set.pieceCount != null && ` • ${set.pieceCount}pc`}
+        </p>
+        {set.theme && <p className={styles.tileTheme}>{set.theme}</p>}
         <div className={styles.tileMeta}>
           <span className={`${styles.tileBadge} status-${set.status}`}>
             {STATUS_LABELS[set.status]}
           </span>
           {set.owners[0] && <span className={styles.tileOwner}>{set.owners[0]}</span>}
-        </div>
-        <div className={styles.tileDetails}>
-          {set.pieceCount != null && <span>{set.pieceCount} pcs</span>}
-          {set.theme && <span>{set.theme}</span>}
         </div>
       </div>
     </div>
