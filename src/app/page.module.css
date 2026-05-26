@@ -272,7 +272,7 @@ h1.tagline {
   flex-shrink: 0;
 }
 
-/* Wider viewports — keep the clean 5×4 grid (20 sets, no partial rows),
+/* Wider viewports — keep the clean 5×5 grid (25 sets, no partial rows),
    grow each tile slightly so the catalog scales with the right-hand
    column. */
 @media (min-width: 1280px) {

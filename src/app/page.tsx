@@ -53,13 +53,20 @@ function demoSet(
 }
 
 /**
- * Marketing-only demo sets shown in the hero catalog mockup. Pulled
- * through the real `SetCard` component so the grid stays in lockstep with
- * how the actual catalog looks (theming, layout, hover).
+ * Marketing-only demo sets shown in the hero catalog mockup. Rendered
+ * through `MarketingSetTile` (defined below) at native thumbnail size
+ * so the catalog grid stays editorial without leaning on the real
+ * SetCard's app-scale tokens.
+ *
+ * 25 sets in a 5×5 grid — the odd row count is intentional: it puts the
+ * grid's midpoint on row 3, so `align-items: center` produces a clean
+ * top-half-clipped / middle-full / bottom-half-clipped pattern on
+ * mobile (which depends on container height + tile height to look
+ * right; see .heroCatalog styles).
  *
  * Owners are placeholder names (not real users). Status mix skews toward
- * built (~70%) so the catalog reads as a lived-in collection. Themes are
- * deliberately mixed (Icons, Ideas, Technic, Star Wars, Botanical).
+ * built (~70%) so the catalog reads as a lived-in collection. Themes
+ * deliberately mixed (Icons, Ideas, Technic, Star Wars, Architecture).
  *
  * Stop-gap until a proper public demo collection lives in Supabase
  * (tracked at https://github.com/ryan-graves/eggo-web/issues/56).
@@ -85,6 +92,11 @@ const HERO_SETS: LegoSet[] = [
   demoSet('40531', 'Lars Family Homestead Kitchen', 'Star Wars', 195, 2022, 'assembled', 'Nora'),
   demoSet('30495', 'AT-ST', 'Star Wars', 79, 2021, 'unopened', 'Jules'),
   demoSet('75312', "Boba Fett's Starship", 'Star Wars', 593, 2021, 'unopened', 'Sam'),
+  demoSet('10283', 'NASA Space Shuttle Discovery', 'Icons', 2354, 2021, 'assembled', 'Theo'),
+  demoSet('10314', 'Dried Flower Centerpiece', 'Icons', 812, 2023, 'assembled', 'Nora'),
+  demoSet('21344', 'The Orient Express Train', 'Ideas', 2540, 2023, 'in_progress', 'Jules'),
+  demoSet('10302', 'Optimus Prime', 'Icons', 1508, 2022, 'assembled', 'Sam'),
+  demoSet('21054', 'The Empire State Building', 'Architecture', 1767, 2019, 'unopened', 'Mae'),
 ];
 
 /**
