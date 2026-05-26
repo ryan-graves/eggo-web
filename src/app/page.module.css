@@ -217,23 +217,24 @@
    proportions are correct without relying on `zoom` or `transform`. */
 .heroCatalogGrid {
   display: grid;
-  grid-template-columns: repeat(5, 130px);
+  grid-template-columns: repeat(5, 115px);
   grid-auto-rows: max-content;
   gap: var(--space-2);
   flex-shrink: 0;
 }
 
-/* Wider viewports — keep the same 5×4 grid (20 sets, no partial rows),
-   grow each tile so the catalog scales with the right-hand column. */
+/* Wider viewports — keep the clean 5×4 grid (20 sets, no partial rows),
+   grow each tile slightly so the catalog scales with the right-hand
+   column. */
 @media (min-width: 1280px) {
   .heroCatalogGrid {
-    grid-template-columns: repeat(5, 150px);
+    grid-template-columns: repeat(5, 130px);
   }
 }
 
 @media (max-width: 767px) {
   .heroCatalogGrid {
-    grid-template-columns: repeat(5, 110px);
+    grid-template-columns: repeat(5, 100px);
   }
 }
 
@@ -256,7 +257,11 @@
 .tileImage {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+
+  /* Shorter than SetCard's 1/1 — keeps tiles compact so more rows fit
+     in the hero catalog space. The photo still has room to breathe via
+     .tileImageInner's inset. */
+  aspect-ratio: 4 / 3;
   flex-shrink: 0;
 }
 
