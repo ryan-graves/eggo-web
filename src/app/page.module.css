@@ -107,18 +107,25 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
-/* Tagline carries the hero. Mobile uses the original clamp (48–80px) so
-   the headline reads as 2–3 lines at phone widths. Desktop steps up to a
-   much larger floor + ceiling — at 1280–1920px the column has room for a
-   90–112px display size, which gives the wordmark→tagline jump the
-   editorial weight the catalog grid needs to balance against. */
-.tagline {
+/* Tagline carries the hero. Mobile uses a clamp (48–80px) so the
+   headline reads as 2–3 lines at phone widths. Desktop steps up to a
+   much larger floor + ceiling — at 1280–1920px the column has room for
+   a 90–112px display size, which gives the wordmark→tagline jump the
+   editorial weight the catalog grid balances against.
+
+   Selector is `h1.tagline` (not `.tagline`) so it ties theme.css's
+   `[data-ui-theme='mono'] h1` rule on specificity. Page-module CSS
+   loads after globals, so the tie resolves in our favor. Plain
+   `.tagline` (0,0,1,0) loses to the theme rule (0,0,1,1) and the
+   font-size + letter-spacing here would silently not apply. */
+h1.tagline {
   align-self: stretch;
   font-size: clamp(var(--font-size-5xl), 7vw, var(--font-size-7xl));
+  letter-spacing: var(--letter-spacing-tighter);
 }
 
 @media (min-width: 768px) {
-  .tagline {
+  h1.tagline {
     font-size: clamp(var(--font-size-6xl), 8vw, var(--font-size-9xl));
   }
 }
