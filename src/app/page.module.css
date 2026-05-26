@@ -121,12 +121,18 @@
 h1.tagline {
   align-self: stretch;
   font-size: clamp(var(--font-size-5xl), 7vw, var(--font-size-7xl));
+
+  /* Tighter than the shared --line-height-tight (1.2) for an editorial
+     display feel. 1.05 keeps "g"/"y" descenders clear of next-line
+     ascenders ("l", "t") at 64–96px, while reading as printed-catalog
+     tight rather than UI-tight. */
+  line-height: var(--line-height-display);
   letter-spacing: var(--letter-spacing-tighter);
 }
 
 @media (min-width: 768px) {
   h1.tagline {
-    font-size: clamp(var(--font-size-6xl), 8vw, var(--font-size-9xl));
+    font-size: clamp(var(--font-size-6xl), 8vw, var(--font-size-8xl));
   }
 }
 

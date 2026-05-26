@@ -87,12 +87,12 @@
   --font-size-6xl: 4rem;      /* 64px — marketing/display */
   --font-size-7xl: 5rem;      /* 80px — marketing/display */
   --font-size-8xl: 6rem;      /* 96px — marketing/display */
-  --font-size-9xl: 7rem;      /* 112px — marketing/display */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   --line-height-none: 1;
+  --line-height-display: 1.05; /* editorial display headlines at 64px+ */
   --line-height-tight: 1.2;
   --line-height-snug: 1.35;
   --line-height-normal: 1.5;
