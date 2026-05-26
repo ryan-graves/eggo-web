@@ -14,11 +14,6 @@ export type SetStatus =
 export type ThemePreference = 'system' | 'light' | 'dark';
 
 /**
- * UI theme/style preference
- */
-export type UITheme = 'baseplate' | 'mono';
-
-/**
  * Smart filter section types for the Home view
  */
 export type SmartSectionType =
@@ -52,7 +47,6 @@ export type HomeSectionConfig =
 
 export interface UserPreferences {
   theme: ThemePreference;
-  uiTheme: UITheme;
   homeSections?: HomeSectionConfig[];
   updatedAt: string;
 }
@@ -137,7 +131,6 @@ export interface User {
   displayName: string;
   photoUrl?: string;
   theme: ThemePreference;
-  uiTheme: UITheme;
   collectionIds: string[];
   createdAt: string;
   updatedAt: string;

@@ -86,16 +86,12 @@
   flex: 1;
 }
 
-/* h3.name (not .name) so the selector ties theme.css's
-   [data-ui-theme='mono'] h3 rule on specificity and wins on source
-   order. DESIGN.md card spec: name is Inter bold, 2-line clamp —
-   plain .name (0,0,1,0) silently loses to the theme default. */
-h3.name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
+/* Set name. Heading typography (font-family, weight, size,
+   letter-spacing) comes from theme.css's h3 rule (the Title scale
+   per DESIGN.md: Instrument Serif 18px, normal weight). Only the
+   2-line clamp + color belong on the class. */
+.name {
   color: var(--text-primary);
-  line-height: var(--line-height-tight);
-  letter-spacing: var(--letter-spacing-tight);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

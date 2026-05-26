@@ -91,13 +91,10 @@
   letter-spacing: var(--letter-spacing-wider);
 }
 
-/* h3.apiName ties theme.css h3 default on specificity. [[theme-h1-override-gotcha]]. */
-h3.apiName {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
+/* API source name. Heading typography comes from theme.css's h3
+   rule (the Title scale: Instrument Serif 18px). */
+.apiName {
   color: var(--text-primary);
-  line-height: var(--line-height-tight);
-  letter-spacing: var(--letter-spacing-tight);
   margin: 0;
 }
 

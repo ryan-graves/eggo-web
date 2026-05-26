@@ -123,12 +123,10 @@
    a 90–112px display size, which gives the wordmark→tagline jump the
    editorial weight the catalog grid balances against.
 
-   Selector is `h1.tagline` (not `.tagline`) so it ties theme.css's
-   `[data-ui-theme='mono'] h1` rule on specificity. Page-module CSS
-   loads after globals, so the tie resolves in our favor. Plain
-   `.tagline` (0,0,1,0) loses to the theme rule (0,0,1,1) and the
-   font-size + letter-spacing here would silently not apply. */
-h1.tagline {
+   Font-family + normal weight come from theme.css's `h1` rule (since
+   plain `.tagline` doesn't redeclare them); the clamp font-size and
+   tighter letter-spacing are the marketing-display overrides. */
+.tagline {
   align-self: stretch;
   font-size: clamp(var(--font-size-5xl), 7vw, var(--font-size-7xl));
 
@@ -147,7 +145,7 @@ h1.tagline {
 }
 
 @media (min-width: 768px) {
-  h1.tagline {
+  .tagline {
     font-size: clamp(var(--font-size-6xl), 8vw, var(--font-size-8xl));
   }
 }
@@ -475,24 +473,19 @@ h1.tagline {
   gap: var(--space-3);
 }
 
-/* h2.featureHeading (not .featureHeading) so the selector ties
-   theme.css's `[data-ui-theme='mono'] h2` rule on specificity and
-   wins on source order. See [[theme-h1-override-gotcha]] memory for
-   the broader pattern — plain class selectors on h1/h2/h3 lose to
-   the theme defaults and the font-size/line-height here would
-   silently not apply. */
-h2.featureHeading {
+/* Feature heading. Font-family / weight / letter-spacing come from
+   theme.css's `h2` rule. The bigger-on-mobile size pattern is the
+   override that lives here (a section heading on stacked mobile
+   wants more weight than the desktop 3-col layout needs). */
+.featureHeading {
   margin: 0;
-  font-family: var(--font-instrument-serif), Georgia, serif;
   font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-normal);
   line-height: var(--line-height-tight);
-  letter-spacing: var(--letter-spacing-tight);
   color: var(--text-primary);
 }
 
 @media (min-width: 768px) {
-  h2.featureHeading {
+  .featureHeading {
     font-size: var(--font-size-2xl);
   }
 }

@@ -22,12 +22,11 @@
   margin-bottom: var(--space-8);
 }
 
-/* h2.sectionTitle / h3.settingGroupTitle below — tag-prefixed so the
-   selectors tie theme.css's h2/h3 defaults on specificity.
-   [[theme-h1-override-gotcha]]. */
-h2.sectionTitle {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+/* Section title (Account, Color Mode, Sharing, About). Plain class —
+   font-family / weight / size come from theme.css's h2 rule
+   (Instrument Serif 20px). Only properties that diverge from the
+   theme heading default need to live here. */
+.sectionTitle {
   color: var(--text-primary);
   margin: 0 0 var(--space-4) 0;
 }
@@ -83,25 +82,6 @@ h2.sectionTitle {
 
 .signOutButton:hover {
   opacity: var(--opacity-subtle);
-}
-
-.settingGroup {
-  padding-bottom: var(--space-4);
-  margin-bottom: var(--space-4);
-  border-bottom: 1px solid var(--border-secondary);
-}
-
-.settingGroup:last-child {
-  padding-bottom: 0;
-  margin-bottom: 0;
-  border-bottom: none;
-}
-
-h3.settingGroupTitle {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-3) 0;
 }
 
 .settingDescription {

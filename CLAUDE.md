@@ -202,7 +202,6 @@ Individual Lego sets with:
 Application users with:
 
 - Color mode preference: `system`, `light`, `dark`
-- UI theme preference: `mono` (minimal serif), `baseplate` (classic accent colors)
 - Collection memberships
 
 ## External APIs

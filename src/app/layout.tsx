@@ -43,15 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>): React.JSX.Element {
   return (
-    <html
-      lang="en"
-      // Mono is the canonical brand expression (DESIGN.md). Setting it on
-      // the SSR'd <html> means first-time visitors land on Mono instead of
-      // briefly flashing the Baseplate-flavored base styles before
-      // useUserPreferences hydrates and applies the stored UI theme.
-      data-ui-theme="mono"
-      className={`${inter.variable} ${instrumentSerif.variable}`}
-    >
+    <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>
