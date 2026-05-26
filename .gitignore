@@ -60,3 +60,6 @@ debug-storybook.log
 
 # claude code: project-scoped MCP servers (contains personal access tokens)
 /.mcp.json
+
+# Local screenshot/critique artifacts
+.impeccable/

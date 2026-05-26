@@ -83,6 +83,9 @@
   --font-size-2xl: 1.375rem;  /* 22px */
   --font-size-3xl: 1.75rem;   /* 28px */
   --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-5xl: 3rem;      /* 48px — marketing/display */
+  --font-size-6xl: 4rem;      /* 64px — marketing/display */
+  --font-size-7xl: 5rem;      /* 80px — marketing/display */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;

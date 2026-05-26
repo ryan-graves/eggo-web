@@ -1,0 +1,406 @@
+/*
+ * Landing page (/). Public marketing surface that explains Eggo at a glance.
+ *
+ * Composition: two-column hero (text-left, decorative catalog mockup right)
+ * at desktop, stacked on mobile. A 3-column text-only features block sits
+ * underneath, then a quiet footer. The catalog mockup uses the real
+ * SetCard component so it inherits theming, hover, and any future layout
+ * changes without further marketing edits.
+ */
+
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background-color: var(--surface-background);
+  color: var(--text-primary);
+}
+
+/* Sections all sit inside the same outer container width so left/right
+   margins line up. Padding-inline gives the content air on small screens. */
+.hero,
+.features,
+.footer {
+  width: 100%;
+  max-width: var(--max-width-content);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .hero,
+  .features,
+  .footer {
+    padding-inline: var(--space-8);
+  }
+}
+
+/* ----- Hero ----------------------------------------------------------- */
+
+/* Single-column stack on mobile (text → catalog). Two-column on desktop
+   (text-left, catalog-right). The catalog deliberately overflows its
+   container; the mask on .heroCatalog fades both edges. */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    flex-direction: row;
+
+    /* align-items: stretch lets .heroCatalog fill the full row height,
+       which is hard-capped at 80vh so the features section peeks above
+       the bottom of the first fold. */
+    align-items: stretch;
+    gap: var(--space-10);
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-16);
+    min-height: 80vh;
+    max-height: 80vh;
+    overflow: hidden;
+  }
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .heroText {
+    /* Vertically centered inside the now-stretch row so the text reads
+       as the anchor of the hero, not a top-aligned label. */
+    justify-content: center;
+    gap: var(--space-6);
+  }
+}
+
+/* Wordmark and tagline share one display scale — the brand mark is the
+   title of the page, not a kicker. Both clamp fluidly. The tagline has
+   no max-width so it wraps at the natural column edge (rather than at a
+   forced character measure) and reads as a full headline. */
+.wordmark,
+.tagline {
+  margin: 0;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(var(--font-size-4xl), 5.5vw, var(--font-size-6xl));
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tighter);
+  color: var(--text-primary);
+}
+
+.prose {
+  margin: 0;
+  max-width: 36ch;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-secondary);
+}
+
+/* Capsule CTA — matches the system's primary-button signature (tonal
+   inversion + full pill radius). Spelled out here rather than reaching
+   for a shared Button so the landing page stays self-contained. */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-1);
+  padding: var(--space-3) var(--space-6);
+  min-height: var(--size-touch-target);
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+.cta:hover {
+  background-color: var(--interactive-primary-hover);
+}
+
+.cta:focus-visible {
+  outline: var(--outline-width) solid var(--border-focus);
+  outline-offset: var(--outline-offset);
+}
+
+.cta:active {
+  opacity: var(--opacity-active);
+}
+
+/* ----- Hero catalog mockup -------------------------------------------- */
+
+/* The catalog mockup container. Centers a wider-than-itself grid inside,
+   clips overflow, and fades both horizontal edges with a mask. Result:
+   tiles bleed off both sides of the visible area, suggesting "more
+   catalog beyond." pointer-events:none disables the SetCards' navigation
+   since this is decorative. */
+.heroCatalog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+
+  /* Two intersecting linear gradients — horizontal + vertical — fade the
+     catalog on all four sides. `currentcolor` for the opaque stops is one
+     of the few tokens stylelint allows in mask-image (rgb/hsl/named
+     colors are all banned project-wide); only the alpha matters for the
+     mask anyway. Autoprefixer adds the -webkit- variant at build. */
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      currentcolor 10%,
+      currentcolor 90%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      currentcolor 12%,
+      currentcolor 88%,
+      transparent 100%
+    );
+  mask-composite: intersect;
+}
+
+/* On desktop the catalog fills the hero's right column and the second
+   axis of the row layout. flex:1 only at the desktop row layout — on
+   mobile (column flex with no parent height) flex-basis:0 against a
+   0-sized parent + overflow:hidden would clip the catalog to 0 height. */
+@media (min-width: 768px) {
+  .heroCatalog {
+    flex: 1 1 0;
+    align-self: stretch;
+    min-width: 0;
+  }
+}
+
+/* Mobile: cap visible catalog height to ~50vh so it acts as a visual
+   accent without dominating the page. The mask top/bottom fades hide
+   the clipped overflow gracefully. */
+@media (max-width: 767px) {
+  .heroCatalog {
+    max-height: 50vh;
+  }
+}
+
+/* Wider-and-taller-than-container grid, centered by .heroCatalog's flex
+   parent (which has overflow:hidden) so excess overflows on all four
+   sides. The mask fades the edges; the overflow clips them. Tiles use
+   natural marketing-only sizes (.tile + descendants below) so all
+   proportions are correct without relying on `zoom` or `transform`. */
+.heroCatalogGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 130px);
+  grid-auto-rows: max-content;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* Wider viewports — keep the same 5×4 grid (20 sets, no partial rows),
+   grow each tile so the catalog scales with the right-hand column. */
+@media (min-width: 1280px) {
+  .heroCatalogGrid {
+    grid-template-columns: repeat(5, 150px);
+  }
+}
+
+@media (max-width: 767px) {
+  .heroCatalogGrid {
+    grid-template-columns: repeat(5, 110px);
+  }
+}
+
+/* ----- Marketing set tile --------------------------------------------- */
+
+/* Sized natively as a thumbnail — mirrors SetCard's IA at smaller
+   proportions. */
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+}
+
+.tileImage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+}
+
+/* Inner wrapper that absolute-positions inside .tileImage with `inset` so
+   the `<Image fill>` (which itself uses position:absolute; inset:0)
+   floats with padding around it. Matches SetCard.module.css's
+   .imageInner inset (--space-3 / 12px) so the photo sits inside the
+   tile with the same proportional breathing room as the real card. */
+.tileImageInner {
+  position: absolute;
+  inset: var(--space-3);
+}
+
+.tileContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+  padding: var(--space-1) var(--space-2) var(--space-2);
+  flex: 1;
+}
+
+.tileName {
+  margin: 0;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text-primary);
+
+  /* Two-line clamp keeps the tile from getting tall when a set name
+     overflows. Mirrors SetCard.name's behavior at smaller proportions. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tileNumber {
+  margin: 0;
+  font-size: var(--font-size-2xs);
+  color: var(--text-tertiary);
+}
+
+.tileMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-0-5);
+  margin-top: var(--space-1);
+}
+
+/* Local badge sizing paired with the global `.status-{state}` class
+   for color — gives us full visual control of the badge proportions
+   while keeping color in lockstep with the real app. The 7px font is
+   one-off marketing chrome (not part of the app's type scale), so it's
+   intentionally below the smallest type token (--font-size-2xs = 10px). */
+.tileBadge {
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the type scale */
+  font-size: 7px;
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  line-height: var(--line-height-snug);
+}
+
+.tileOwner {
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the type scale */
+  font-size: 7px;
+  padding: 1px var(--space-1);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-snug);
+}
+
+.tileDetails {
+  display: flex;
+  gap: var(--space-1);
+  font-size: var(--font-size-2xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-0-5);
+}
+
+.heroCatalogTile {
+  /* Each tile is itself a SetCard; the wrapper exists so the grid lays
+     out cleanly without leaning on SetCard's own width math. */
+  display: flex;
+}
+
+/* ----- Features ------------------------------------------------------- */
+
+.features {
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-16);
+  border-top: 1px solid var(--border-primary);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-10);
+}
+
+@media (min-width: 640px) {
+  .features {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-8);
+  }
+}
+
+@media (min-width: 768px) {
+  .features {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-20);
+  }
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.featureHeading {
+  margin: 0;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+  .featureHeading {
+    font-size: var(--font-size-2xl);
+  }
+}
+
+.featureBody {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-secondary);
+}
+
+/* ----- Footer --------------------------------------------------------- */
+
+.footer {
+  margin-top: auto;
+  padding-block: var(--space-6);
+  border-top: 1px solid var(--border-primary);
+}
+
+.footerLine {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
