@@ -128,6 +128,12 @@ h1.tagline {
      tight rather than UI-tight. */
   line-height: var(--line-height-display);
   letter-spacing: var(--letter-spacing-tighter);
+
+  /* Distribute words evenly across wrapping lines so the tagline never
+     strands a single word on its own line as a viewport-width
+     adjustment pushes one word over the previous line's edge.
+     Browsers without support fall back to normal wrapping. */
+  text-wrap: balance;
 }
 
 @media (min-width: 768px) {
@@ -285,7 +291,13 @@ h1.tagline {
 
 @media (max-width: 767px) {
   .heroCatalogGrid {
-    grid-template-columns: repeat(6, 100px);
+    /* 12px wider than the prior 100px to give the "#10307 • 10001pc"
+       row enough room to render without text-overflow ellipsis on
+       5-digit piece counts. Two left-center and right-center columns
+       still both render fully inside the 390px-ish iPhone viewport;
+       the extra 72px of total grid width spills off the edges and
+       fades under the side mask gradients as before. */
+    grid-template-columns: repeat(6, 112px);
   }
 }
 
@@ -392,6 +404,12 @@ h1.tagline {
   /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the type scale */
   font-size: 7px;
   padding: 1px var(--space-1);
+
+  /* Transparent 1px border matches .tileOwner's visible border so both
+     chips end up the same total height. Without this the badge is 2px
+     shorter and its text floats above the owner chip's text when the
+     flex parent stretches them to equal height. */
+  border: 1px solid transparent;
   /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the radius scale */
   border-radius: 3px;
   font-weight: var(--font-weight-medium);
