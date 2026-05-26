@@ -24,8 +24,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // No maximumScale / userScalable:false — both disable pinch-to-zoom,
+  // which fails WCAG SC 1.4.4 (Resize Text). Double-tap zoom (the
+  // misfire users complain about) is suppressed at the CSS layer
+  // instead via `touch-action: manipulation` in globals.css, which
+  // leaves pinch intact for accessibility.
   viewportFit: 'cover',
   interactiveWidget: 'resizes-content',
   themeColor: [

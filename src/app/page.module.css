@@ -205,7 +205,15 @@ h1.tagline {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+
+  /* Fully presentational. pointer-events:none disables clicks;
+     user-select:none stops text from being highlighted (the set names
+     and numbers under each tile would otherwise be selectable); the
+     -webkit-touch-callout disables the iOS long-press share / save
+     menu on the images. */
   pointer-events: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 
   /* Two intersecting linear gradients — horizontal + vertical — fade the
      catalog on all four sides. `currentcolor` for the opaque stops is one
@@ -355,14 +363,17 @@ h1.tagline {
 
 /* Local badge sizing paired with the global `.status-{state}` class
    for color — gives us full visual control of the badge proportions
-   while keeping color in lockstep with the real app. The 7px font is
-   one-off marketing chrome (not part of the app's type scale), so it's
-   intentionally below the smallest type token (--font-size-2xs = 10px). */
+   while keeping color in lockstep with the real app. The 7px font and
+   3px radius are one-off marketing chrome (not part of the app's type
+   or radius scales): the smallest --radius-sm (6px) reads almost
+   half-pill at this chip height, so the radius scales down with the
+   chip proportionally. */
 .tileBadge {
   /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the type scale */
   font-size: 7px;
   padding: 1px var(--space-1);
-  border-radius: var(--radius-sm);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the radius scale */
+  border-radius: 3px;
   font-weight: var(--font-weight-medium);
   white-space: nowrap;
   line-height: var(--line-height-snug);
@@ -373,7 +384,8 @@ h1.tagline {
   font-size: 7px;
   padding: 1px var(--space-1);
   border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-sm);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the radius scale */
+  border-radius: 3px;
   color: var(--text-secondary);
   line-height: var(--line-height-snug);
 }

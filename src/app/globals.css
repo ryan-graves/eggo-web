@@ -23,6 +23,13 @@ html {
 body {
   min-height: 100vh;
   min-height: 100dvh;
+
+  /* Suppress iOS double-tap-zoom and the 300ms tap delay without
+     disabling pinch-to-zoom (which is needed for WCAG 1.4.4). The
+     button rule below has the same property scoped to controls; this
+     extends it to text, images, and tiles where double-tap-zoom
+     misfires most often. */
+  touch-action: manipulation;
   color: var(--text-primary);
   background-color: var(--surface-background);
   font-family:
