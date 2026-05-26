@@ -107,8 +107,20 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
+/* Tagline carries the hero. Mobile uses the original clamp (48–80px) so
+   the headline reads as 2–3 lines at phone widths. Desktop steps up to a
+   much larger floor + ceiling — at 1280–1920px the column has room for a
+   90–112px display size, which gives the wordmark→tagline jump the
+   editorial weight the catalog grid needs to balance against. */
 .tagline {
+  align-self: stretch;
   font-size: clamp(var(--font-size-5xl), 7vw, var(--font-size-7xl));
+}
+
+@media (min-width: 768px) {
+  .tagline {
+    font-size: clamp(var(--font-size-6xl), 8vw, var(--font-size-9xl));
+  }
 }
 
 .prose {
