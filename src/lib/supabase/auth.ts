@@ -39,10 +39,23 @@ export function subscribeToAuthChanges(
 ): () => void {
   const supabase = getSupabaseClient();
 
-  // Resolve any persisted session once, immediately
-  void supabase.auth.getSession().then(({ data: { session } }) => {
-    callback(session?.user ?? null);
-  });
+  // Resolve any persisted session once, immediately. The .catch is
+  // load-bearing: AuthProvider only flips `loading` to false once this
+  // callback fires, so any silently-rejected getSession() (e.g. blocked
+  // by browser private-network rules on an HTTP-IP dev origin, transient
+  // network failure, corrupted localStorage) would otherwise strand the
+  // UI in its "Loading…" state forever. Falling through to signed-out
+  // keeps the page interactive; the user can still hit the CTA to retry
+  // the OAuth flow.
+  void supabase.auth
+    .getSession()
+    .then(({ data: { session } }) => {
+      callback(session?.user ?? null);
+    })
+    .catch((err) => {
+      console.error('Failed to resolve initial Supabase session', err);
+      callback(null);
+    });
 
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
     callback(session?.user ?? null);
