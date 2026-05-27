@@ -114,7 +114,7 @@ const FEATURES = [
   },
   {
     heading: 'Search, filter, share.',
-    body: 'Filter by theme, owner, or build status. Share a public link, with whichever details you want visible.',
+    body: 'Filter by theme, owner, or build status. Get a customizable public link so you can share your collection with friends and family.',
   },
 ] as const;
 
