@@ -124,8 +124,11 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
 
   // Subscribe to sets for active collection
   useEffect(() => {
-    if (!activeCollection) {
-      // No collection selected - clear sets but preserve initialized state
+    if (!activeCollection || !user?.id) {
+      // No collection selected (or not signed in) — clear sets but
+      // preserve initialized state. The user.id gate is what's
+      // passed to subscribeToSetsForCollection so the refetch can
+      // enforce membership; without it we don't subscribe at all.
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state when no collection is intentional
       setSets([]);
       setSetsError(null);
@@ -147,7 +150,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       setIsSwitchingCollection(true);
     }
 
-    const unsubscribe = subscribeToSetsForCollection(activeCollection.id, (collectionSets) => {
+    const unsubscribe = subscribeToSetsForCollection(activeCollection.id, user.id, (collectionSets) => {
       setSets(collectionSets);
       setSetsError(null);
       loadedCollectionIdRef.current = activeCollection.id;
@@ -164,7 +167,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       // Don't clear sets on cleanup - keep showing previous data until new data arrives
       // This prevents the flash of empty state when switching collections
     };
-  }, [activeCollection, setsInitialized]);
+  }, [activeCollection, setsInitialized, user?.id]);
 
   const setActiveCollection = useCallback((collection: Collection) => {
     setActiveCollectionState(collection);

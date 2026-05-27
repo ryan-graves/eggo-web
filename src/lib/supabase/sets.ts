@@ -111,8 +111,27 @@ export async function getSet(setId: string): Promise<LegoSet | null> {
   return data ? fromDb(data as SetRow) : null;
 }
 
-export async function getSetsForCollection(collectionId: string): Promise<LegoSet[]> {
+/**
+ * Fetch all sets in a collection. When `userId` is provided, gates the
+ * read on membership via the `is_collection_member()` SECURITY DEFINER
+ * RPC and returns `[]` if the user isn't a member — defense in depth
+ * for issue #58. Without `userId`, falls back to RLS-only behavior
+ * (used by /share/{token} viewers, which are intentional non-member
+ * readers of public collections).
+ */
+export async function getSetsForCollection(
+  collectionId: string,
+  userId?: string,
+): Promise<LegoSet[]> {
   const supabase = getSupabaseClient();
+  if (userId) {
+    const { data: isMember, error: rpcErr } = await supabase.rpc('is_collection_member', {
+      coll_id: collectionId,
+      uid: userId,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    if (!isMember) return [];
+  }
   const { data, error } = await supabase
     .from(TABLE)
     .select('*')
@@ -126,9 +145,16 @@ export async function getSetsForCollection(collectionId: string): Promise<LegoSe
  * Realtime subscription on sets within a single collection. Refetches on any
  * row-level change rather than applying deltas — fine at our scale and avoids
  * having to reconcile postgres_changes payloads against an in-memory list.
+ *
+ * `userId` is the membership gate: refetches go through
+ * `getSetsForCollection(collectionId, userId)`, so a non-member who
+ * somehow got this collection id (stale localStorage, leaked URL) gets
+ * an empty list rather than the public-RLS read of the collection's
+ * sets. See issue #58.
  */
 export function subscribeToSetsForCollection(
   collectionId: string,
+  userId: string,
   callback: (sets: LegoSet[]) => void,
   onError?: (error: Error) => void
 ): () => void {
@@ -139,7 +165,7 @@ export function subscribeToSetsForCollection(
 
   const refetch = async () => {
     try {
-      const sets = await getSetsForCollection(collectionId);
+      const sets = await getSetsForCollection(collectionId, userId);
       if (cancelled) return;
       callback(sets);
     } catch (err) {
