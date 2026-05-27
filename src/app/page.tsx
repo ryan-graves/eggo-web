@@ -110,7 +110,7 @@ const FEATURES = [
   },
   {
     heading: 'Remember when and how you got it.',
-    body: 'Note the date you got a set, the occasion, who gave it to you. Each set carries that history alongside the brick count.',
+    body: 'Note when each set arrived, the occasion, who gave it to you. Eggo keeps that history alongside the piece count.',
   },
   {
     heading: 'Search, filter, share.',
