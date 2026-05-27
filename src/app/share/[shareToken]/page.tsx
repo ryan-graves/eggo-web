@@ -49,7 +49,7 @@ function PublicCollectionContent(): React.JSX.Element {
             <span className={styles.collectionName}>{collection.name}</span>
           </div>
         </div>
-        <Link href="/sign-in" className="btn-default btn-primary">
+        <Link href="/" className="btn-default btn-primary">
           Sign Up
         </Link>
       </header>
