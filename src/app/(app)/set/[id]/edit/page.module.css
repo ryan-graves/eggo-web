@@ -91,12 +91,10 @@
   letter-spacing: var(--letter-spacing-wider);
 }
 
+/* API source name. Heading typography comes from theme.css's h3
+   rule (the Title scale: Instrument Serif 18px). */
 .apiName {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
-  line-height: var(--line-height-tight);
-  letter-spacing: var(--letter-spacing-tight);
   margin: 0;
 }
 

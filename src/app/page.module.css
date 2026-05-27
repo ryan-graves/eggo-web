@@ -1,0 +1,547 @@
+/*
+ * Landing page (/). Public marketing surface that explains Eggo at a glance.
+ *
+ * Composition: two-column hero (text-left, decorative catalog mockup right)
+ * at desktop, stacked on mobile. A 3-column text-only features block sits
+ * underneath, then a quiet footer.
+ *
+ * The catalog mockup uses `MarketingSetTile` (defined inline in
+ * `page.tsx`) rather than the real `SetCard`. SetCard's paddings, text
+ * sizes, and badge sizes reference fixed --space-/--font-size- tokens
+ * that don't shrink proportionally when forced narrow — tiles end up
+ * tall and skinny. MarketingSetTile is sized natively for the
+ * catalog-preview thumbnail use case.
+ */
+
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background-color: var(--surface-background);
+  color: var(--text-primary);
+}
+
+/* Sections all sit inside the same outer container width so left/right
+   margins line up. Padding-inline gives the content air on small screens. */
+.hero,
+.features,
+.footer {
+  width: 100%;
+  max-width: var(--max-width-content);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .hero,
+  .features,
+  .footer {
+    padding-inline: var(--space-8);
+  }
+}
+
+/* ----- Hero ----------------------------------------------------------- */
+
+/* Single-column stack on mobile (text → catalog). Two-column on desktop
+   (text-left, catalog-right). The catalog deliberately overflows its
+   container; the mask on .heroCatalog fades both edges. */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+  align-items: stretch;
+}
+
+/* Desktop two-column hero gated on BOTH width AND height. The width
+   threshold (768px) is the usual phone/tablet boundary. The height
+   threshold (500px) catches landscape phones (~390–430px tall) where
+   the row layout breaks down: heroText is vertically centered in its
+   column, and the catalog mockup's grid is taller than the viewport,
+   so the row stretches to ~850px and the text scrolls off-screen.
+   Below 500px tall, the hero stays in the single-column mobile layout
+   regardless of width — text on top, catalog below, user can scroll. */
+@media (min-width: 768px) and (min-height: 500px) {
+  .hero {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--space-10);
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-16);
+
+    /* min-height: 80vh + overflow: hidden keeps the features section
+       peeking above the fold on typical desktops. The combination of
+       the min-height threshold above and the explicit clip below
+       means we can rely on the cap without worrying about short
+       viewports losing text — those fall through to column layout. */
+    min-height: 80vh;
+    overflow: hidden;
+  }
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+@media (min-width: 768px) and (min-height: 500px) {
+  .heroText {
+    /* Vertically centered inside the now-stretch row so the text reads
+       as the anchor of the hero, not a top-aligned label. Scoped to
+       the same width+height window as the row layout — see .hero. */
+    justify-content: center;
+    gap: var(--space-6);
+  }
+}
+
+/* Wordmark and tagline share family + weight + line-height, but the
+   wordmark is the small brand-mark above the headline (kicker scale) and
+   the tagline is the primary display element. The tagline has no
+   max-width so it wraps at the natural column edge rather than at a
+   forced character measure. */
+.wordmark,
+.tagline {
+  margin: 0;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tighter);
+  color: var(--text-primary);
+}
+
+.wordmark {
+  font-size: var(--font-size-3xl);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+/* Tagline carries the hero. Mobile uses a clamp (48–80px) so the
+   headline reads as 2–3 lines at phone widths. Desktop steps up to a
+   much larger floor + ceiling — at 1280–1920px the column has room for
+   a 90–112px display size, which gives the wordmark→tagline jump the
+   editorial weight the catalog grid balances against.
+
+   Font-family, weight, and the baseline letter-spacing come from the
+   shared .wordmark/.tagline block above (its values match theme.css's
+   h1 element rule). This block layers the marketing-display font-size
+   clamp, a tighter editorial line-height, and text-wrap balance on top. */
+.tagline {
+  align-self: stretch;
+  font-size: clamp(var(--font-size-5xl), 7vw, var(--font-size-7xl));
+
+  /* Tighter than the shared --line-height-tight (1.2) for an editorial
+     display feel. 1.05 keeps "g"/"y" descenders clear of next-line
+     ascenders ("l", "t") at 64–96px, while reading as printed-catalog
+     tight rather than UI-tight. */
+  line-height: var(--line-height-display);
+  letter-spacing: var(--letter-spacing-tighter);
+
+  /* Distribute words evenly across wrapping lines so the tagline never
+     strands a single word on its own line as a viewport-width
+     adjustment pushes one word over the previous line's edge.
+     Browsers without support fall back to normal wrapping. */
+  text-wrap: balance;
+}
+
+@media (min-width: 768px) {
+  .tagline {
+    font-size: clamp(var(--font-size-6xl), 8vw, var(--font-size-8xl));
+  }
+}
+
+.prose {
+  margin: 0;
+  max-width: 36ch;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-secondary);
+}
+
+/* Capsule CTA — matches the system's primary-button signature (tonal
+   inversion + full pill radius). Spelled out here rather than reaching
+   for a shared Button so the landing page stays self-contained.
+   `gap` carries the space between the Google G and the label. */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  padding: var(--space-3) var(--space-6);
+  min-height: var(--size-touch-target);
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+.cta:hover:not(:disabled) {
+  background-color: var(--interactive-primary-hover);
+}
+
+.cta:focus-visible {
+  outline: var(--outline-width) solid var(--border-focus);
+  outline-offset: var(--outline-offset);
+}
+
+.cta:active:not(:disabled) {
+  opacity: var(--opacity-active);
+}
+
+.cta:disabled {
+  opacity: var(--opacity-muted);
+  cursor: progress;
+}
+
+/* OAuth error message, sits just below the CTA. Kept quiet — small
+   font, muted status color, no surrounding chip. The button itself
+   re-enables for retry on any auth context refresh. */
+.ctaError {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--status-error);
+}
+
+/* ----- Hero catalog mockup -------------------------------------------- */
+
+/* The catalog mockup container. Centers a wider-than-itself grid inside,
+   clips overflow, and fades both horizontal edges with a mask. Result:
+   tiles bleed off both sides of the visible area, suggesting "more
+   catalog beyond." pointer-events:none disables the SetCards' navigation
+   since this is decorative. */
+.heroCatalog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  /* Fully presentational. pointer-events:none disables clicks;
+     user-select:none stops text from being highlighted (the set names
+     and numbers under each tile would otherwise be selectable); the
+     -webkit-touch-callout disables the iOS long-press share / save
+     menu on the images. */
+  pointer-events: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+
+  /* Two intersecting linear gradients — horizontal + vertical — fade the
+     catalog on all four sides. `currentcolor` for the opaque stops is one
+     of the few tokens stylelint allows in mask-image (rgb/hsl/named
+     colors are all banned project-wide); only the alpha matters for the
+     mask anyway. Autoprefixer adds the -webkit- variant at build. */
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      currentcolor 10%,
+      currentcolor 90%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      currentcolor 12%,
+      currentcolor 88%,
+      transparent 100%
+    );
+  mask-composite: intersect;
+}
+
+/* On desktop the catalog fills the hero's right column and the second
+   axis of the row layout. flex:1 only at the desktop row layout — on
+   mobile (column flex with no parent height) flex-basis:0 against a
+   0-sized parent + overflow:hidden would clip the catalog to 0 height.
+   Gated on the same width+height window as the .hero row layout. */
+@media (min-width: 768px) and (min-height: 500px) {
+  .heroCatalog {
+    flex: 1 1 0;
+    align-self: stretch;
+    min-width: 0;
+  }
+}
+
+/* Mobile / short-viewport: cap visible catalog height at ~50vh + 96px
+   so the catalog acts as a visual accent without dominating the page.
+   The extra ~96px lifts the top and bottom mask fades off the tile
+   edges, revealing about 60% of the rows that fade in/out at the
+   boundary. Applies on narrow viewports (typical mobile) AND on any
+   short viewport (landscape phones), where the hero falls back to the
+   single-column layout — without this cap the grid would drive the
+   container to its full 620px natural height. */
+@media (max-width: 767px), (max-height: 499px) {
+  .heroCatalog {
+    max-height: calc(50vh + 96px);
+  }
+}
+
+/* Wider-and-taller-than-container grid, centered by .heroCatalog's flex
+   parent (which has overflow:hidden) so excess overflows on all four
+   sides. The mask fades the edges; the overflow clips them. Tiles use
+   natural marketing-only sizes (.tile + descendants below) so all
+   proportions are correct without relying on `zoom` or `transform`. */
+.heroCatalogGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 115px);
+  grid-auto-rows: max-content;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* Wider viewports — keep the clean 6×4 grid (24 sets, no partial
+   rows), grow each tile slightly so the catalog scales with the
+   right-hand column. */
+@media (min-width: 1280px) {
+  .heroCatalogGrid {
+    grid-template-columns: repeat(6, 130px);
+  }
+}
+
+@media (max-width: 767px), (max-height: 499px) {
+  .heroCatalogGrid {
+    /* 12px wider than the prior 100px to give the "#10307 • 10001 pcs"
+       row enough room to render without text-overflow ellipsis at the
+       longest 5-digit piece counts. Two left-center and right-center
+       columns still both render fully inside the 390px-ish iPhone
+       viewport; the extra 72px of total grid width spills off the
+       edges and fades under the side mask gradients as before.
+       Applied to landscape phones too via the height clause — they
+       use the same column-stacked layout as portrait mobile. */
+    grid-template-columns: repeat(6, 112px);
+  }
+}
+
+/* ----- Marketing set tile --------------------------------------------- */
+
+/* Sized natively as a thumbnail — mirrors SetCard's IA at smaller
+   proportions. */
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+}
+
+.tileImage {
+  position: relative;
+  width: 100%;
+
+  /* Shorter than SetCard's 1/1 — keeps tiles compact so more rows fit
+     in the hero catalog space. The photo still has room to breathe via
+     .tileImageInner's inset. */
+  aspect-ratio: 4 / 3;
+  flex-shrink: 0;
+}
+
+/* Inner wrapper that absolute-positions inside .tileImage with `inset` so
+   the `<Image fill>` (which itself uses position:absolute; inset:0)
+   floats with padding around it. Matches SetCard.module.css's
+   .imageInner inset (--space-3 / 12px) so the photo sits inside the
+   tile with the same proportional breathing room as the real card. */
+.tileImageInner {
+  position: absolute;
+  inset: var(--space-3);
+}
+
+.tileContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+  padding: var(--space-1) var(--space-2) var(--space-2);
+  flex: 1;
+}
+
+.tileName {
+  margin: 0;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text-primary);
+
+  /* Two-line clamp + min-height of 2 line-heights so every tile
+     reserves the same vertical space for the name regardless of
+     whether the name fits on 1 or 2 lines. Keeps the tiles bottom-
+     aligned at the chip row across the grid. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2lh;
+}
+
+/* "#10307 • 10001 pcs" — number + piece count on one line. Truncates
+   with an ellipsis rather than wrapping so the row stays exactly one
+   line tall (uniformity with the always-2-line name above). */
+.tileNumber {
+  margin: 0;
+  font-size: var(--font-size-2xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tileTheme {
+  margin: 0;
+  font-size: var(--font-size-2xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tileMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-0-5);
+  margin-top: var(--space-1);
+}
+
+/* Local badge sizing paired with the global `.status-{state}` class
+   for color — gives us full visual control of the badge proportions
+   while keeping color in lockstep with the real app. The 7px font and
+   3px radius are one-off marketing chrome (not part of the app's type
+   or radius scales): the smallest --radius-sm (6px) reads almost
+   half-pill at this chip height, so the radius scales down with the
+   chip proportionally. */
+.tileBadge {
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the type scale */
+  font-size: 7px;
+  padding: 1px var(--space-1);
+
+  /* Transparent 1px border matches .tileOwner's visible border so both
+     chips end up the same total height. Without this the badge is 2px
+     shorter and its text floats above the owner chip's text when the
+     flex parent stretches them to equal height. */
+  border: 1px solid transparent;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the radius scale */
+  border-radius: 3px;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  line-height: var(--line-height-snug);
+}
+
+.tileOwner {
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the type scale */
+  font-size: 7px;
+  padding: 1px var(--space-1);
+  border: 1px solid var(--border-secondary);
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- one-off marketing chrome below the radius scale */
+  border-radius: 3px;
+  color: var(--text-secondary);
+  line-height: var(--line-height-snug);
+}
+
+/* ----- Features ------------------------------------------------------- */
+
+.features {
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-16);
+  border-top: 1px solid var(--border-primary);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-10);
+}
+
+@media (min-width: 640px) {
+  .features {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-8);
+  }
+}
+
+@media (min-width: 768px) {
+  .features {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-20);
+  }
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Feature heading. Font-family / weight / letter-spacing come from
+   theme.css's `h2` rule. The bigger-on-mobile size pattern is the
+   override that lives here (a section heading on stacked mobile
+   wants more weight than the desktop 3-col layout needs). */
+.featureHeading {
+  margin: 0;
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-tight);
+  color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+  .featureHeading {
+    font-size: var(--font-size-2xl);
+  }
+}
+
+.featureBody {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-relaxed);
+  color: var(--text-secondary);
+}
+
+/* ----- Footer --------------------------------------------------------- */
+
+/* Two-row at mobile (wordmark, then credit). Two-column at ≥640px
+   (wordmark left, credit right, baseline-aligned) so the page closes
+   on a clean editorial line rather than a single afterthought. */
+.footer {
+  margin-top: auto;
+  padding-block: var(--space-6);
+  border-top: 1px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-6);
+  }
+}
+
+/* Smaller Instrument-Serif wordmark, half the hero scale — recognizable
+   without competing with the hero. Mirrors the type treatment of the
+   .wordmark above. */
+.footerWordmark {
+  margin: 0;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text-primary);
+}
+
+/* Single-line colophon (project description + © + version). Tertiary
+   text color so it sits quietly under the wordmark. */
+.footerCredit {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}

@@ -18,9 +18,9 @@
   min-width: 0;
 }
 
+/* Carousel section title. Heading typography comes from theme.css's
+   h2 rule (the Headline scale: Instrument Serif 20px). */
 .title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
   margin: 0;
 }

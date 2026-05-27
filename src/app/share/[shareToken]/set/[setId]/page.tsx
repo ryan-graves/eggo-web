@@ -40,7 +40,7 @@ function PublicSetDetailContent(): React.JSX.Element {
         <div className={styles.notFound}>
           <h1>Collection Not Found</h1>
           <p>This collection is not available or is no longer public.</p>
-          <Link href="/sign-in" className={styles.backLink}>
+          <Link href="/" className={styles.backLink}>
             Start Your Own Collection
           </Link>
         </div>

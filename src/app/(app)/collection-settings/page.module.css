@@ -59,9 +59,10 @@
   border-top: 1px solid var(--border-primary);
 }
 
+/* Danger zone title. Heading typography comes from theme.css's h3
+   rule (the Title scale: Instrument Serif 18px). Only the status-
+   error color is local. */
 .dangerTitle {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
   color: var(--status-error);
   margin: 0 0 var(--space-2) 0;
 }

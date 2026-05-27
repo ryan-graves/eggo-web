@@ -1,14 +1,21 @@
 /*
  * Semantic Theme Variables (Layer 2 — themed aliases)
  *
- * These variables use semantic names (e.g., "surface", "text-primary")
- * and map to primitive tokens. This allows easy theme switching.
+ * Eggo has one canonical UI: an editorial monochrome catalog. There is no
+ * `data-ui-theme` attribute and no alternate variant — the rules below
+ * apply unconditionally, switching only between dark and light color
+ * modes via `data-theme` (or the system preference when unset).
  *
- * Dark theme is the default (Factory.ai inspired).
- * Light theme available via data-theme="light".
+ * Interactive color uses a tonal inversion (near-white on dark, near-
+ * black on light) rather than a chromatic accent. The only saturated
+ * colors in the system are the four functional status signals.
+ *
+ * Was previously a two-axis system (Mono + Baseplate, each with dark +
+ * light). Baseplate carried an orange accent and standard button radius;
+ * both have been removed (see migration 0006_drop_ui_theme.sql).
  */
 
-/* Dark Theme (default) */
+/* Dark mode (default) */
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
@@ -25,18 +32,18 @@
   --text-secondary: var(--color-gray-400);
   --text-tertiary: var(--color-gray-500);
   --text-inverse: var(--color-gray-900);
-  --text-link: var(--color-orange-500);
-  --text-link-hover: var(--color-orange-400);
+  --text-link: var(--color-gray-300);
+  --text-link-hover: var(--color-gray-100);
 
   /* Borders */
   --border-primary: var(--color-gray-800);
   --border-secondary: var(--color-gray-700);
-  --border-focus: var(--color-orange-500);
+  --border-focus: var(--color-gray-400);
 
-  /* Interactive - Orange accent */
-  --interactive-primary: var(--color-orange-500);
-  --interactive-primary-hover: var(--color-orange-400);
-  --interactive-primary-bg: rgb(249 115 22 / 10%);
+  /* Interactive — tonal inversion (near-white fill on dark) */
+  --interactive-primary: var(--color-gray-100);
+  --interactive-primary-hover: var(--color-white);
+  --interactive-primary-bg: rgb(255 255 255 / 10%);
   --interactive-secondary: var(--color-gray-800);
   --interactive-secondary-hover: var(--color-gray-700);
 
@@ -63,9 +70,12 @@
   /* Shadows */
   --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 30%), 0 2px 4px -2px rgb(0 0 0 / 30%);
   --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 40%), 0 4px 6px -4px rgb(0 0 0 / 40%);
+
+  /* Heading font (Instrument Serif via next/font CSS variable) */
+  --font-heading: var(--font-instrument-serif), Georgia, serif;
 }
 
-/* Light Theme */
+/* Light mode */
 [data-theme='light'] {
   color-scheme: light;
 
@@ -81,18 +91,18 @@
   --text-secondary: var(--color-gray-600);
   --text-tertiary: var(--color-gray-500);
   --text-inverse: var(--color-white);
-  --text-link: var(--color-orange-600);
-  --text-link-hover: var(--color-orange-500);
+  --text-link: var(--color-gray-700);
+  --text-link-hover: var(--color-gray-900);
 
   /* Borders */
   --border-primary: var(--color-gray-200);
   --border-secondary: var(--color-gray-300);
-  --border-focus: var(--color-orange-500);
+  --border-focus: var(--color-gray-600);
 
-  /* Interactive - Orange accent */
-  --interactive-primary: var(--color-orange-500);
-  --interactive-primary-hover: var(--color-orange-600);
-  --interactive-primary-bg: rgb(249 115 22 / 10%);
+  /* Interactive — tonal inversion (near-black fill on light) */
+  --interactive-primary: var(--color-gray-900);
+  --interactive-primary-hover: var(--color-black);
+  --interactive-primary-bg: rgb(0 0 0 / 5%);
   --interactive-secondary: var(--color-gray-200);
   --interactive-secondary-hover: var(--color-gray-300);
 
@@ -121,7 +131,7 @@
   --shadow-dropdown: var(--shadow-lg);
 }
 
-/* System preference - when data-theme is "system" or not set */
+/* System preference light mode (when data-theme is unset or "system") */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme='dark'], [data-theme='light']) {
     color-scheme: light;
@@ -135,14 +145,14 @@
     --text-secondary: var(--color-gray-600);
     --text-tertiary: var(--color-gray-500);
     --text-inverse: var(--color-white);
-    --text-link: var(--color-orange-600);
-    --text-link-hover: var(--color-orange-500);
+    --text-link: var(--color-gray-700);
+    --text-link-hover: var(--color-gray-900);
     --border-primary: var(--color-gray-200);
     --border-secondary: var(--color-gray-300);
-    --border-focus: var(--color-orange-500);
-    --interactive-primary: var(--color-orange-500);
-    --interactive-primary-hover: var(--color-orange-600);
-    --interactive-primary-bg: rgb(249 115 22 / 10%);
+    --border-focus: var(--color-gray-600);
+    --interactive-primary: var(--color-gray-900);
+    --interactive-primary-hover: var(--color-black);
+    --interactive-primary-bg: rgb(0 0 0 / 5%);
     --interactive-secondary: var(--color-gray-200);
     --interactive-secondary-hover: var(--color-gray-300);
     --status-success-bg: #dcfce7;
@@ -159,91 +169,47 @@
 }
 
 /*
- * Mono UI Theme (default)
- *
- * A minimal monochrome theme with serif headings.
- * Works with both light and dark color modes.
- * Uses higher specificity selectors to ensure proper override.
+ * Heading typography — Instrument Serif at normal weight, with a
+ * per-level size and line-height. Plain element selectors so any
+ * CSS Module class can override locally without a specificity battle.
+ * Where a module wants the system heading rules to apply (default
+ * expectation), it should not re-declare font-family / font-weight /
+ * font-size on its heading classes at all.
  */
-
-/* Mono theme base - applies to all mono theme instances */
-[data-ui-theme='mono'] {
-  /* Heading font */
-  --font-heading: var(--font-instrument-serif), Georgia, serif;
-}
-
-/* Mono theme in DARK mode - explicit selectors for all dark mode cases */
-[data-theme='dark'][data-ui-theme='mono'],
-:root[data-ui-theme='mono']:not([data-theme='light']) {
-  /* Light buttons with dark text for dark backgrounds */
-  --interactive-primary: var(--color-gray-100);
-  --interactive-primary-hover: var(--color-white);
-  --interactive-primary-bg: rgb(255 255 255 / 10%);
-  --text-inverse: var(--color-gray-900);
-  --text-link: var(--color-gray-300);
-  --text-link-hover: var(--color-gray-100);
-  --border-focus: var(--color-gray-400);
-}
-
-/* Mono theme in LIGHT mode - explicit selectors for all light mode cases */
-[data-theme='light'][data-ui-theme='mono'] {
-  /* Dark buttons with light text for light backgrounds */
-  --interactive-primary: var(--color-gray-900);
-  --interactive-primary-hover: var(--color-black);
-  --interactive-primary-bg: rgb(0 0 0 / 5%);
-  --text-inverse: var(--color-white);
-  --text-link: var(--color-gray-700);
-  --text-link-hover: var(--color-gray-900);
-  --border-focus: var(--color-gray-600);
-}
-
-/* Mono theme with system preference light mode (when data-theme not explicitly set) */
-@media (prefers-color-scheme: light) {
-  :root[data-ui-theme='mono']:not([data-theme='dark'], [data-theme='light']) {
-    --interactive-primary: var(--color-gray-900);
-    --interactive-primary-hover: var(--color-black);
-    --interactive-primary-bg: rgb(0 0 0 / 5%);
-    --text-inverse: var(--color-white);
-    --text-link: var(--color-gray-700);
-    --text-link-hover: var(--color-gray-900);
-    --border-focus: var(--color-gray-600);
-  }
-}
-
-/* Apply heading font to headings in mono theme */
-[data-ui-theme='mono'] h1,
-[data-ui-theme='mono'] h2,
-[data-ui-theme='mono'] h3,
-[data-ui-theme='mono'] h4,
-[data-ui-theme='mono'] h5,
-[data-ui-theme='mono'] h6 {
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: var(--font-weight-normal);
   letter-spacing: var(--letter-spacing-tight);
 }
 
-/* Slightly larger heading sizes with preserved line heights */
-[data-ui-theme='mono'] h1 {
+h1 {
   font-size: var(--font-size-3xl);
   line-height: var(--line-height-tight);
 }
 
-[data-ui-theme='mono'] h2 {
+h2 {
   font-size: 1.25rem;
   line-height: 1.3;
 }
 
-[data-ui-theme='mono'] h3 {
+h3 {
   font-size: var(--font-size-xl);
   line-height: 1.4;
 }
 
-/* Capsule-shaped buttons in mono theme */
-[data-ui-theme='mono'] button,
-[data-ui-theme='mono'] [role='button'],
-[data-ui-theme='mono'] a[class*='button' i],
-[data-ui-theme='mono'] a[class*='Button' i],
-[data-ui-theme='mono'] .btn-default,
-[data-ui-theme='mono'] .btn-small {
+/*
+ * Capsule buttons everywhere — the system's most distinctive component
+ * signature. `!important` is deliberate: it ensures a CSS Module
+ * declaring `border-radius` on a button element can't accidentally
+ * de-capsule it. A one-off non-pill button (should be rare) opts out
+ * with its own `!important` override on a more specific selector;
+ * specificity alone is not enough.
+ */
+button,
+[role='button'],
+a[class*='button' i],
+a[class*='Button' i],
+.btn-default,
+.btn-small {
   border-radius: var(--radius-full) !important;
 }

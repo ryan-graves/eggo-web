@@ -86,12 +86,12 @@
   flex: 1;
 }
 
+/* Set name. Heading typography (font-family, weight, size,
+   letter-spacing) comes from theme.css's h3 rule (the Title scale
+   per DESIGN.md: Instrument Serif 18px, normal weight). Only the
+   2-line clamp + color belong on the class. */
 .name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
   color: var(--text-primary);
-  line-height: var(--line-height-tight);
-  letter-spacing: var(--letter-spacing-tight);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

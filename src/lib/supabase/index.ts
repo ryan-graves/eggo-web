@@ -41,7 +41,6 @@ export {
   getUserPreferences,
   setUserPreferences,
   updateThemePreference,
-  updateUIThemePreference,
   updateHomeSections,
   subscribeToUserPreferences,
 } from './userPreferences';

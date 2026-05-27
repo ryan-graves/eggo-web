@@ -72,10 +72,17 @@
   opacity: var(--opacity-active);
 }
 
+/* Page title rendered inside the header bar. Deliberately overrides
+   the theme h1 default (which would be Display-scale Instrument
+   Serif) with Inter Semibold per DESIGN.md's Navigation spec. The
+   plain class selector (0,0,1,0) wins over the theme's `h1`
+   (0,0,0,1) naturally. */
 .title {
   margin: 0;
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -196,9 +203,9 @@
   border-radius: var(--radius-lg);
 }
 
+/* Notes section title. Heading typography comes from theme.css's
+   h2 rule (the Headline scale: Instrument Serif 20px). */
 .notesTitle {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
   margin: 0 0 var(--space-3) 0;
 }

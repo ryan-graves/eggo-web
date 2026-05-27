@@ -3,10 +3,9 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
 import { subscribeToUserPreferences, setUserPreferences } from '@/lib/supabase';
-import type { ThemePreference, UITheme, HomeSectionConfig } from '@/types';
+import type { ThemePreference, HomeSectionConfig } from '@/types';
 
 const THEME_STORAGE_KEY = 'eggo-theme';
-const UI_THEME_STORAGE_KEY = 'eggo-ui-theme';
 
 function getStoredTheme(): ThemePreference {
   if (typeof window === 'undefined') return 'system';
@@ -15,15 +14,6 @@ function getStoredTheme(): ThemePreference {
     return stored;
   }
   return 'system';
-}
-
-function getStoredUITheme(): UITheme {
-  if (typeof window === 'undefined') return 'mono';
-  const stored = localStorage.getItem(UI_THEME_STORAGE_KEY);
-  if (stored === 'baseplate' || stored === 'mono') {
-    return stored;
-  }
-  return 'mono';
 }
 
 function applyTheme(theme: ThemePreference): void {
@@ -36,17 +26,10 @@ function applyTheme(theme: ThemePreference): void {
   }
 }
 
-function applyUITheme(uiTheme: UITheme): void {
-  if (typeof document === 'undefined') return;
-  document.documentElement.setAttribute('data-ui-theme', uiTheme);
-}
-
 interface UserPreferencesContextValue {
   theme: ThemePreference;
   setTheme: (theme: ThemePreference) => void;
   resolvedTheme: 'light' | 'dark';
-  uiTheme: UITheme;
-  setUITheme: (uiTheme: UITheme) => void;
   homeSections: HomeSectionConfig[] | undefined;
   setHomeSections: (sections: HomeSectionConfig[]) => void;
 }
@@ -56,19 +39,15 @@ export const UserPreferencesContext = createContext<UserPreferencesContextValue 
 export function useUserPreferencesProvider(): UserPreferencesContextValue {
   const { user } = useAuth();
   const [theme, setThemeState] = useState<ThemePreference>('system');
-  const [uiTheme, setUIThemeState] = useState<UITheme>('mono');
   const [homeSections, setHomeSectionsState] = useState<HomeSectionConfig[] | undefined>(undefined);
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
   // Initialize from localStorage on mount (hydration pattern for SSR)
   useEffect(() => {
     const storedTheme = getStoredTheme();
-    const storedUITheme = getStoredUITheme();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrating from localStorage on mount is a valid SSR pattern
     setThemeState(storedTheme);
-    setUIThemeState(storedUITheme);
     applyTheme(storedTheme);
-    applyUITheme(storedUITheme);
   }, []);
 
   useEffect(() => {
@@ -80,11 +59,6 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
           setThemeState(prefs.theme);
           localStorage.setItem(THEME_STORAGE_KEY, prefs.theme);
           applyTheme(prefs.theme);
-        }
-        if (prefs.uiTheme) {
-          setUIThemeState(prefs.uiTheme);
-          localStorage.setItem(UI_THEME_STORAGE_KEY, prefs.uiTheme);
-          applyUITheme(prefs.uiTheme);
         }
         if (prefs.homeSections !== undefined) {
           setHomeSectionsState(prefs.homeSections);
@@ -128,19 +102,6 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
     [user]
   );
 
-  const setUITheme = useCallback(
-    (newUITheme: UITheme) => {
-      setUIThemeState(newUITheme);
-      localStorage.setItem(UI_THEME_STORAGE_KEY, newUITheme);
-      applyUITheme(newUITheme);
-
-      if (user?.id) {
-        setUserPreferences(user.id, { uiTheme: newUITheme }).catch(console.error);
-      }
-    },
-    [user]
-  );
-
   const setHomeSections = useCallback(
     (sections: HomeSectionConfig[]) => {
       setHomeSectionsState(sections);
@@ -152,7 +113,7 @@ export function useUserPreferencesProvider(): UserPreferencesContextValue {
     [user]
   );
 
-  return { theme, setTheme, resolvedTheme, uiTheme, setUITheme, homeSections, setHomeSections };
+  return { theme, setTheme, resolvedTheme, homeSections, setHomeSections };
 }
 
 export function useUserPreferences(): UserPreferencesContextValue {
@@ -166,11 +127,6 @@ export function useUserPreferences(): UserPreferencesContextValue {
 export function useTheme(): Pick<UserPreferencesContextValue, 'theme' | 'setTheme' | 'resolvedTheme'> {
   const { theme, setTheme, resolvedTheme } = useUserPreferences();
   return { theme, setTheme, resolvedTheme };
-}
-
-export function useUITheme(): Pick<UserPreferencesContextValue, 'uiTheme' | 'setUITheme'> {
-  const { uiTheme, setUITheme } = useUserPreferences();
-  return { uiTheme, setUITheme };
 }
 
 export function useHomeSections(): Pick<UserPreferencesContextValue, 'homeSections' | 'setHomeSections'> {

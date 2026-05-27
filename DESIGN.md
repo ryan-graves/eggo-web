@@ -122,19 +122,16 @@ way. Nothing on screen competes with a set's own photograph; the interface stays
 enough that each set image reads like an object on display, with chrome, borders,
 controls, and type quiet enough to disappear.
 
-The system supports two themes (**Mono** and **Baseplate**), each with both **light and
-dark color modes**. The user's color mode preference follows the OS by default.
-Components reference the semantic aliases in `theme.css`
+The system runs in a single canonical UI — an editorial monochrome catalog — across
+both **light and dark color modes**. The user's color mode preference follows the OS
+by default. Components reference the semantic aliases in `theme.css`
 (`--surface-primary`, `--text-secondary`, `--interactive-primary`, etc.) so a single
-component adapts cleanly across every theme + mode combination.
+component adapts cleanly across both modes.
 
-The canonical brand expression is the **Mono theme**: a neutral gray ramp, Instrument
-Serif for every heading, Inter for everything else, no decorative accent color. The
-**Baseplate theme** is a parallel variant that carries a small accent hue rather than the
-strict monochrome palette; it shares the same semantic-token structure and may be evolved
-alongside Mono. The only saturated colors in either theme are the four functional status
-signals (success, warning, error, info), and they appear only on status badges, never as
-decoration.
+The visual treatment: a neutral gray ramp, Instrument Serif for every heading, Inter
+for everything else, no decorative accent color. The only saturated colors are the four
+functional status signals (success, warning, error, info), and they appear only on
+status badges, never as decoration.
 
 This system explicitly rejects the **generic SaaS dashboard** (no hero-metric blocks, no
 gradient accents, no identical icon-card grids), the **childish toy-store** look (no
@@ -144,7 +141,7 @@ visually noisy listings).
 
 **Key Characteristics:**
 
-- Mono theme (canonical) uses monochrome neutrals; saturated color is functional only (status signals).
+- Monochrome neutrals; saturated color is functional only (status signals).
 - Editorial pairing: Instrument Serif headings at normal weight, Inter body at 14px.
 - Flat at rest; depth comes from tonal layering, with shadow reserved for hover.
 - Tactile, confident controls: solid fills, capsule buttons, clear hover response.
@@ -216,6 +213,28 @@ with the `cv11` and `ss01` stylistic sets enabled for a cleaner single-story loo
 - **Label** (Inter, 500, 0.8125rem / 13px): Form labels, metadata, button text. Medium
   weight; never uppercased.
 
+### How heading typography is actually applied
+
+The canonical heading rules live in `src/styles/theme.css` as plain element selectors
+on `h1`–`h6`. They set `font-family: var(--font-heading)` (Instrument Serif),
+`font-weight: 400`, and a per-level `font-size` and `line-height`. A plain class
+selector in any CSS Module (e.g. `.title`) wins on specificity over the element
+selector and applies whatever font properties it declares.
+
+The implication for new code:
+
+- **The default expectation is that headings inherit from theme.css.** Don't restate
+  the heading font on every CSS Module class — leave `font-family`, `font-weight`,
+  `letter-spacing`, and the per-level `font-size` off the class and let the theme
+  rule paint them.
+- **Only declare a font property on a class when you actually want to deviate** from
+  the system scale: an oversized marketing display (the landing `.tagline` /
+  `.featureHeading` pattern), or the header page-title exception below.
+- **Page titles in the Header are the standing exception.** Per the Navigation
+  section below, page title is Inter Semibold; the `.title` class in
+  `Header.module.css` and the share-route header re-declares font-family + size +
+  weight to override the theme h1.
+
 ### Named Rules
 
 **The Light-Serif Rule.** Headings are serif at normal weight (400). A bold serif heading
@@ -252,7 +271,7 @@ response to hover and focus. They feel clickable without resorting to decoration
 
 ### Buttons
 
-- **Shape:** Capsule. In the Mono theme every button is fully pill-shaped
+- **Shape:** Capsule. Every button is fully pill-shaped
   (`border-radius: 9999px`). This is the system's most distinctive component signature.
 - **Primary:** Tonal-inversion fill, near-white on dark, near-black on light, with
   inverse text. Padding `8px 16px` (default) or `8px 12px` (small).
@@ -276,8 +295,9 @@ response to hover and focus. They feel clickable without resorting to decoration
 - **Shadow Strategy:** None at rest. On hover (hover-capable devices only) the border
   brightens one step and the card hover shadow fades in.
 - **Structure:** A square (1:1) image well with `12px` inset padding so the set photo
-  floats, then a content block: name (Inter bold, 2-line clamp), set number, and a
-  metadata row of status badge and owner tag pushed to the bottom.
+  floats, then a content block: **name** (rendered as `<h3>`, so it picks up the
+  Title scale — Instrument Serif at 18px, normal weight, 2-line clamp), set number,
+  and a metadata row of status badge and owner tag pushed to the bottom.
 - **Internal Padding:** `8px 12px 12px` on the content block.
 
 ### Inputs / Fields
@@ -310,14 +330,14 @@ response to hover and focus. They feel clickable without resorting to decoration
   supply the only real color.
 - **Do** set every heading in Instrument Serif at weight 400.
 - **Do** keep surfaces flat at rest and convey depth with a lighter tonal step.
-- **Do** make buttons fully capsule-shaped (`border-radius: 9999px`) in the Mono theme.
+- **Do** make buttons fully capsule-shaped (`border-radius: 9999px`).
 - **Do** keep all borders at 1px hairlines.
 - **Do** reserve the four status colors for status badges and validation only.
 
 ### Don't:
 
-- **Don't** introduce a decorative accent hue in the Mono theme. Orange is the
-  Baseplate theme's signature, not Mono's. The Monochrome Rule applies inside Mono.
+- **Don't** introduce a decorative accent hue. Saturated color is reserved for the
+  four functional status signals; everything else is the gray ramp.
 - **Don't** build a **generic SaaS dashboard**: no hero-metric blocks, no gradient text
   or gradient accents, no identical icon-card grids.
 - **Don't** make it a **childish toy-store**: no primary-color overload, no bubbly or
