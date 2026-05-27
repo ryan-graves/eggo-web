@@ -61,5 +61,8 @@ debug-storybook.log
 # claude code: project-scoped MCP servers (contains personal access tokens)
 /.mcp.json
 
+# supabase CLI scratch cache
+/supabase/.temp/
+
 # Local screenshot/critique artifacts
 .impeccable/

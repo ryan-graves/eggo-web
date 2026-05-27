@@ -7,7 +7,7 @@ import {
   updatePublicViewSettings,
 } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from '@/hooks/useUserPreferences';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
