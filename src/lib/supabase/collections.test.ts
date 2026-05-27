@@ -10,6 +10,7 @@
  * See GitHub issue #58 for the original bug.
  */
 
+import { getSupabaseClient } from './client';
 import { getCollection, getCollectionsForUser } from './collections';
 
 // Records every `.from / .select / .eq / .order / .maybeSingle` call as a
@@ -41,15 +42,21 @@ function makeChainMock() {
   };
 }
 
-const mock = makeChainMock();
-
+// Self-contained factory — captures nothing from outer scope, so the
+// hoisting order of jest.mock vs the `mock` const declaration below
+// can't trigger a TDZ on `mock` if a future refactor of ./collections
+// calls getSupabaseClient at module-init time. The proxy gets wired up
+// via mockReturnValue in beforeEach.
 jest.mock('./client', () => ({
-  getSupabaseClient: () => mock.proxy,
+  getSupabaseClient: jest.fn(),
 }));
+
+const mock = makeChainMock();
 
 beforeEach(() => {
   mock.calls.length = 0;
   mock.__resolve({ data: [], error: null });
+  (getSupabaseClient as jest.Mock).mockReturnValue(mock.proxy);
 });
 
 describe('getCollectionsForUser', () => {

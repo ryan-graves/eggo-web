@@ -7,6 +7,7 @@
  * silently drop the membership probe or revert to a spoofable RPC.
  */
 
+import { getSupabaseClient } from './client';
 import { findSetsByNumber, getSetsForCollection } from './sets';
 
 function makeChainMock() {
@@ -41,16 +42,22 @@ function makeChainMock() {
   };
 }
 
-const mock = makeChainMock();
-
+// Self-contained factory — captures nothing from outer scope, so the
+// hoisting order of jest.mock vs the `mock` const declaration below
+// can't trigger a TDZ on `mock` if a future refactor of ./sets calls
+// getSupabaseClient at module-init time. The proxy gets wired up via
+// mockReturnValue in beforeEach.
 jest.mock('./client', () => ({
-  getSupabaseClient: () => mock.proxy,
+  getSupabaseClient: jest.fn(),
 }));
+
+const mock = makeChainMock();
 
 beforeEach(() => {
   mock.calls.length = 0;
   mock.__resolveMembership({ data: { id: 'membership-row' }, error: null });
   mock.__resolveSets({ data: [], error: null });
+  (getSupabaseClient as jest.Mock).mockReturnValue(mock.proxy);
 });
 
 describe('getSetsForCollection', () => {
