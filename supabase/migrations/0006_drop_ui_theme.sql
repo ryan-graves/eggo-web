@@ -12,6 +12,6 @@
 -- ============================================================================
 
 alter table public.user_preferences
-  drop column ui_theme;
+  drop column if exists ui_theme;
 
-drop type public.ui_theme;
+drop type if exists public.ui_theme;

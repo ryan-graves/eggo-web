@@ -128,9 +128,10 @@
    a 90–112px display size, which gives the wordmark→tagline jump the
    editorial weight the catalog grid balances against.
 
-   Font-family + normal weight come from theme.css's `h1` rule (since
-   plain `.tagline` doesn't redeclare them); the clamp font-size and
-   tighter letter-spacing are the marketing-display overrides. */
+   Font-family, weight, and the baseline letter-spacing come from the
+   shared .wordmark/.tagline block above (its values match theme.css's
+   h1 element rule). This block layers the marketing-display font-size
+   clamp, a tighter editorial line-height, and text-wrap balance on top. */
 .tagline {
   align-self: stretch;
   font-size: clamp(var(--font-size-5xl), 7vw, var(--font-size-7xl));

@@ -316,7 +316,7 @@ function MarketingSetTile({ set }: { set: LegoSet }): React.JSX.Element {
         <p className={styles.tileName}>{set.name}</p>
         <p className={styles.tileNumber}>
           #{set.setNumber}
-          {set.pieceCount != null && ` • ${set.pieceCount} pcs`}
+          {set.pieceCount != null && ` • ${set.pieceCount.toLocaleString()} pcs`}
         </p>
         {set.theme && <p className={styles.tileTheme}>{set.theme}</p>}
         <div className={styles.tileMeta}>
