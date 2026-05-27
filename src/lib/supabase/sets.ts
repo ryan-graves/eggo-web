@@ -275,11 +275,25 @@ export async function findSetByNumber(
   return data ? fromDb(data as SetRow) : null;
 }
 
+/**
+ * Find existing sets with a given set number in a collection. Used by
+ * the add-set flow for duplicate detection. Same membership gate as
+ * `getSetsForCollection` — non-members get an empty result.
+ */
 export async function findSetsByNumber(
   collectionId: string,
-  setNumber: string
+  setNumber: string,
+  userId?: string,
 ): Promise<LegoSet[]> {
   const supabase = getSupabaseClient();
+  if (userId) {
+    const { data: isMember, error: rpcErr } = await supabase.rpc('is_collection_member', {
+      coll_id: collectionId,
+      uid: userId,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    if (!isMember) return [];
+  }
   const { data, error } = await supabase
     .from(TABLE)
     .select('*')
