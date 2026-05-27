@@ -199,9 +199,11 @@ h3 {
 
 /*
  * Capsule buttons everywhere — the system's most distinctive component
- * signature. `!important` mirrors the previous Mono-scoped rule; CSS
- * Modules can opt out via tag-prefixed selectors if a one-off non-pill
- * button ever needs to ship.
+ * signature. `!important` is deliberate: it ensures a CSS Module
+ * declaring `border-radius` on a button element can't accidentally
+ * de-capsule it. A one-off non-pill button (should be rare) opts out
+ * with its own `!important` override on a more specific selector;
+ * specificity alone is not enough.
  */
 button,
 [role='button'],
