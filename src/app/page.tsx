@@ -105,16 +105,16 @@ const HERO_SETS: LegoSet[] = [
  */
 const FEATURES = [
   {
-    heading: 'Just the number.',
-    body: 'Type a set’s number and Eggo fills in the rest: name, theme, piece count, year, and a clean cutout of the box photo.',
+    heading: 'Add your collection quickly and easily.',
+    body: 'Type a set’s number and Eggo fills in the rest: name, theme, piece count, year, and a clean image of the set.',
   },
   {
     heading: 'Remember when and how you got it.',
-    body: 'Note the date a set arrived, the occasion, who gave it to you. Each set carries that history alongside the brick count.',
+    body: 'Note the date you got a set, the occasion, who gave it to you. Each set carries that history alongside the brick count.',
   },
   {
     heading: 'Search, filter, share.',
-    body: 'Filter by theme, owner, or build status. Send someone a public link to your collection; they don’t need to sign up to look.',
+    body: 'Filter by theme, owner, or build status. Share a public link, with whichever details you want visible.',
   },
 ] as const;
 
