@@ -244,7 +244,12 @@ export default function HomePage(): React.JSX.Element {
       <footer className={styles.footer}>
         <p className={styles.footerWordmark}>Eggo</p>
         <p className={styles.footerCredit}>
-          A small project by Ryan Graves · © {new Date().getFullYear()}
+          A small project by Ryan Graves · ©{' '}
+          {/* Suppress hydration warning on just the year: if the build
+              crosses Dec 31 → Jan 1 (or the server/client disagree for
+              any other reason) the strings differ by 4 characters with
+              no layout impact, and we'd rather not warn over it. */}
+          <span suppressHydrationWarning>{new Date().getFullYear()}</span>
           {APP_VERSION ? ` · v${APP_VERSION}` : ''}
         </p>
       </footer>

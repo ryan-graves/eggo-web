@@ -3,9 +3,14 @@
  *
  * Composition: two-column hero (text-left, decorative catalog mockup right)
  * at desktop, stacked on mobile. A 3-column text-only features block sits
- * underneath, then a quiet footer. The catalog mockup uses the real
- * SetCard component so it inherits theming, hover, and any future layout
- * changes without further marketing edits.
+ * underneath, then a quiet footer.
+ *
+ * The catalog mockup uses `MarketingSetTile` (defined inline in
+ * `page.tsx`) rather than the real `SetCard`. SetCard's paddings, text
+ * sizes, and badge sizes reference fixed --space-/--font-size- tokens
+ * that don't shrink proportionally when forced narrow — tiles end up
+ * tall and skinny. MarketingSetTile is sized natively for the
+ * catalog-preview thumbnail use case.
  */
 
 .page {
