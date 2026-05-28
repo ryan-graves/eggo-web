@@ -89,6 +89,29 @@ function toDb(input: Partial<LegoSet>): Record<string, unknown> {
   return out;
 }
 
+/**
+ * RLS-bound membership probe. Returns true if the JWT-authenticated
+ * user is a member of the given collection. Non-spoofable: RLS on
+ * `collection_members` uses `auth.uid()`, so the result reflects who
+ * the supabase-js client's JWT says they are, not anything passed in
+ * from the client.
+ *
+ * Shared by `getSetsForCollection` and `findSetsByNumber` — security-
+ * relevant gating, kept as one implementation so the two call sites
+ * can't silently drift. See issue #58 / PR #59.
+ */
+async function isCurrentUserCollectionMember(collectionId: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('collection_members')
+    .select('id')
+    .eq('collection_id', collectionId)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data != null;
+}
+
 export async function createSet(data: CreateLegoSetInput): Promise<string> {
   const supabase = getSupabaseClient();
   const { data: row, error } = await supabase
@@ -128,22 +151,8 @@ export async function getSetsForCollection(
   collectionId: string,
   userId?: string,
 ): Promise<LegoSet[]> {
+  if (userId && !(await isCurrentUserCollectionMember(collectionId))) return [];
   const supabase = getSupabaseClient();
-  if (userId) {
-    // RLS on `collection_members` is
-    // `is_collection_member(collection_id, auth.uid())`, so a
-    // non-member sees zero rows regardless of any uid they pass on
-    // the client side. Null result means "not a member of this
-    // collection per the JWT" — return [] and skip the set fetch.
-    const { data: membership, error: membershipErr } = await supabase
-      .from('collection_members')
-      .select('id')
-      .eq('collection_id', collectionId)
-      .limit(1)
-      .maybeSingle();
-    if (membershipErr) throw new Error(membershipErr.message);
-    if (!membership) return [];
-  }
   const { data, error } = await supabase
     .from(TABLE)
     .select('*')
@@ -297,20 +306,8 @@ export async function findSetsByNumber(
   setNumber: string,
   userId?: string,
 ): Promise<LegoSet[]> {
+  if (userId && !(await isCurrentUserCollectionMember(collectionId))) return [];
   const supabase = getSupabaseClient();
-  if (userId) {
-    // RLS-bound membership probe — see getSetsForCollection for the
-    // full rationale. The `userId` parameter is a signal, not the
-    // gate value; the JWT's auth.uid() drives the actual check.
-    const { data: membership, error: membershipErr } = await supabase
-      .from('collection_members')
-      .select('id')
-      .eq('collection_id', collectionId)
-      .limit(1)
-      .maybeSingle();
-    if (membershipErr) throw new Error(membershipErr.message);
-    if (!membership) return [];
-  }
   const { data, error } = await supabase
     .from(TABLE)
     .select('*')

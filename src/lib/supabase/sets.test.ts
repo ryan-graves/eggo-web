@@ -26,7 +26,12 @@ function makeChainMock() {
     if (method === 'order') return Promise.resolve(setsResolved);
     return proxy;
   };
-  for (const m of ['from', 'select', 'eq', 'limit', 'maybeSingle', 'order']) {
+  // `rpc` is listed even though no production path calls it — the
+  // negative assertion in `getSetsForCollection`'s test (no `.rpc`
+  // calls) would otherwise fail with a confusing TypeError if rpc
+  // were reintroduced. With it in the proxy, the call is recorded
+  // and `expect(...).toBeUndefined()` fires with a clear message.
+  for (const m of ['from', 'select', 'eq', 'limit', 'maybeSingle', 'order', 'rpc']) {
     proxy[m] = handler(m);
   }
 
