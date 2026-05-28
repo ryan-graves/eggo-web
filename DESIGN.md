@@ -229,11 +229,9 @@ The implication for new code:
   rule paint them.
 - **Only declare a font property on a class when you actually want to deviate** from
   the system scale: an oversized marketing display (the landing `.tagline` /
-  `.featureHeading` pattern), or the header page-title exception below.
-- **Page titles in the Header are the standing exception.** Per the Navigation
-  section below, page title is Inter Semibold; the `.title` class in
-  `Header.module.css` and the share-route header re-declares font-family + size +
-  weight to override the theme h1.
+  `.featureHeading` pattern), or a size override for a cramped container (the
+  Header's `.title` declares only `font-size: lg` because Display-scale 28px
+  doesn't fit in the header bar — it still inherits Instrument Serif from `h1`).
 
 ### Named Rules
 
@@ -313,7 +311,9 @@ response to hover and focus. They feel clickable without resorting to decoration
 - A floating, fully-contained bar: it sticks a small margin below the viewport top,
   sits on a neutral surface with a 1px border, and is heavily rounded (`radius 2xl`,
   20px) so it reads as a discrete object, not an edge-to-edge chrome strip.
-- The "Eggo" wordmark uses Instrument Serif. Page title is Inter semibold, truncated.
+- The "Eggo" wordmark and page title both render in Instrument Serif (the system
+  default). The page title is sized one step down from Display scale to fit the
+  header bar, and truncates with an ellipsis when too long.
 - The back button and right-side actions are 40px neutral icon buttons.
 
 ### Modals (Drawer)
