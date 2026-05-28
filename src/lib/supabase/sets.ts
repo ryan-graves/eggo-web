@@ -89,6 +89,29 @@ function toDb(input: Partial<LegoSet>): Record<string, unknown> {
   return out;
 }
 
+/**
+ * RLS-bound membership probe. Returns true if the JWT-authenticated
+ * user is a member of the given collection. Non-spoofable: RLS on
+ * `collection_members` uses `auth.uid()`, so the result reflects who
+ * the supabase-js client's JWT says they are, not anything passed in
+ * from the client.
+ *
+ * Shared by `getSetsForCollection` and `findSetsByNumber` — security-
+ * relevant gating, kept as one implementation so the two call sites
+ * can't silently drift. See issue #58 / PR #59.
+ */
+async function isCurrentUserCollectionMember(collectionId: string): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('collection_members')
+    .select('id')
+    .eq('collection_id', collectionId)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data != null;
+}
+
 export async function createSet(data: CreateLegoSetInput): Promise<string> {
   const supabase = getSupabaseClient();
   const { data: row, error } = await supabase
@@ -111,7 +134,24 @@ export async function getSet(setId: string): Promise<LegoSet | null> {
   return data ? fromDb(data as SetRow) : null;
 }
 
-export async function getSetsForCollection(collectionId: string): Promise<LegoSet[]> {
+/**
+ * Fetch all sets in a collection. When `userId` is provided, gates the
+ * read on membership via an RLS-bound probe of `collection_members`
+ * and returns `[]` if the JWT user isn't a member — defense in depth
+ * for issue #58. Without `userId`, falls back to RLS-only behavior
+ * (used by /share/{token} viewers, which are intentional non-member
+ * readers of public collections).
+ *
+ * The `userId` parameter is only a signal "perform the gate"; the
+ * actual membership check derives from `auth.uid()` via RLS on
+ * `collection_members`, so it can't be spoofed by passing a known
+ * member's uid (which the earlier RPC-based check allowed).
+ */
+export async function getSetsForCollection(
+  collectionId: string,
+  userId?: string,
+): Promise<LegoSet[]> {
+  if (userId && !(await isCurrentUserCollectionMember(collectionId))) return [];
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from(TABLE)
@@ -126,9 +166,16 @@ export async function getSetsForCollection(collectionId: string): Promise<LegoSe
  * Realtime subscription on sets within a single collection. Refetches on any
  * row-level change rather than applying deltas — fine at our scale and avoids
  * having to reconcile postgres_changes payloads against an in-memory list.
+ *
+ * `userId` is the membership gate: refetches go through
+ * `getSetsForCollection(collectionId, userId)`, so a non-member who
+ * somehow got this collection id (stale localStorage, leaked URL) gets
+ * an empty list rather than the public-RLS read of the collection's
+ * sets. See issue #58.
  */
 export function subscribeToSetsForCollection(
   collectionId: string,
+  userId: string,
   callback: (sets: LegoSet[]) => void,
   onError?: (error: Error) => void
 ): () => void {
@@ -139,7 +186,7 @@ export function subscribeToSetsForCollection(
 
   const refetch = async () => {
     try {
-      const sets = await getSetsForCollection(collectionId);
+      const sets = await getSetsForCollection(collectionId, userId);
       if (cancelled) return;
       callback(sets);
     } catch (err) {
@@ -249,10 +296,17 @@ export async function findSetByNumber(
   return data ? fromDb(data as SetRow) : null;
 }
 
+/**
+ * Find existing sets with a given set number in a collection. Used by
+ * the add-set flow for duplicate detection. Same membership gate as
+ * `getSetsForCollection` — non-members get an empty result.
+ */
 export async function findSetsByNumber(
   collectionId: string,
-  setNumber: string
+  setNumber: string,
+  userId?: string,
 ): Promise<LegoSet[]> {
+  if (userId && !(await isCurrentUserCollectionMember(collectionId))) return [];
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from(TABLE)

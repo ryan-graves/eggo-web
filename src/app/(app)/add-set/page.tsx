@@ -5,6 +5,7 @@ import { flushSync } from 'react-dom';
 import Image from 'next/image';
 import { useNavigation } from '@/hooks/useNavigation';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { createSet, findSetsByNumber } from '@/lib/supabase';
@@ -53,6 +54,7 @@ const STAGE_MIN_DURATION: Record<ImageProcessingStage, number> = {
 
 function AddSetContent(): React.JSX.Element {
   const { router } = useNavigation();
+  const { user } = useAuth();
   const { activeCollection, isInitializing } = useCollection();
 
   const collectionId = activeCollection?.id ?? '';
@@ -197,9 +199,9 @@ function AddSetContent(): React.JSX.Element {
 
         try {
           const trimmed = setNumber.trim();
-          const duplicateChecks = [findSetsByNumber(collectionId, trimmed)];
+          const duplicateChecks = [findSetsByNumber(collectionId, trimmed, user?.id)];
           if (result.setNumber !== trimmed) {
-            duplicateChecks.push(findSetsByNumber(collectionId, result.setNumber));
+            duplicateChecks.push(findSetsByNumber(collectionId, result.setNumber, user?.id));
           }
           const results = await Promise.all(duplicateChecks);
 

@@ -41,6 +41,26 @@ function fromDb(row: CollectionRow): Collection {
 const COLLECTION_SELECT = '*, collection_members(user_id)';
 
 /**
+ * Member-scoped variant of COLLECTION_SELECT. The `!inner` modifier
+ * turns the collection_members embed into an inner join, so collections
+ * with no matching member row drop out. Pair with
+ * `.eq('collection_members.user_id', userId)` to filter to just one
+ * user's memberships.
+ *
+ * Critical: RLS allows public-collection reads to any authenticated
+ * user (the `is_public = true` clause is intended for /share/{token}
+ * viewers). Relying on RLS alone leaks those public collections into
+ * authenticated home views. See GitHub issue #58.
+ *
+ * Side effect: the embedded `collection_members` array now only
+ * contains the matching user's row, so `memberUserIds` ends up as
+ * `[userId]`. Nothing in the codebase currently consumes the full
+ * member list (verified with grep at the time of the fix); when that
+ * changes, fetch the member list separately.
+ */
+const COLLECTION_SELECT_FOR_MEMBER = '*, collection_members!inner(user_id)';
+
+/**
  * Create a new collection via the server-side API route, which uses the
  * secret key to bypass RLS for the membership insert.
  */
@@ -71,24 +91,39 @@ export async function createCollection(data: {
   return result.id;
 }
 
-export async function getCollection(collectionId: string): Promise<Collection | null> {
+/**
+ * Fetch one collection by id. When `userId` is provided, the read is
+ * scoped to collections the user is a member of (returns null for non-
+ * members) — see issue #58. When omitted, falls back to RLS-only
+ * behavior (the legacy public-share / internal-helper path).
+ */
+export async function getCollection(
+  collectionId: string,
+  userId?: string,
+): Promise<Collection | null> {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from(TABLE)
-    .select(COLLECTION_SELECT)
-    .eq('id', collectionId)
-    .maybeSingle();
+    .select(userId ? COLLECTION_SELECT_FOR_MEMBER : COLLECTION_SELECT)
+    .eq('id', collectionId);
+  if (userId) query = query.eq('collection_members.user_id', userId);
+  const { data, error } = await query.maybeSingle();
   if (error) throw new Error(error.message);
   return data ? fromDb(data as CollectionRow) : null;
 }
 
-export async function getCollectionsForUser(_userId: string): Promise<Collection[]> {
-  // RLS already filters to collections where the authenticated user is a
-  // member, so the userId parameter is informational. Kept for API parity.
+/**
+ * Fetch all collections the user is a member of. Explicit application-
+ * layer filter on `collection_members.user_id` — do not rely on RLS,
+ * which also allows public-collection reads (intended for share-link
+ * viewers, not for authenticated home views).
+ */
+export async function getCollectionsForUser(userId: string): Promise<Collection[]> {
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from(TABLE)
-    .select(COLLECTION_SELECT)
+    .select(COLLECTION_SELECT_FOR_MEMBER)
+    .eq('collection_members.user_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => fromDb(row as CollectionRow));
@@ -121,7 +156,8 @@ export function subscribeToCollectionsForUser(
     try {
       const { data, error } = await supabase
         .from(TABLE)
-        .select(COLLECTION_SELECT)
+        .select(COLLECTION_SELECT_FOR_MEMBER)
+        .eq('collection_members.user_id', userId)
         .order('created_at', { ascending: false });
       if (unmounted) return;
       if (error) throw error;
