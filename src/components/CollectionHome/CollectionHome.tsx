@@ -3,29 +3,42 @@
 import { useMemo, useState } from 'react';
 import { SetCarousel } from '@/components/SetCarousel';
 import { HomeSectionsSheet } from '@/components/HomeSectionsSheet';
-import { useHomeSections } from '@/hooks/useUserPreferences';
 import type { LegoSet, HomeSectionConfig } from '@/types';
 import { resolveSection, DEFAULT_HOME_SECTIONS } from './sectionRegistry';
 import styles from './CollectionHome.module.css';
 
 interface CollectionHomeProps {
   sets: LegoSet[];
-  /** When true, hides customize UI and uses default sections (for public view) */
+  /**
+   * The collection's saved home layout. Falls back to DEFAULT_HOME_SECTIONS
+   * when undefined. Shared by all members and inherited by the public link.
+   */
+  sections?: HomeSectionConfig[];
+  /** When true, hides the customize UI (public share view) */
   readOnly?: boolean;
+  /** Persists a new layout. Required to enable the customize UI. */
+  onSaveSections?: (sections: HomeSectionConfig[]) => void;
   /** Link prefix for set detail URLs (e.g., '/share/abc123/set') */
   linkPrefix?: string;
   /** Hide status badges on cards */
   hideStatus?: boolean;
 }
 
-export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus }: CollectionHomeProps): React.JSX.Element {
-  const { homeSections, setHomeSections } = useHomeSections();
+export function CollectionHome({
+  sets,
+  sections,
+  readOnly = false,
+  onSaveSections,
+  linkPrefix,
+  hideStatus,
+}: CollectionHomeProps): React.JSX.Element {
   const [showCustomize, setShowCustomize] = useState(false);
   // One seed per mount keeps random sections (Discover) stable across the
   // realtime refetches that would otherwise reshuffle them under the user.
   const [shuffleSeed] = useState(() => Math.random());
 
-  const sectionConfigs = readOnly ? DEFAULT_HOME_SECTIONS : (homeSections ?? DEFAULT_HOME_SECTIONS);
+  const canCustomize = !readOnly && !!onSaveSections;
+  const sectionConfigs = sections ?? DEFAULT_HOME_SECTIONS;
 
   const availableThemes = useMemo(() => {
     const themeSet = new Set<string>();
@@ -35,7 +48,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
     return Array.from(themeSet).sort();
   }, [sets]);
 
-  const sections = useMemo(() => {
+  const resolvedSections = useMemo(() => {
     return sectionConfigs
       .map((config) => {
         const resolved = resolveSection(config);
@@ -58,7 +71,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
   }, [sectionConfigs, sets, readOnly, shuffleSeed]);
 
   const handleSaveSections = (newSections: HomeSectionConfig[]): void => {
-    setHomeSections(newSections);
+    onSaveSections?.(newSections);
     setShowCustomize(false);
   };
 
@@ -73,7 +86,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
 
   return (
     <div className={styles.container}>
-      {!readOnly && (
+      {canCustomize && (
         <div className={styles.customizeRow}>
           <button
             type="button"
@@ -98,10 +111,10 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
         </div>
       )}
 
-      {sections.length === 0 ? (
+      {resolvedSections.length === 0 ? (
         <div className={styles.emptySections}>
           <p>None of your home sections have matching sets.</p>
-          {!readOnly && (
+          {canCustomize && (
             <button
               type="button"
               className={styles.customizeLinkButton}
@@ -112,7 +125,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
           )}
         </div>
       ) : (
-        sections.map((section) => (
+        resolvedSections.map((section) => (
           <SetCarousel
             key={section.id}
             title={section.title}
@@ -128,7 +141,7 @@ export function CollectionHome({ sets, readOnly = false, linkPrefix, hideStatus 
         ))
       )}
 
-      {!readOnly && (
+      {canCustomize && (
         <HomeSectionsSheet
           isOpen={showCustomize}
           onClose={() => setShowCustomize(false)}
