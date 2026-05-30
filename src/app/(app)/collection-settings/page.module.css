@@ -5,7 +5,7 @@
   flex-direction: column;
   padding: calc(var(--space-3) + env(safe-area-inset-top))
     calc(var(--space-3) + env(safe-area-inset-right))
-    0
+    calc(var(--space-3) + env(safe-area-inset-bottom))
     calc(var(--space-3) + env(safe-area-inset-left));
   gap: var(--space-3);
   background-color: var(--surface-background);
@@ -15,15 +15,10 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.container {
-  max-width: var(--max-width-form);
+  max-width: var(--max-width-settings);
   margin: 0 auto;
   padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  width: 100%;
 }
 
 .loading {
@@ -34,82 +29,278 @@
   color: var(--text-secondary);
 }
 
-.hint {
-  font-size: var(--font-size-xs);
+.section {
+  margin-bottom: var(--space-8);
+}
+
+/* Section title. Font-family / weight / size come from theme.css's h2 rule
+   (Instrument Serif 20px); only the color diverges. */
+.sectionTitle {
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4) 0;
+}
+
+/* Flat at rest: tonal surface + 1px hairline, no resting shadow. */
+.card {
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+/* ==========================================================================
+ * Inline-edit fields (name, owners)
+ * ========================================================================== */
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.fieldText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.fieldLabel {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.fieldValue {
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fieldEmpty {
   color: var(--text-tertiary);
+}
+
+.fieldDivider {
+  height: 1px;
+  background-color: var(--border-primary);
+  margin: var(--space-4) 0;
+}
+
+.fieldEditing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fieldEditActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
   margin-top: var(--space-1);
 }
 
-/* Footer */
-.footer {
+.hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* ==========================================================================
+ * Sharing
+ * ========================================================================== */
+
+.settingDescription {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.toggleLabel {
   display: flex;
-  gap: var(--space-3);
-  justify-content: flex-end;
-  max-width: var(--max-width-form);
-  margin: 0 auto;
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  cursor: pointer;
+}
+
+.toggleText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.toggleTitle {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.toggleDescription {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.toggle {
+  position: relative;
+  width: var(--size-toggle-width);
+  height: var(--size-toggle-height);
+  padding: 0;
+  background-color: var(--surface-tertiary);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
   flex-shrink: 0;
 }
 
-/* Danger Zone */
-.dangerZone {
-  padding-top: var(--space-5);
+.toggle:disabled {
+  opacity: var(--opacity-muted);
+  cursor: not-allowed;
+}
+
+.toggleOn {
+  background-color: var(--interactive-primary);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: var(--toggle-knob-inset);
+  left: var(--toggle-knob-inset);
+  width: var(--size-toggle-knob);
+  height: var(--size-toggle-knob);
+  background-color: var(--surface-primary);
+  border-radius: var(--radius-full);
+  transition: transform var(--transition-fast);
+  box-shadow: var(--shadow-toggle-knob);
+}
+
+.toggleOn .toggleKnob {
+  transform: translateX(var(--toggle-knob-offset));
+}
+
+.shareUrlContainer {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+/* Pill input to resolve cleanly against the capsule Copy button beside it. */
+.shareUrlInput {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  cursor: text;
+}
+
+.shareUrlInput:focus {
+  outline: none;
+  border-color: var(--interactive-primary);
+}
+
+.viewSettingsSection {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
   border-top: 1px solid var(--border-primary);
 }
 
-/* Danger zone title. Heading typography comes from theme.css's h3
-   rule (the Title scale: Instrument Serif 18px). Only the status-
-   error color is local. */
-.dangerTitle {
-  color: var(--status-error);
-  margin: 0 0 var(--space-2) 0;
+.viewSettingsTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1) 0;
 }
 
-.dangerDescription {
+.viewSettingsDescription {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   margin: 0 0 var(--space-3) 0;
 }
 
-.deleteButton {
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--status-error);
-  background-color: var(--status-error-bg);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: opacity var(--transition-fast);
-}
-
-.deleteButton:hover:not(:disabled) {
-  opacity: var(--opacity-subtle);
-}
-
-.deleteButton:disabled {
-  opacity: var(--opacity-disabled);
-  cursor: not-allowed;
-}
-
-/* Delete confirmation */
-.deleteConfirmSection {
+.viewSettingsOptions {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-1);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.checkboxLabel:hover {
+  background-color: var(--surface-secondary);
+}
+
+/* Monochrome checkbox: native accent-color leaks the OS hue (usually blue),
+   breaking the Monochrome Rule. Draw our own tick from the gray ramp. The
+   check glyph is a rotated open-corner box (the classic CSS checkmark), so
+   its color stays a theme token and there's no data-URI for the bundler to
+   choke on. */
+.checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: var(--size-checkbox);
+  height: var(--size-checkbox);
+  margin: 0;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-primary);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.checkbox::before {
+  content: '';
+  width: 0.3125rem;
+  height: 0.5625rem;
+  margin-bottom: 0.125rem;
+  border: solid var(--text-inverse);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform var(--transition-fast);
+}
+
+.checkbox:checked {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary);
+}
+
+.checkbox:checked::before {
+  transform: rotate(45deg) scale(1);
+}
+
+.checkbox:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+ * Delete
+ * ========================================================================== */
+
+.deleteConfirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .deleteWarning {
-  font-size: var(--font-size-base);
   color: var(--text-primary);
-  margin: 0;
-}
-
-.deleteNote {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -124,12 +315,20 @@
   .page {
     padding: calc(var(--space-2) + env(safe-area-inset-top))
       calc(var(--space-2) + env(safe-area-inset-right))
-      0
+      calc(var(--space-2) + env(safe-area-inset-bottom))
       calc(var(--space-2) + env(safe-area-inset-left));
     gap: var(--space-2);
   }
 
-  .container {
+  .main {
     padding: var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checkbox,
+  .checkbox::before,
+  .toggleKnob {
+    transition: none;
   }
 }
