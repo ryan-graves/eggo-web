@@ -66,3 +66,6 @@ debug-storybook.log
 
 # Local screenshot/critique artifacts
 .impeccable/
+
+# Playwright MCP scratch (snapshots, console logs, screenshots)
+.playwright-mcp/

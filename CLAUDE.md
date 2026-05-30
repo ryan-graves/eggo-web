@@ -70,6 +70,35 @@ npm run e2e          # Run Playwright tests
 npm run storybook    # Start Storybook
 ```
 
+## Local Dev Login (UI verification without Google OAuth)
+
+The app's auth is client-side (Supabase session in `localStorage`, guarded by
+`ProtectedRoute`), so every real view is behind Google sign-in. For local
+verification (design reviews, screenshots, browser automation) there is a
+localhost-only backdoor that signs in as a disposable **test account** which
+mirrors a real one.
+
+Setup (one time):
+
+1. Set the dev-login vars in `.env.local` (see `.env.local.example`):
+   `DEV_LOGIN_ENABLED`, `NEXT_PUBLIC_DEV_LOGIN_ENABLED`, `DEV_LOGIN_SOURCE_EMAIL`
+   (account to clone from), `DEV_LOGIN_EMAIL` / `DEV_LOGIN_PASSWORD` (the test
+   account).
+2. `node scripts/seed-test-account.mjs` — creates the test user and clones the
+   source account's collections + sets into it (idempotent; re-run to reset to a
+   clean mirror). Set rows reference public Storage image URLs, so no files are
+   copied.
+3. Visit `http://localhost:3000/dev-login` — mints a session for the test
+   account and redirects to `/home`. Browser automation can hit this URL to
+   become authenticated in one navigation.
+
+The test account is fully independent: add/edit/delete sets and tweak
+collection/sharing settings there without touching the real account.
+
+**Never set the `DEV_LOGIN_*` vars in Netlify/production.** `/api/dev/login` is
+hard-gated to `NODE_ENV !== 'production'` + localhost and is permanently 404 in
+prod, but keeping the flags out of prod env is the first line of defense.
+
 ## Code Style Guidelines
 
 ### TypeScript
