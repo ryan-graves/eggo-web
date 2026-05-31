@@ -195,6 +195,11 @@ function CollectionSettingsContent(): React.JSX.Element {
       setShareUrl(null);
     }
     // Keyed on primitives, not the unstable realtime snapshot reference.
+    // publicViewSettings is intentionally omitted: it's an object whose ref
+    // changes on every realtime refetch, so depending on it would re-run this
+    // effect constantly and clobber in-progress optimistic toggles. It's seeded
+    // here on mount / when sharing flips on; live edits are driven locally by
+    // handleViewSettingChange.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collectionId, activeCollection?.isPublic, activeCollection?.publicShareToken]);
 
@@ -253,7 +258,9 @@ function CollectionSettingsContent(): React.JSX.Element {
       try {
         await updatePublicViewSettings(collectionId, newSettings);
       } catch (err) {
-        setViewSettings(viewSettings); // revert optimistic toggle
+        // Revert only this field, not the whole snapshot — a concurrent toggle
+        // of another field must not be clobbered if this request fails.
+        setViewSettings((prev) => ({ ...prev, [key]: !value }));
         toast.error("Couldn't update visibility", {
           description: err instanceof Error ? err.message : undefined,
         });

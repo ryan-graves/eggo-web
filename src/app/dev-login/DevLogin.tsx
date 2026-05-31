@@ -41,7 +41,7 @@ export function DevLogin(): React.JSX.Element {
   }, [router]);
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif', color: '#52525b' }}>
+    <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif', color: 'var(--text-secondary)' }}>
       {status}
     </main>
   );
