@@ -70,6 +70,44 @@ npm run e2e          # Run Playwright tests
 npm run storybook    # Start Storybook
 ```
 
+## Local Dev Login (UI verification without Google OAuth)
+
+The app's auth is client-side (Supabase session in `localStorage`, guarded by
+`ProtectedRoute`), so every real view is behind Google sign-in. For local
+verification (design reviews, screenshots, browser automation) there is a
+localhost-only backdoor that signs in as a disposable **test account** which
+mirrors a real one.
+
+Setup (one time):
+
+1. Apply migration `supabase/migrations/0008_add_seed_flag_to_collections.sql`
+   (adds `collections.is_seed_data`).
+2. Set the dev-login vars in `.env.local` (see `.env.local.example`):
+   `DEV_LOGIN_ENABLED`, `NEXT_PUBLIC_DEV_LOGIN_ENABLED`, `DEV_LOGIN_SOURCE_EMAIL`
+   (account to clone from), `DEV_LOGIN_EMAIL` / `DEV_LOGIN_PASSWORD` (the test
+   account).
+3. `node scripts/seed-test-account.mjs` — creates the test user (flagged
+   `app_metadata.seed = true`) and clones the source account's collections + sets
+   into it (flagged `is_seed_data = true`; idempotent, re-run to reset to a clean
+   mirror). Set rows reference public Storage image URLs, so no files are copied.
+4. Visit `http://localhost:3000/dev-login` — mints a session for the test
+   account and redirects to `/home`. Browser automation can hit this URL to
+   become authenticated in one navigation.
+
+The test account is fully independent: add/edit/delete sets and tweak
+collection/sharing settings there without touching the real account. Remove it
+entirely with `node scripts/teardown-test-account.mjs`.
+
+**Safety:** the seed/teardown scripts and `/api/dev/login` all require the
+`app_metadata.seed` flag and only delete `is_seed_data` collections, so a
+misconfigured `DEV_LOGIN_EMAIL` pointing at a real account can't be
+password-reset, wiped, or impersonated.
+
+**Never set the `DEV_LOGIN_*` vars in Netlify/production.** `/dev-login` and
+`/api/dev/login` are hard-gated to `NODE_ENV !== 'production'` + localhost and
+are permanently 404 in prod, but keeping the flags out of prod env is the first
+line of defense.
+
 ## Code Style Guidelines
 
 ### TypeScript

@@ -22,20 +22,21 @@
   margin-bottom: var(--space-8);
 }
 
-/* Section title (Account, Color Mode, Sharing, About). Plain class —
-   font-family / weight / size come from theme.css's h2 rule
-   (Instrument Serif 20px). Only properties that diverge from the
-   theme heading default need to live here. */
+/* Section title (Account, Color Mode, About). Plain class — font-family /
+   weight / size come from theme.css's h2 rule (Instrument Serif 20px).
+   Only properties that diverge from the theme heading default live here. */
 .sectionTitle {
   color: var(--text-primary);
   margin: 0 0 var(--space-4) 0;
 }
 
+/* Flat at rest: depth comes from the tonal surface step + a 1px hairline,
+   never a resting shadow (per the Display Shelf system). */
 .card {
   background-color: var(--surface-primary);
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  box-shadow: var(--shadow-card);
 }
 
 .accountInfo {
@@ -75,19 +76,12 @@
   color: var(--status-error);
   background-color: var(--status-error-bg);
   border: none;
-  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: background-color var(--transition-fast);
 }
 
 .signOutButton:hover {
-  opacity: var(--opacity-subtle);
-}
-
-.settingDescription {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin: 0 0 var(--space-4) 0;
+  background-color: var(--status-error-bg-hover);
 }
 
 .themeOptions {
@@ -110,9 +104,47 @@
   background-color: var(--surface-secondary);
 }
 
+/* Monochrome radio: native accent-color leaks the OS hue (usually blue),
+   which violates the Monochrome Rule. Draw our own from the gray ramp. */
 .themeRadio {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: var(--size-checkbox);
+  height: var(--size-checkbox);
+  margin: 0;
   margin-top: var(--space-0-5);
-  accent-color: var(--interactive-primary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-full);
+  background-color: var(--surface-primary);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.themeRadio::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--text-inverse);
+  transform: scale(0);
+  transition: transform var(--transition-fast);
+}
+
+.themeRadio:checked {
+  border-color: var(--interactive-primary);
+  background-color: var(--interactive-primary);
+}
+
+.themeRadio:checked::before {
+  transform: scale(1);
+}
+
+.themeRadio:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 
 .themeContent {
@@ -142,165 +174,6 @@
   margin: 0;
 }
 
-.sharingStatus {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin: var(--space-3) 0 0 0;
-}
-
-/* Sharing section styles */
-.sharingToggle {
-  margin-bottom: var(--space-4);
-}
-
-.toggleLabel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  cursor: pointer;
-}
-
-.toggleText {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.toggleTitle {
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-}
-
-.toggleDescription {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
-
-.toggle {
-  position: relative;
-  width: var(--size-toggle-width);
-  height: var(--size-toggle-height);
-  padding: 0;
-  background-color: var(--surface-tertiary);
-  border: none;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-  flex-shrink: 0;
-}
-
-.toggle:disabled {
-  opacity: var(--opacity-muted);
-  cursor: not-allowed;
-}
-
-.toggleOn {
-  background-color: var(--interactive-primary);
-}
-
-.toggleKnob {
-  position: absolute;
-  top: var(--toggle-knob-inset);
-  left: var(--toggle-knob-inset);
-  width: var(--size-toggle-knob);
-  height: var(--size-toggle-knob);
-  background-color: var(--surface-primary);
-  border-radius: var(--radius-full);
-  transition: transform var(--transition-fast);
-  box-shadow: var(--shadow-toggle-knob);
-}
-
-.toggleOn .toggleKnob {
-  transform: translateX(var(--toggle-knob-offset));
-}
-
-.shareUrlContainer {
-  display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-}
-
-.shareUrlInput {
-  flex: 1;
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  background-color: var(--surface-secondary);
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  cursor: text;
-}
-
-.shareUrlInput:focus {
-  outline: none;
-  border-color: var(--border-focus);
-}
-
-.copyButton {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-inverse);
-  background-color: var(--interactive-primary);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-  white-space: nowrap;
-}
-
-.copyButton:hover {
-  background-color: var(--interactive-primary-hover);
-}
-
-.viewSettingsSection {
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border-secondary);
-}
-
-.viewSettingsTitle {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-1) 0;
-}
-
-.viewSettingsDescription {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin: 0 0 var(--space-3) 0;
-}
-
-.viewSettingsOptions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-}
-
-.checkboxLabel:hover {
-  background-color: var(--surface-secondary);
-}
-
-.checkbox {
-  width: var(--size-checkbox);
-  height: var(--size-checkbox);
-  accent-color: var(--interactive-primary);
-  cursor: pointer;
-}
-
 @media (max-width: 768px) {
   .page {
     padding: calc(var(--space-2) + env(safe-area-inset-top))
@@ -310,12 +183,14 @@
     gap: var(--space-2);
   }
 
-  .header {
-    top: calc(var(--space-2) + env(safe-area-inset-top));
-    padding: var(--space-2) var(--space-3);
-  }
-
   .main {
     padding: var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .themeRadio,
+  .themeRadio::before {
+    transition: none;
   }
 }
