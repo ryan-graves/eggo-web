@@ -89,6 +89,7 @@ function PublicCollectionContent(): React.JSX.Element {
         {showHomeView && activeView === 'home' ? (
           <CollectionHome
             sets={sets}
+            sections={collection.homeSections}
             readOnly
             linkPrefix={linkPrefix}
             hideStatus={hideStatus}

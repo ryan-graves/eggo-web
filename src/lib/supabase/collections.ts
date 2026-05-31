@@ -1,7 +1,7 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { getSupabaseClient } from './client';
 import { getAccessToken } from './auth';
-import type { Collection, PublicViewSettings } from '@/types';
+import type { Collection, HomeSectionConfig, PublicViewSettings } from '@/types';
 
 const TABLE = 'collections';
 
@@ -18,6 +18,7 @@ interface CollectionRow {
   is_public: boolean;
   public_share_token: string | null;
   public_view_settings: PublicViewSettings | null;
+  home_sections: HomeSectionConfig[] | null;
   created_at: string;
   updated_at: string;
   collection_members?: CollectionMemberRow[];
@@ -33,6 +34,7 @@ function fromDb(row: CollectionRow): Collection {
     isPublic: row.is_public,
     publicShareToken: row.public_share_token ?? undefined,
     publicViewSettings: row.public_view_settings ?? undefined,
+    homeSections: row.home_sections ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   } as Collection;
@@ -349,6 +351,25 @@ export async function updatePublicViewSettings(
   const { error } = await supabase
     .from(TABLE)
     .update({ public_view_settings: viewSettings })
+    .eq('id', collectionId);
+  if (error) throw new Error(error.message);
+}
+
+/**
+ * Persist the collection's home view layout. The layout is collection-scoped:
+ * any member can edit it, the change applies to every member, and the public
+ * share link inherits it. An empty array persists an empty layout (a home with
+ * no sections); the default sections are restored via the sheet's explicit
+ * "Reset to defaults" action, which saves a non-empty layout.
+ */
+export async function updateCollectionHomeSections(
+  collectionId: string,
+  homeSections: HomeSectionConfig[]
+): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase
+    .from(TABLE)
+    .update({ home_sections: homeSections })
     .eq('id', collectionId);
   if (error) throw new Error(error.message);
 }

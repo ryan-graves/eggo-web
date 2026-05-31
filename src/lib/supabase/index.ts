@@ -21,6 +21,7 @@ export {
   enablePublicSharing,
   disablePublicSharing,
   updatePublicViewSettings,
+  updateCollectionHomeSections,
 } from './collections';
 export {
   createSet,
@@ -41,6 +42,5 @@ export {
   getUserPreferences,
   setUserPreferences,
   updateThemePreference,
-  updateHomeSections,
   subscribeToUserPreferences,
 } from './userPreferences';

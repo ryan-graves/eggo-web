@@ -1,9 +1,5 @@
 import { getSupabaseClient } from './client';
-import type {
-  HomeSectionConfig,
-  ThemePreference,
-  UserPreferences,
-} from '@/types';
+import type { ThemePreference, UserPreferences } from '@/types';
 
 const TABLE = 'user_preferences';
 
@@ -11,14 +7,12 @@ interface UserPrefsRow {
   id: string;
   user_id: string;
   theme: ThemePreference;
-  home_sections: HomeSectionConfig[] | null;
   updated_at: string;
 }
 
 function fromDb(row: UserPrefsRow): UserPreferences {
   return {
     theme: row.theme,
-    homeSections: row.home_sections ?? undefined,
     updatedAt: row.updated_at,
   } as UserPreferences;
 }
@@ -41,7 +35,6 @@ export async function setUserPreferences(
   const supabase = getSupabaseClient();
   const update: Record<string, unknown> = { user_id: userId };
   if (preferences.theme !== undefined) update.theme = preferences.theme;
-  if (preferences.homeSections !== undefined) update.home_sections = preferences.homeSections;
   const { error } = await supabase
     .from(TABLE)
     .upsert(update, { onConflict: 'user_id' });
@@ -53,13 +46,6 @@ export async function updateThemePreference(
   theme: ThemePreference
 ): Promise<void> {
   await setUserPreferences(userId, { theme });
-}
-
-export async function updateHomeSections(
-  userId: string,
-  homeSections: HomeSectionConfig[]
-): Promise<void> {
-  await setUserPreferences(userId, { homeSections });
 }
 
 /**

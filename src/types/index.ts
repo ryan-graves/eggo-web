@@ -47,7 +47,6 @@ export type HomeSectionConfig =
 
 export interface UserPreferences {
   theme: ThemePreference;
-  homeSections?: HomeSectionConfig[];
   updatedAt: string;
 }
 
@@ -118,6 +117,7 @@ export interface Collection {
   isPublic?: boolean; // Whether collection is publicly viewable
   publicShareToken?: string; // Unique token for public share URL
   publicViewSettings?: PublicViewSettings; // Controls which fields are visible publicly
+  homeSections?: HomeSectionConfig[]; // Home view layout, shared by all members and the public link
   createdAt: string;
   updatedAt: string;
 }
