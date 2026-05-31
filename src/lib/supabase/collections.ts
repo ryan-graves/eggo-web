@@ -358,8 +358,9 @@ export async function updatePublicViewSettings(
 /**
  * Persist the collection's home view layout. The layout is collection-scoped:
  * any member can edit it, the change applies to every member, and the public
- * share link inherits it. Passing an empty array clears the customization and
- * falls back to the application default.
+ * share link inherits it. An empty array persists an empty layout (a home with
+ * no sections); the default sections are restored via the sheet's explicit
+ * "Reset to defaults" action, which saves a non-empty layout.
  */
 export async function updateCollectionHomeSections(
   collectionId: string,
