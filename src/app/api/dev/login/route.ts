@@ -61,6 +61,13 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
+  // Defense in depth: only ever mint a session for a flagged seed account, so a
+  // misconfigured DEV_LOGIN_EMAIL pointing at a real user can't be impersonated.
+  // This, not the spoofable Host header, is the real guard on who gets logged in.
+  if (data.user?.app_metadata?.seed !== true) {
+    return new Response('Not found', { status: 404 });
+  }
+
   return Response.json({
     access_token: data.session.access_token,
     refresh_token: data.session.refresh_token,

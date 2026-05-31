@@ -9,146 +9,81 @@
  * file copying is needed) but completely independent: adding, editing, or
  * deleting sets on the test account never touches the real one.
  *
- * Idempotent: re-running wipes the test user's existing collections/sets and
- * re-clones from source, so you always get a clean mirror.
+ * Safety: the test user is flagged with app_metadata.seed = true and the cloned
+ * collections with is_seed_data = true. The script refuses to reuse an existing
+ * account that is NOT flagged seed (so a misconfigured DEV_LOGIN_EMAIL can't
+ * password-reset or wipe a real account), and only ever deletes is_seed_data
+ * collections. Idempotent: re-running wipes the prior clone and re-clones.
  *
- * Run (Node loads nothing automatically here, so we parse .env.local below):
- *   node scripts/seed-test-account.mjs
+ * Prereq: migration 0008_add_seed_flag_to_collections.sql must be applied.
  *
- * Required env (set in .env.local, never in production):
- *   NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY
- *   DEV_LOGIN_SOURCE_EMAIL   account to clone FROM (your real account)
- *   DEV_LOGIN_EMAIL          test account to clone INTO
- *   DEV_LOGIN_PASSWORD       password set on the test account
+ * Run: node scripts/seed-test-account.mjs
+ *
+ * Required env (.env.local, never production): NEXT_PUBLIC_SUPABASE_URL,
+ * SUPABASE_SECRET_KEY, DEV_LOGIN_SOURCE_EMAIL, DEV_LOGIN_EMAIL, DEV_LOGIN_PASSWORD.
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
-// --- Load .env.local manually so the script is invocation/Node-version
-// independent (no dependency on `node --env-file` or dotenv). ---
-function loadEnvLocal() {
-  let raw;
-  try {
-    raw = readFileSync(resolve(process.cwd(), '.env.local'), 'utf-8');
-  } catch {
-    return; // rely on already-present process.env
-  }
-  for (const line of raw.split('\n')) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    const eq = trimmed.indexOf('=');
-    if (eq < 0) continue;
-    const key = trimmed.slice(0, eq).trim();
-    let value = trimmed.slice(eq + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-    if (!(key in process.env)) process.env[key] = value;
-  }
-}
-
-loadEnvLocal();
-
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SECRET = process.env.SUPABASE_SECRET_KEY;
-const SOURCE_EMAIL = process.env.DEV_LOGIN_SOURCE_EMAIL;
-const TEST_EMAIL = process.env.DEV_LOGIN_EMAIL;
-const TEST_PASSWORD = process.env.DEV_LOGIN_PASSWORD;
-
-const missing = Object.entries({
-  NEXT_PUBLIC_SUPABASE_URL: URL,
-  SUPABASE_SECRET_KEY: SECRET,
-  DEV_LOGIN_SOURCE_EMAIL: SOURCE_EMAIL,
-  DEV_LOGIN_EMAIL: TEST_EMAIL,
-  DEV_LOGIN_PASSWORD: TEST_PASSWORD,
-})
-  .filter(([, v]) => !v)
-  .map(([k]) => k);
-
-if (missing.length) {
-  console.error(`Missing required env: ${missing.join(', ')}`);
-  process.exit(1);
-}
-
-if (TEST_EMAIL.toLowerCase() === SOURCE_EMAIL.toLowerCase()) {
-  console.error('DEV_LOGIN_EMAIL must differ from DEV_LOGIN_SOURCE_EMAIL — refusing to clone an account onto itself.');
-  process.exit(1);
-}
-
-const admin = createClient(URL, SECRET, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
-
-async function findUserByEmail(email) {
-  for (let page = 1; ; page++) {
-    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-    if (error) throw new Error(error.message);
-    const match = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
-    if (match) return match;
-    if (data.users.length < 200) return null;
-  }
-}
-
-async function collectionIdsForUser(userId) {
-  const { data, error } = await admin
-    .from('collection_members')
-    .select('collection_id')
-    .eq('user_id', userId);
-  if (error) throw new Error(error.message);
-  return data.map((m) => m.collection_id);
-}
-
-async function wipeCollection(collectionId) {
-  // Order matters if FK cascade isn't configured: sets + members first.
-  for (const table of ['sets', 'collection_members']) {
-    const { error } = await admin.from(table).delete().eq('collection_id', collectionId);
-    if (error) throw new Error(`wipe ${table}: ${error.message}`);
-  }
-  const { error } = await admin.from('collections').delete().eq('id', collectionId);
-  if (error) throw new Error(`wipe collections: ${error.message}`);
-}
+import {
+  getConfig,
+  makeAdmin,
+  findUserByEmail,
+  isSeedUser,
+  seedCollectionIdsForUser,
+  wipeCollection,
+} from './lib/test-account.mjs';
 
 async function main() {
-  console.log(`Cloning ${SOURCE_EMAIL} → ${TEST_EMAIL}`);
+  const cfg = getConfig({ requireSource: true });
+  if (cfg.testEmail.toLowerCase() === cfg.sourceEmail.toLowerCase()) {
+    throw new Error('DEV_LOGIN_EMAIL must differ from DEV_LOGIN_SOURCE_EMAIL — refusing to clone an account onto itself.');
+  }
+  const admin = makeAdmin(cfg);
 
-  const source = await findUserByEmail(SOURCE_EMAIL);
-  if (!source) {
-    console.error(`Source user ${SOURCE_EMAIL} not found.`);
-    process.exit(1);
-  }
-  const sourceCollectionIds = await collectionIdsForUser(source.id);
-  if (sourceCollectionIds.length === 0) {
-    console.error(`Source user has no collections to clone.`);
-    process.exit(1);
-  }
+  console.log(`Cloning ${cfg.sourceEmail} → ${cfg.testEmail}`);
+
+  const source = await findUserByEmail(admin, cfg.sourceEmail);
+  if (!source) throw new Error(`Source user ${cfg.sourceEmail} not found.`);
+
+  // Source collections (no seed filter — we read the real ones to clone).
+  const { data: sourceMemberships, error: memErr } = await admin
+    .from('collection_members')
+    .select('collection_id')
+    .eq('user_id', source.id);
+  if (memErr) throw new Error(memErr.message);
+  const sourceCollectionIds = sourceMemberships.map((m) => m.collection_id);
+  if (sourceCollectionIds.length === 0) throw new Error('Source user has no collections to clone.');
   console.log(`Source has ${sourceCollectionIds.length} collection(s).`);
 
-  // Test user: create or reset password to the known value.
-  let test = await findUserByEmail(TEST_EMAIL);
+  // Test user: create flagged, or reuse only if already flagged seed.
+  let test = await findUserByEmail(admin, cfg.testEmail);
   if (!test) {
     const { data, error } = await admin.auth.admin.createUser({
-      email: TEST_EMAIL,
-      password: TEST_PASSWORD,
+      email: cfg.testEmail,
+      password: cfg.testPassword,
       email_confirm: true,
+      app_metadata: { seed: true },
     });
     if (error) throw new Error(`createUser: ${error.message}`);
     test = data.user;
-    console.log(`Created test user ${TEST_EMAIL} (${test.id}).`);
+    console.log(`Created seed test user ${cfg.testEmail} (${test.id}).`);
+  } else if (!isSeedUser(test)) {
+    throw new Error(
+      `Refusing to touch ${cfg.testEmail}: it exists but is NOT flagged app_metadata.seed = true. ` +
+      `If this is meant to be the throwaway test account, delete it first; otherwise fix DEV_LOGIN_EMAIL.`
+    );
   } else {
-    const { error } = await admin.auth.admin.updateUserById(test.id, { password: TEST_PASSWORD });
+    const { error } = await admin.auth.admin.updateUserById(test.id, {
+      password: cfg.testPassword,
+      app_metadata: { seed: true },
+    });
     if (error) throw new Error(`updateUserById: ${error.message}`);
-    console.log(`Reusing test user ${TEST_EMAIL} (${test.id}); password reset.`);
+    console.log(`Reusing seed test user ${cfg.testEmail} (${test.id}); password reset.`);
   }
 
-  // Wipe any prior clone so reseeding is clean.
-  const existing = await collectionIdsForUser(test.id);
-  for (const cid of existing) await wipeCollection(cid);
-  if (existing.length) console.log(`Wiped ${existing.length} prior test collection(s).`);
+  // Wipe only this user's prior SEED collections (never a real one).
+  const priorSeed = await seedCollectionIdsForUser(admin, test.id);
+  for (const cid of priorSeed) await wipeCollection(admin, cid);
+  if (priorSeed.length) console.log(`Wiped ${priorSeed.length} prior seed collection(s).`);
 
   let totalSets = 0;
   for (const sourceId of sourceCollectionIds) {
@@ -161,15 +96,26 @@ async function main() {
 
     const { data: newColl, error: insErr } = await admin
       .from('collections')
-      .insert({ name: `${coll.name} (Test)`, owners: coll.owners ?? [], is_public: false })
+      .insert({
+        name: `${coll.name} (Test)`,
+        owners: coll.owners ?? [],
+        is_public: false,
+        is_seed_data: true,
+        home_sections: coll.home_sections ?? null,
+      })
       .select('id')
       .single();
-    if (insErr) throw new Error(`insert collection: ${insErr.message}`);
+    if (insErr) {
+      if (insErr.code === '42703') {
+        throw new Error('collections.is_seed_data does not exist — apply migration 0008 first.');
+      }
+      throw new Error(`insert collection: ${insErr.message}`);
+    }
 
-    const { error: memErr } = await admin
+    const { error: memberErr } = await admin
       .from('collection_members')
       .insert({ collection_id: newColl.id, user_id: test.id });
-    if (memErr) throw new Error(`insert member: ${memErr.message}`);
+    if (memberErr) throw new Error(`insert member: ${memberErr.message}`);
 
     const { data: sets, error: setsErr } = await admin
       .from('sets')
@@ -177,14 +123,16 @@ async function main() {
       .eq('collection_id', sourceId);
     if (setsErr) throw new Error(`read sets: ${setsErr.message}`);
 
-    const rows = sets.map(({ id, collection_id, created_at, updated_at, ...rest }) => ({
-      ...rest,
-      collection_id: newColl.id,
-    }));
-
+    const rows = sets.map((s) => {
+      // Clone every column except the DB-managed ones; retarget the collection.
+      const row = { ...s, collection_id: newColl.id };
+      delete row.id;
+      delete row.created_at;
+      delete row.updated_at;
+      return row;
+    });
     for (let i = 0; i < rows.length; i += 500) {
-      const chunk = rows.slice(i, i + 500);
-      const { error } = await admin.from('sets').insert(chunk);
+      const { error } = await admin.from('sets').insert(rows.slice(i, i + 500));
       if (error) throw new Error(`insert sets: ${error.message}`);
     }
     totalSets += rows.length;
@@ -192,7 +140,7 @@ async function main() {
   }
 
   console.log(`Done. Test account has ${sourceCollectionIds.length} collection(s) and ${totalSets} sets.`);
-  console.log(`Sign in locally via /dev-login (password sign-in as ${TEST_EMAIL}).`);
+  console.log(`Sign in locally via /dev-login (password sign-in as ${cfg.testEmail}).`);
 }
 
 main().catch((err) => {

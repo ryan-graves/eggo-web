@@ -73,6 +73,7 @@ function InlineEditField({
   const [draft, setDraft] = useState(value);
   const [isSaving, setIsSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fieldId = `field-${label.toLowerCase().replace(/\s+/g, '-')}`;
 
   const startEditing = () => {
     setDraft(value);
@@ -133,11 +134,11 @@ function InlineEditField({
         void save();
       }}
     >
-      <label htmlFor={`field-${label}`} className="form-label">
+      <label htmlFor={fieldId} className="form-label">
         {label}
       </label>
       <input
-        id={`field-${label}`}
+        id={fieldId}
         ref={inputRef}
         type="text"
         className="form-input"
