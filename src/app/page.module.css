@@ -110,8 +110,8 @@
 .wordmark,
 .tagline {
   margin: 0;
-  font-family: var(--font-instrument-serif), Georgia, serif;
-  font-weight: var(--font-weight-normal);
+  font-family: var(--font-radio-canada-big), system-ui, sans-serif;
+  font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tighter);
   color: var(--text-primary);
@@ -526,12 +526,12 @@
   }
 }
 
-/* Smaller Instrument-Serif wordmark, half the hero scale — recognizable
-   without competing with the hero. Mirrors the type treatment of the
-   .wordmark above. */
+/* Smaller wordmark, half the hero scale — recognizable without competing
+   with the hero. Mirrors the type treatment of the .wordmark above. */
 .footerWordmark {
   margin: 0;
-  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-family: var(--font-radio-canada-big), system-ui, sans-serif;
+  font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-xl);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);

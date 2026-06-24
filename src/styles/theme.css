@@ -71,8 +71,9 @@
   --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 30%), 0 2px 4px -2px rgb(0 0 0 / 30%);
   --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 40%), 0 4px 6px -4px rgb(0 0 0 / 40%);
 
-  /* Heading font (Instrument Serif via next/font CSS variable) */
-  --font-heading: var(--font-instrument-serif), Georgia, serif;
+  /* Heading font — same family as body (Radio Canada Big via next/font);
+     headings differ from body by weight, not family. */
+  --font-heading: var(--font-radio-canada-big), system-ui, sans-serif;
 }
 
 /* Light mode */
@@ -169,16 +170,18 @@
 }
 
 /*
- * Heading typography — Instrument Serif at normal weight, with a
- * per-level size and line-height. Plain element selectors so any
- * CSS Module class can override locally without a specificity battle.
- * Where a module wants the system heading rules to apply (default
- * expectation), it should not re-declare font-family / font-weight /
- * font-size on its heading classes at all.
+ * Heading typography — Radio Canada Big at semibold, with a per-level
+ * size and line-height. In a single-family system the headings earn
+ * their hierarchy from weight (600 vs. the body's 400) and size, not
+ * from a serif/sans contrast. Plain element selectors so any CSS Module
+ * class can override locally without a specificity battle. Where a
+ * module wants the system heading rules to apply (default expectation),
+ * it should not re-declare font-family / font-weight / font-size on its
+ * heading classes at all.
  */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  font-weight: var(--font-weight-normal);
+  font-weight: var(--font-weight-semibold);
   letter-spacing: var(--letter-spacing-tight);
 }
 

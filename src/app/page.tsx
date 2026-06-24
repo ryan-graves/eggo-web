@@ -105,7 +105,7 @@ const HERO_SETS: LegoSet[] = [
  */
 const FEATURES = [
   {
-    heading: 'Add your collection quickly and easily.',
+    heading: 'Add a set in seconds.',
     body: 'Type a set’s number and Eggo fills in the rest: name, theme, piece count, year, and a clean image of the set.',
   },
   {

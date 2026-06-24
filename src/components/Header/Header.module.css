@@ -20,7 +20,7 @@
 }
 
 /* "Eggo" wordmark. Heading typography comes from theme.css's h1
-   rule (Display scale: Instrument Serif at normal weight) per
+   rule (Display scale: Radio Canada Big at semibold) per
    DESIGN.md's Navigation spec. Only the layout properties belong
    here. */
 .logo {
@@ -29,10 +29,10 @@
   flex-shrink: 0;
 }
 
-/* Page title in the header. Inherits Instrument Serif at normal
-   weight from theme.css's `h1` rule; the only override here is the
-   smaller size (Display-scale 28px would blow out the cramped header
-   bar) and the truncation properties. */
+/* Page title in the header. Inherits Radio Canada Big at semibold
+   from theme.css's `h1` rule; the only override here is the smaller
+   size (Display-scale 28px would blow out the cramped header bar)
+   and the truncation properties. */
 .title {
   margin: 0;
   font-size: var(--font-size-lg);

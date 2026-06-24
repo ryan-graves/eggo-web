@@ -97,9 +97,9 @@
   width: 100%;
   height: 100%;
 
-  /* Match the empty-state tone of the rest of the catalog: Instrument Serif
+  /* Match the empty-state tone of the rest of the catalog: a display-scale
      headline rather than a plain-text label. */
-  font-family: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  font-family: var(--font-radio-canada-big), system-ui, sans-serif;
   font-size: var(--font-size-xl);
   color: var(--text-tertiary);
 }
@@ -186,7 +186,7 @@
 }
 
 .storyText {
-  font-family: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  font-family: var(--font-radio-canada-big), system-ui, sans-serif;
   font-size: var(--font-size-xl);
   line-height: var(--line-height-relaxed);
   letter-spacing: var(--letter-spacing-tight);
@@ -212,8 +212,8 @@
   gap: var(--space-3);
 }
 
-/* h2 — font-family / size / weight come from the mono theme's h2 rule
-   (Instrument Serif at the headline size). Only color is local. */
+/* h2 — font-family / size / weight come from theme.css's h2 rule
+   (Radio Canada Big at the headline size). Only color is local. */
 .notesTitle {
   color: var(--text-primary);
   margin: 0;

@@ -1,19 +1,15 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Instrument_Serif } from 'next/font/google';
+import { Radio_Canada_Big } from 'next/font/google';
 import { Providers } from '@/components/Providers';
 import './globals.css';
 
-const inter = Inter({
+// Single typeface for the whole site. Radio Canada Big is a variable font
+// (wght 400–700) — omitting `weight` loads the full axis, so hierarchy can
+// lean on weight as well as size.
+const radioCanadaBig = Radio_Canada_Big({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
-});
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ['latin'],
-  weight: '400',
-  display: 'swap',
-  variable: '--font-instrument-serif',
+  variable: '--font-radio-canada-big',
 });
 
 export const metadata: Metadata = {
@@ -43,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>): React.JSX.Element {
   return (
-    <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
+    <html lang="en" className={radioCanadaBig.variable}>
       <body>
         <Providers>{children}</Providers>
       </body>

@@ -92,7 +92,7 @@
 }
 
 /* API source name. Heading typography comes from theme.css's h3
-   rule (the Title scale: Instrument Serif 18px). */
+   rule (the Title scale: Radio Canada Big 18px, semibold). */
 .apiName {
   color: var(--text-primary);
   margin: 0;

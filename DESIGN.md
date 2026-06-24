@@ -24,32 +24,31 @@ colors:
   status-info: "#3b82f6"
 typography:
   display:
-    fontFamily: "Instrument Serif, Georgia, serif"
+    fontFamily: "Radio Canada Big, system-ui, sans-serif"
     fontSize: "1.75rem"
-    fontWeight: 400
+    fontWeight: 600
     lineHeight: 1.2
     letterSpacing: "-0.01em"
   headline:
-    fontFamily: "Instrument Serif, Georgia, serif"
+    fontFamily: "Radio Canada Big, system-ui, sans-serif"
     fontSize: "1.25rem"
-    fontWeight: 400
+    fontWeight: 600
     lineHeight: 1.3
     letterSpacing: "-0.01em"
   title:
-    fontFamily: "Instrument Serif, Georgia, serif"
+    fontFamily: "Radio Canada Big, system-ui, sans-serif"
     fontSize: "1.125rem"
-    fontWeight: 400
+    fontWeight: 600
     lineHeight: 1.4
     letterSpacing: "-0.01em"
   body:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Radio Canada Big, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: "0"
-    fontFeature: "'cv11', 'ss01'"
   label:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Radio Canada Big, system-ui, sans-serif"
     fontSize: "0.8125rem"
     fontWeight: 500
     lineHeight: 1.35
@@ -128,8 +127,8 @@ by default. Components reference the semantic aliases in `theme.css`
 (`--surface-primary`, `--text-secondary`, `--interactive-primary`, etc.) so a single
 component adapts cleanly across both modes.
 
-The visual treatment: a neutral gray ramp, Instrument Serif for every heading, Inter
-for everything else, no decorative accent color. The only saturated colors are the four
+The visual treatment: a neutral gray ramp, one typeface (Radio Canada Big) across the
+whole interface, no decorative accent color. The only saturated colors are the four
 functional status signals (success, warning, error, info), and they appear only on
 status badges, never as decoration.
 
@@ -142,7 +141,7 @@ visually noisy listings).
 **Key Characteristics:**
 
 - Monochrome neutrals; saturated color is functional only (status signals).
-- Editorial pairing: Instrument Serif headings at normal weight, Inter body at 14px.
+- One typeface, Radio Canada Big: semibold headings, regular body at 14px. Hierarchy from weight + size.
 - Flat at rest; depth comes from tonal layering, with shadow reserved for hover.
 - Tactile, confident controls: solid fills, capsule buttons, clear hover response.
 - The set image is always the loudest element on screen.
@@ -193,33 +192,38 @@ stays neutral so those photographs are never out-shouted.
 
 ## 3. Typography
 
-**Display Font:** Instrument Serif (with Georgia, serif fallback)
-**Body Font:** Inter (with system-ui, sans-serif fallback)
+**Typeface (everything):** Radio Canada Big (with system-ui, sans-serif fallback)
 
-**Character:** A deliberate editorial pairing. Instrument Serif is a high-contrast serif
-used at its normal weight, giving headings a printed-catalog quality, considered, a
-little refined, never shouty. Inter handles every functional surface at a compact 14px
-with the `cv11` and `ss01` stylistic sets enabled for a cleaner single-story look.
+**Character:** A single, well-tuned humanist sans carries the whole interface. Radio
+Canada Big is a variable font (wght 400–700) with an open, even color and a generous
+x-height; it stays calm and legible at a compact 14px body, and gains presence at the
+larger heading sizes. With one family doing all the work, hierarchy comes from **weight
+and size**, not from a serif/sans contrast: headings run at semibold (600) against the
+regular (400) body, so a title reads as a title even at a close size. The result still
+feels editorial and considered, just quieter and more contemporary than a serif.
 
 ### Hierarchy
 
-- **Display** (Instrument Serif, 400, 1.75rem / 28px, line-height 1.2): Page titles,
+- **Display** (Radio Canada Big, 600, 1.75rem / 28px, line-height 1.2): Page titles,
   collection names. The largest type on any screen.
-- **Headline** (Instrument Serif, 400, 1.25rem / 20px, line-height 1.3): Section headings.
-- **Title** (Instrument Serif, 400, 1.125rem / 18px, line-height 1.4): Subsection and
+- **Headline** (Radio Canada Big, 600, 1.25rem / 20px, line-height 1.3): Section headings.
+- **Title** (Radio Canada Big, 600, 1.125rem / 18px, line-height 1.4): Subsection and
   card-group headings.
-- **Body** (Inter, 400, 0.875rem / 14px, line-height 1.5): Default UI and reading text.
-  Cap measured prose at 65–75ch.
-- **Label** (Inter, 500, 0.8125rem / 13px): Form labels, metadata, button text. Medium
-  weight; never uppercased.
+- **Body** (Radio Canada Big, 400, 0.875rem / 14px, line-height 1.5): Default UI and
+  reading text. Cap measured prose at 65–75ch.
+- **Label** (Radio Canada Big, 500, 0.8125rem / 13px): Form labels, metadata, button
+  text. Medium weight; never uppercased.
+
+Marketing display (the landing hero) pushes the same family to a fluid `clamp()` size
+at semibold with tighter tracking; it is the one place type is allowed to get loud.
 
 ### How heading typography is actually applied
 
 The canonical heading rules live in `src/styles/theme.css` as plain element selectors
-on `h1`–`h6`. They set `font-family: var(--font-heading)` (Instrument Serif),
-`font-weight: 400`, and a per-level `font-size` and `line-height`. A plain class
-selector in any CSS Module (e.g. `.title`) wins on specificity over the element
-selector and applies whatever font properties it declares.
+on `h1`–`h6`. They set `font-family: var(--font-heading)` (Radio Canada Big — the same
+family as the body), `font-weight: 600`, and a per-level `font-size` and `line-height`.
+A plain class selector in any CSS Module (e.g. `.title`) wins on specificity over the
+element selector and applies whatever font properties it declares.
 
 The implication for new code:
 
@@ -231,12 +235,14 @@ The implication for new code:
   the system scale: an oversized marketing display (the landing `.tagline` /
   `.featureHeading` pattern), or a size override for a cramped container (the
   Header's `.title` declares only `font-size: lg` because Display-scale 28px
-  doesn't fit in the header bar — it still inherits Instrument Serif from `h1`).
+  doesn't fit in the header bar — it still inherits the semibold heading weight from `h1`).
 
 ### Named Rules
 
-**The Light-Serif Rule.** Headings are serif at normal weight (400). A bold serif heading
-is forbidden; emphasis comes from size, never from weighting the serif.
+**The Weight-Contrast Rule.** In a one-family system, headings earn their hierarchy from
+weight: semibold (600) headings against the regular (400) body. Don't flatten a heading
+to regular weight (it loses its rank), and don't reach past semibold for emphasis — size
+plus the 600/400 step is the whole ladder.
 
 **The Capped-Measure Rule.** Body copy never runs wider than 75ch. Eggo's content is
 short by nature, so a stray full-width paragraph reads as a mistake.
@@ -294,7 +300,7 @@ response to hover and focus. They feel clickable without resorting to decoration
   brightens one step and the card hover shadow fades in.
 - **Structure:** A square (1:1) image well with `12px` inset padding so the set photo
   floats, then a content block: **name** (rendered as `<h3>`, so it picks up the
-  Title scale — Instrument Serif at 18px, normal weight, 2-line clamp), set number,
+  Title scale — Radio Canada Big at 18px, semibold, 2-line clamp), set number,
   and a metadata row of status badge and owner tag pushed to the bottom.
 - **Internal Padding:** `8px 12px 12px` on the content block.
 
@@ -311,9 +317,9 @@ response to hover and focus. They feel clickable without resorting to decoration
 - A floating, fully-contained bar: it sticks a small margin below the viewport top,
   sits on a neutral surface with a 1px border, and is heavily rounded (`radius 2xl`,
   20px) so it reads as a discrete object, not an edge-to-edge chrome strip.
-- The "Eggo" wordmark and page title both render in Instrument Serif (the system
-  default). The page title is sized one step down from Display scale to fit the
-  header bar, and truncates with an ellipsis when too long.
+- The "Eggo" wordmark and page title both render in Radio Canada Big at the semibold
+  heading weight (the system default). The page title is sized one step down from
+  Display scale to fit the header bar, and truncates with an ellipsis when too long.
 - The back button and right-side actions are 40px neutral icon buttons.
 
 ### Modals (Drawer)
@@ -328,7 +334,8 @@ response to hover and focus. They feel clickable without resorting to decoration
 
 - **Do** keep the system monochrome. Structure with the gray ramp; let set photographs
   supply the only real color.
-- **Do** set every heading in Instrument Serif at weight 400.
+- **Do** set every heading in Radio Canada Big at semibold (600); let the body stay at
+  regular (400) so the weight step does the ranking.
 - **Do** keep surfaces flat at rest and convey depth with a lighter tonal step.
 - **Do** make buttons fully capsule-shaped (`border-radius: 9999px`).
 - **Do** keep all borders at 1px hairlines.
@@ -350,4 +357,7 @@ response to hover and focus. They feel clickable without resorting to decoration
   marks something that truly floats.
 - **Don't** use a colored side-stripe (`border-left`/`border-right` > 1px) on cards,
   list items, or alerts.
-- **Don't** bold the serif headings. Emphasize with size, not weight.
+- **Don't** flatten headings to regular weight or reach past semibold for emphasis. The
+  600/400 weight step plus size is the whole hierarchy; a third weight muddies it.
+- **Don't** reintroduce a second typeface (no serif display, no separate body sans). One
+  family, Radio Canada Big, carries the entire interface.
