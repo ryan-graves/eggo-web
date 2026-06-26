@@ -40,6 +40,11 @@
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--layout-header-radius);
+
+  /* Same content-column cap as the logged-in header (Header.module.css). */
+  max-width: var(--layout-max-width);
+  width: 100%;
+  margin: 0 auto;
 }
 
 .backButton {

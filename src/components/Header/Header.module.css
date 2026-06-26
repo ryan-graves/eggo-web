@@ -9,6 +9,14 @@
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-2xl);
+
+  /* Bound the floating bar to the same column as page content so it stays a
+     discrete object (per DESIGN.md's Navigation spec) rather than stretching
+     into a wall-wide pill on large screens. One consistent width across every
+     route, so the bar never resizes as you navigate. */
+  max-width: var(--layout-max-width);
+  width: 100%;
+  margin: 0 auto;
 }
 
 .leftSection {

@@ -23,6 +23,11 @@
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-2xl);
+
+  /* Same content-column cap as the logged-in header (Header.module.css). */
+  max-width: var(--layout-max-width);
+  width: 100%;
+  margin: 0 auto;
 }
 
 .headerLeft {
@@ -54,8 +59,13 @@
   padding: var(--space-1) var(--space-3);
 }
 
+/* Content column — mirrors the logged-in browse `.main` so the public view
+   gets the same capped, centered gallery measure instead of running full-bleed. */
 .main {
   flex: 1;
+  max-width: var(--layout-max-width);
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* View toggle - mirrors authenticated browse layout */

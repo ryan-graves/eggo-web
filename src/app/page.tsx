@@ -109,7 +109,7 @@ const FEATURES = [
     body: 'Type a set’s number and Eggo fills in the rest: name, theme, piece count, year, and a clean image of the set.',
   },
   {
-    heading: 'Remember when and how you got it.',
+    heading: 'Remember the story.',
     body: 'Note when each set arrived, the occasion, who gave it to you. Eggo keeps that history alongside the piece count.',
   },
   {
