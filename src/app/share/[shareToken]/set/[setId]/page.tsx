@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { PublicCollectionProvider, usePublicCollection } from '@/hooks/usePublicCollection';
 import { PublicBanner } from '@/components/PublicBanner';
+import { Header } from '@/components/Header';
 import { formatDateForDisplay } from '@/lib/date';
 import { SET_IMAGE_VT_NAME, SET_NAME_VT_NAME } from '@/lib/viewTransitions';
 import type { LegoSet } from '@/types';
@@ -101,25 +102,7 @@ function PublicSetDetailContent(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className={styles.backButton}
-          aria-label="Back to collection"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path
-              d="M12.5 15L7.5 10L12.5 5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <h1 className={styles.title}>{set.name}</h1>
-      </header>
+      <Header variant="detail" title={set.name} onBack={() => router.back()} />
 
       <main className={styles.main}>
         <div className={styles.content}>

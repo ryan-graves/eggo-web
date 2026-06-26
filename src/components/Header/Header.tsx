@@ -44,7 +44,7 @@ export function Header({
     const isNavigating = pendingHref !== null;
 
     return (
-      <header className={styles.header}>
+      <header className={`${styles.header} content-column`}>
         <div className={styles.leftSection}>
           <button
             type="button"
@@ -71,7 +71,7 @@ export function Header({
   }
 
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} content-column`}>
       <div className={styles.leftSection}>
         <h1 className={styles.logo}>Eggo</h1>
         {leftContent}

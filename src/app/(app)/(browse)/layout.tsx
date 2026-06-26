@@ -120,7 +120,7 @@ function CollectionSkeleton({ isAllSets = false }: { isAllSets?: boolean }): Rea
   return (
     <div className={styles.page}>
       <SkeletonHeader />
-      <main className={styles.main}>
+      <main className={`${styles.main} content-column`}>
         <SkeletonToolbar />
         {isAllSets ? <AllSetsSkeleton /> : <HomeSkeleton />}
       </main>
@@ -294,7 +294,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
         rightContent={avatarLink}
       />
 
-      <main className={styles.main}>
+      <main className={`${styles.main} content-column`}>
         <div className={styles.toolbar}>
           <div className={styles.viewToggle}>
             <button

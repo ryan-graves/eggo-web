@@ -120,6 +120,15 @@ img {
   letter-spacing: var(--letter-spacing-tight);
 }
 
+/* Centered content column capped at the layout max width. Shared by the
+   floating header and the browse / public-share content areas so they line up
+   on one measure instead of each repeating the cap. */
+.content-column {
+  max-width: var(--layout-max-width);
+  width: 100%;
+  margin-inline: auto;
+}
+
 /* Prevent iOS zoom on input focus - inputs must be 16px minimum */
 @media screen and (max-width: 640px) {
   input,

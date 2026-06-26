@@ -30,12 +30,11 @@
   opacity: var(--opacity-active);
 }
 
+/* Width cap / centering comes from the shared `.content-column` utility
+   (globals.css); only the browse-specific padding lives here. */
 .main {
   flex: 1;
   padding: var(--space-3) var(--space-1);
-  max-width: var(--layout-max-width);
-  margin: 0 auto;
-  width: 100%;
 }
 
 .toolbar {
