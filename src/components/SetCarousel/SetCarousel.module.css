@@ -105,16 +105,15 @@
 
 /* ==========================================================================
  * Display variants
- * featured — enlarged cards + larger serif header, for small actionable sections
+ * featured — enlarged cards, for small actionable sections
  * gallery  — denser cards, for theme sections meant to show breadth
+ *
+ * All three variants share the same section-heading scale (the h2 Headline
+ * size); hierarchy between sections comes from the cards, not the title.
  * ========================================================================== */
 
 .featured {
   gap: var(--space-4);
-}
-
-.featured .title {
-  font-size: var(--font-size-3xl);
 }
 
 /* Variant card sizing on mobile; desktop is handled by the grid below */
