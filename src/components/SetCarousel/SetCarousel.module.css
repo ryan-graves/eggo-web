@@ -57,6 +57,13 @@
 .carousel {
   position: relative;
   overflow: hidden;
+
+  /* Bleed past the page's mobile gutter (space-2) so the peek card runs
+     flush to the viewport edge instead of clipping short of it. The track's
+     inline padding (below) adds the gutter back so the first card stays
+     aligned under the section title. Inert ≥768px, where the track is a
+     static grid with no overflow. */
+  margin-inline: calc(-1 * var(--space-2));
 }
 
 .track {
@@ -65,10 +72,10 @@
   gap: var(--layout-card-gap);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  scroll-padding-left: var(--layout-content-padding);
+  scroll-padding-left: calc(var(--layout-content-padding) + var(--space-2));
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: var(--space-1) var(--layout-content-padding);
+  padding: var(--space-1) calc(var(--layout-content-padding) + var(--space-2));
   margin: calc(-1 * var(--space-1)) 0;
 
   /* iOS momentum scrolling */
@@ -125,6 +132,11 @@
 @media (min-width: 768px) {
   .header {
     padding: 0;
+  }
+
+  /* No mobile edge-bleed on the desktop grid — it aligns to the content column. */
+  .carousel {
+    margin-inline: 0;
   }
 
   .track {
