@@ -29,62 +29,6 @@
   }
 }
 
-.header {
-  position: sticky;
-  top: calc(var(--space-3) + env(safe-area-inset-top));
-  z-index: var(--z-header);
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--layout-header-padding);
-  background-color: var(--surface-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--layout-header-radius);
-}
-
-.backButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: var(--layout-header-button-size);
-  height: var(--layout-header-button-size);
-  padding: 0;
-  background-color: var(--surface-secondary);
-  border: none;
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.backButton:hover {
-  background-color: var(--surface-tertiary);
-  color: var(--text-primary);
-}
-
-.backButton:active {
-  opacity: var(--opacity-active);
-}
-
-/* Page title rendered inside the header bar. Inherits Instrument
-   Serif at normal weight from theme.css's `h1` rule; the only
-   override here is the smaller size (Display-scale 28px would blow
-   out the cramped header bar) and the truncation properties. */
-.title {
-  margin: 0;
-  font-size: var(--font-size-lg);
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .main {
   max-width: var(--max-width-detail);
   margin: 0 auto;
@@ -200,7 +144,7 @@
 }
 
 /* Notes section title. Heading typography comes from theme.css's
-   h2 rule (the Headline scale: Instrument Serif 20px). */
+   h2 rule (the Headline scale: Radio Canada Big 20px, semibold). */
 .notesTitle {
   color: var(--text-primary);
   margin: 0 0 var(--space-3) 0;

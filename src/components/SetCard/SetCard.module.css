@@ -86,11 +86,12 @@
   flex: 1;
 }
 
-/* Set name. Heading typography (font-family, weight, size,
-   letter-spacing) comes from theme.css's h3 rule (the Title scale
-   per DESIGN.md: Instrument Serif 18px, normal weight). Only the
-   2-line clamp + color belong on the class. */
+/* Set name. Family / weight / letter-spacing come from theme.css's h3
+   rule (Radio Canada Big, semibold). The size is stepped down one notch
+   from the 18px Title scale to 16px: as a heavier sans the title ran
+   large in the card and pushed many names into the 2-line ellipsis. */
 .name {
+  font-size: var(--font-size-lg);
   color: var(--text-primary);
   display: -webkit-box;
   -webkit-line-clamp: 2;

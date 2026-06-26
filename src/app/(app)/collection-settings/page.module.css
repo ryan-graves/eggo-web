@@ -34,7 +34,7 @@
 }
 
 /* Section title. Font-family / weight / size come from theme.css's h2 rule
-   (Instrument Serif 20px); only the color diverges. */
+   (Radio Canada Big 20px, semibold); only the color diverges. */
 .sectionTitle {
   color: var(--text-primary);
   margin: 0 0 var(--space-4) 0;

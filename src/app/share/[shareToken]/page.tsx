@@ -7,6 +7,7 @@ import { PublicCollectionProvider, usePublicCollection } from '@/hooks/usePublic
 import { SetList } from '@/components/SetList';
 import { CollectionHome } from '@/components/CollectionHome';
 import { PublicBanner } from '@/components/PublicBanner';
+import { Header } from '@/components/Header';
 import styles from './page.module.css';
 
 function PublicCollectionContent(): React.JSX.Element {
@@ -42,19 +43,21 @@ function PublicCollectionContent(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1 className={`${styles.title} eggo-logo`}>Eggo</h1>
+      <Header
+        variant="main"
+        leftContent={
           <div className={styles.collectionPill}>
             <span className={styles.collectionName}>{collection.name}</span>
           </div>
-        </div>
-        <Link href="/" className="btn-default btn-primary">
-          Sign Up
-        </Link>
-      </header>
+        }
+        rightContent={
+          <Link href="/" className="btn-default btn-primary">
+            Sign Up
+          </Link>
+        }
+      />
 
-      <main className={styles.main}>
+      <main className={`${styles.main} content-column`}>
         {showHomeView && (
           <div className={styles.toolbar}>
             <div className={styles.viewToggle}>

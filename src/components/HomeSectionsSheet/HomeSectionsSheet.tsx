@@ -39,10 +39,11 @@ interface HomeSectionsSheetProps {
 
 type SheetView = 'list' | 'add-smart' | 'add-theme';
 
+// Ordered by card size, smallest to largest.
 const DISPLAY_OPTIONS: { value: SectionDisplay; label: string }[] = [
+  { value: 'gallery', label: 'Gallery' },
   { value: 'standard', label: 'Standard' },
   { value: 'featured', label: 'Featured' },
-  { value: 'gallery', label: 'Gallery' },
 ];
 
 const SECTION_ICON_PROPS = {

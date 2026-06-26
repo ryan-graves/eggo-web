@@ -33,7 +33,7 @@ body {
   color: var(--text-primary);
   background-color: var(--surface-background);
   font-family:
-    var(--font-inter),
+    var(--font-radio-canada-big),
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -45,7 +45,6 @@ body {
   letter-spacing: var(--letter-spacing-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'cv11', 'ss01';
 
   /* Prevent pull-to-refresh and scroll bleed on iOS */
   overscroll-behavior: none;
@@ -116,9 +115,18 @@ img {
 
 /* Eggo Logo - consistent branding across all pages */
 .eggo-logo {
-  font-family: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
-  font-weight: var(--font-weight-normal);
+  font-family: var(--font-radio-canada-big), system-ui, sans-serif;
+  font-weight: var(--font-weight-semibold);
   letter-spacing: var(--letter-spacing-tight);
+}
+
+/* Centered content column capped at the layout max width. Shared by the
+   floating header and the browse / public-share content areas so they line up
+   on one measure instead of each repeating the cap. */
+.content-column {
+  max-width: var(--layout-max-width);
+  width: 100%;
+  margin-inline: auto;
 }
 
 /* Prevent iOS zoom on input focus - inputs must be 16px minimum */

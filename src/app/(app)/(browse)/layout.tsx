@@ -18,14 +18,16 @@ interface CollectionLayoutProps {
 }
 
 function SkeletonHeader(): React.JSX.Element {
+  // Render the real Header so the loading state shares its chrome (sticky
+  // bar, border, radius, content-width cap) and can't drift from it. The
+  // "Eggo" wordmark is static, so it shows immediately; only the dynamic
+  // collection selector and avatar are skeletoned.
   return (
-    <div className={styles.skeletonHeader}>
-      <div className={styles.skeletonHeaderLeft}>
-        <div className={`${styles.skeleton} ${styles.skeletonLogo}`} />
-        <div className={`${styles.skeleton} ${styles.skeletonSelector}`} />
-      </div>
-      <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />
-    </div>
+    <Header
+      variant="main"
+      leftContent={<div className={`${styles.skeleton} ${styles.skeletonSelector}`} />}
+      rightContent={<div className={`${styles.skeleton} ${styles.skeletonAvatar}`} />}
+    />
   );
 }
 
@@ -118,7 +120,7 @@ function CollectionSkeleton({ isAllSets = false }: { isAllSets?: boolean }): Rea
   return (
     <div className={styles.page}>
       <SkeletonHeader />
-      <main className={styles.main}>
+      <main className={`${styles.main} content-column`}>
         <SkeletonToolbar />
         {isAllSets ? <AllSetsSkeleton /> : <HomeSkeleton />}
       </main>
@@ -292,7 +294,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
         rightContent={avatarLink}
       />
 
-      <main className={styles.main}>
+      <main className={`${styles.main} content-column`}>
         <div className={styles.toolbar}>
           <div className={styles.viewToggle}>
             <button

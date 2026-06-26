@@ -94,7 +94,7 @@
 }
 
 /* h3 — only the size and clamping are overridden here; font-family
-   (Instrument Serif) and weight (normal) come from theme.css's h3 rule. */
+   (Radio Canada Big) and weight (semibold) come from theme.css's h3 rule. */
 .name {
   font-size: var(--font-size-3xl);
   line-height: var(--line-height-tight);
