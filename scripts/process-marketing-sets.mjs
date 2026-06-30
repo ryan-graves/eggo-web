@@ -1,5 +1,5 @@
 /**
- * One-off: download Brickset box images for a list of set numbers and run
+ * Utility: download Brickset box images for a list of set numbers and run
  * each through the rembg.com background-removal pipeline so they match
  * the cutout look of the rest of the marketing catalog tiles.
  *
