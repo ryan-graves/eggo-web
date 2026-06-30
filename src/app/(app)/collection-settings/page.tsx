@@ -404,10 +404,6 @@ function CollectionSettingsContent(): React.JSX.Element {
                 </div>
 
                 <div className={styles.viewSettingsSection}>
-                  <p className={styles.viewSettingsTitle}>Views</p>
-                  <p className={styles.viewSettingsDescription}>
-                    Choose which views are available on your public collection.
-                  </p>
                   <div className={styles.viewSettingsOptions}>
                     <label className={styles.checkboxLabel}>
                       <input
@@ -416,9 +412,13 @@ function CollectionSettingsContent(): React.JSX.Element {
                         onChange={(e) => handleViewSettingChange('showHomeView', e.target.checked)}
                         className={styles.checkbox}
                       />
-                      <span>Home view (curated sections)</span>
+                      <span>Include the Home view (curated sections)</span>
                     </label>
                   </div>
+                  <p className={styles.viewSettingsHelp}>
+                    Adds a curated Home tab to your shared collection. Visitors can always browse the
+                    full set list.
+                  </p>
                 </div>
               </>
             )}
