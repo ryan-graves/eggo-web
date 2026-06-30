@@ -66,7 +66,7 @@ function demoSet(
  *
  * Owners are placeholder names (not real users). Status mix skews toward
  * built (~70%) so the catalog reads as a lived-in collection. Themes
- * deliberately mixed (Icons, Ideas, Technic, Star Wars).
+ * deliberately mixed (Icons, Ideas, Technic, Star Wars, Art).
  *
  * Stop-gap until a proper public demo collection lives in Supabase
  * (tracked at https://github.com/ryan-graves/eggo-web/issues/56).
@@ -77,7 +77,7 @@ const HERO_SETS: LegoSet[] = [
   demoSet('10307', 'Eiffel Tower', 'Icons', 10001, 2022, 'in_progress', 'Theo'),
   demoSet('10276', 'Colosseum', 'Icons', 9036, 2020, 'assembled', 'Mae'),
   demoSet('10294', 'Titanic', 'Icons', 9090, 2021, 'in_progress', 'Sam'),
-  demoSet('10311', 'Orchid', 'Icons', 608, 2022, 'assembled', 'Nora'),
+  demoSet('10318', 'Concorde', 'Icons', 2083, 2023, 'assembled', 'Theo'),
   demoSet('10328', 'Bouquet of Roses', 'Icons', 822, 2024, 'assembled', 'Jules'),
   demoSet('10312', 'Jazz Club', 'Icons', 2899, 2023, 'in_progress', 'Theo'),
   demoSet('10316', 'The Lord of the Rings: Rivendell', 'Icons', 6167, 2023, 'unopened', 'Mae'),
@@ -88,12 +88,12 @@ const HERO_SETS: LegoSet[] = [
   demoSet('21338', 'A-Frame Cabin', 'Ideas', 2082, 2023, 'unopened', 'Jules'),
   demoSet('21343', 'Viking Village', 'Ideas', 2103, 2023, 'in_progress', 'Sam'),
   demoSet('42083', 'Bugatti Chiron', 'Technic', 3599, 2018, 'assembled', 'Theo'),
-  demoSet('42115', 'Lamborghini Sián FKP 37', 'Technic', 3696, 2020, 'assembled', 'Mae'),
-  demoSet('40531', 'Lars Family Homestead Kitchen', 'Star Wars', 195, 2022, 'assembled', 'Nora'),
-  demoSet('30495', 'AT-ST', 'Star Wars', 79, 2021, 'unopened', 'Jules'),
+  demoSet('21333', 'Vincent van Gogh - The Starry Night', 'Art', 2316, 2022, 'assembled', 'Nora'),
+  demoSet('10300', 'Back to the Future Time Machine', 'Icons', 1872, 2022, 'assembled', 'Mae'),
+  demoSet('21322', 'Pirates of Barracuda Bay', 'Ideas', 2545, 2020, 'in_progress', 'Jules'),
   demoSet('75312', "Boba Fett's Starship", 'Star Wars', 593, 2021, 'unopened', 'Sam'),
   demoSet('10283', 'NASA Space Shuttle Discovery', 'Icons', 2354, 2021, 'assembled', 'Theo'),
-  demoSet('10314', 'Dried Flower Centerpiece', 'Icons', 812, 2023, 'assembled', 'Nora'),
+  demoSet('10497', 'Galaxy Explorer', 'Icons', 1254, 2022, 'unopened', 'Sam'),
   demoSet('21344', 'The Orient Express Train', 'Ideas', 2540, 2023, 'in_progress', 'Jules'),
   demoSet('10302', 'Optimus Prime', 'Icons', 1508, 2022, 'assembled', 'Sam'),
 ];
