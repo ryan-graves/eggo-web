@@ -1,106 +1,35 @@
 # Eggo
 
-A web application for managing your Lego set collection. Track what you own, when and why you got each set, its current status, and more.
+Track your Lego set collection — what you own, when and why you got each set, and its build status.
+
+**Live at [eggo.fun](https://eggo.fun)**
 
 ## Features
 
-- Track Lego sets with set number, name, piece count, themes, and more
-- Auto-populate set data from Brickset (primary) or Rebrickable (fallback)
+- Auto-populate set data (piece count, themes, images) from Brickset or Rebrickable
 - Organize by owner, status, and theme
 - Real-time sync across devices
-- Public collection sharing with customizable visibility settings
-- Light/dark color modes with system preference support
-- UI themes: Mono (minimal serif) and Baseplate (classic accent colors)
-- Optional background removal for set images (via rembg.com)
-- Smooth view transitions between pages
+- Public collection sharing with customizable visibility
+- Light/dark modes, multiple UI themes, and automatic background removal for set images
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript (strict mode)
-- **UI Library**: React 19
-- **Database**: Supabase Postgres (with RLS)
-- **Authentication**: Supabase Auth (Google OAuth, PKCE flow)
-- **Storage**: Supabase Storage (processed set images)
-- **Styling**: CSS Modules + CSS Custom Properties (design tokens)
-- **Animations**: View Transitions API (via next-view-transitions)
-- **Notifications**: Sonner (toast notifications)
-- **Testing**: Jest 30 (unit), Playwright (E2E)
-- **Components**: Storybook 10
-- **Deployment**: Netlify
+Next.js 16 (App Router) · React 19 · TypeScript · Supabase (Postgres, Auth, Storage) · CSS Modules with design tokens · Jest + Playwright · Netlify
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 20.19+ (required by stylelint 17; Next.js 16 needs ≥20.9)
-- A Supabase project
-- Brickset API key (recommended) or Rebrickable API key (fallback)
-- rembg.com API key (for background removal on set images)
-
-### Setup
-
-1. Clone the repository
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Copy the environment template:
-
-   ```bash
-   cp .env.local.example .env.local
-   ```
-
-4. Fill in your Supabase, Brickset/Rebrickable, and rembg.com credentials in `.env.local`
-
-5. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-6. Open http://localhost:3000
-
-## Development
+Requires Node.js 20.19+, a Supabase project, and API keys for Brickset (or Rebrickable) and rembg.com.
 
 ```bash
-npm run dev          # Start dev server
-npm run build        # Production build
-npm run lint         # Run ESLint
-npm run lint:css     # Run stylelint (token discipline + CSS conventions)
-npm run format       # Format with Prettier
-npm run typecheck    # TypeScript type checking
-npm run test         # Run Jest tests
-npm run e2e          # Run Playwright tests
-npm run storybook    # Start Storybook
-npm run review       # Run code quality checks
+npm install
+cp .env.local.example .env.local   # fill in credentials
+npm run dev
 ```
 
-## Versioning
+Then open http://localhost:3000.
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/) and automated version bumping. A GitHub Action runs on every merge to `main` and bumps the version in `package.json` based on the commit message prefix:
-
-| Prefix | Bump | Example |
-|--------|------|---------|
-| `feat:` | Minor (0.11.2 → 0.12.0) | `feat: add set search` |
-| `fix:` | Patch (0.11.2 → 0.11.3) | `fix: correct sort order` |
-| `<type>!:` | Major (0.11.2 → 1.0.0) | `feat!: redesign data model`, `fix!: change error codes` |
-| `chore:`, `docs:`, `refactor:`, `deps:` | None | `chore: update dependencies` |
-
-The version is displayed in Settings > About and varies by environment:
-- **Production** (Netlify): `0.12.0`
-- **Branch deploy** (Netlify): `0.12.0-dev.abc1234`
-- **Local dev**: `0.12.0-local`
-
-No manual version management is needed — just use the right commit prefix.
-
-## Deployment
-
-This app is configured for deployment on Netlify. See the Netlify dashboard for configuration.
+Useful scripts: `npm run lint`, `npm run typecheck`, `npm run test`, `npm run e2e`, `npm run storybook`.
 
 ## License
 
-Private project - not for redistribution.
+Private project — not for redistribution.
