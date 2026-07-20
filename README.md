@@ -10,7 +10,7 @@ Track your Lego set collection — what you own, when and why you got each set, 
 - Organize by owner, status, and theme
 - Real-time sync across devices
 - Public collection sharing with customizable visibility
-- Light/dark modes, multiple UI themes, and automatic background removal for set images
+- Light/dark modes and automatic background removal for set images
 
 ## Tech Stack
 
