@@ -8,6 +8,7 @@ import {
   isSupabaseConfigured,
   type User,
 } from '@/lib/supabase';
+import { identifyUser, resetAnalyticsUser } from '@/lib/analytics';
 
 interface AuthContextValue {
   user: User | null;
@@ -51,6 +52,11 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
     }
   }, []);
 
+  const userId = user?.id;
+  useEffect(() => {
+    if (userId) identifyUser(userId);
+  }, [userId]);
+
   const signInWithGoogle = useCallback(async () => {
     setError(null);
     try {
@@ -66,6 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
     setError(null);
     try {
       await supabaseSignOut();
+      resetAnalyticsUser();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to sign out';
       setError(message);

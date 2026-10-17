@@ -17,6 +17,15 @@ function getAppVersion(): string {
   return `${base}-local`;
 }
 
+/**
+ * PostHog has no test-mode bucket, so only the production deploy gets the
+ * project token; local dev and deploy/branch previews build with analytics off.
+ */
+function getPostHogProjectToken(): string {
+  if (process.env.CONTEXT !== 'production') return '';
+  return process.env.POSTHOG_PROJECT_TOKEN ?? '';
+}
+
 function getSupabaseHost(): string | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!url) return null;
@@ -30,6 +39,7 @@ function getSupabaseHost(): string | null {
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: getAppVersion(),
+    NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: getPostHogProjectToken(),
   },
   /**
    * `/sign-in` used to be the standalone auth surface, but the landing

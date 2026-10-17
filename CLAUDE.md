@@ -12,6 +12,7 @@ Eggo is a web application for tracking Lego set collections. Built with Next.js 
 - **Styling**: CSS Modules + CSS Custom Properties (no Tailwind)
 - **Animations**: View Transitions API (native, used in add-set form)
 - **Notifications**: Sonner (toast notifications)
+- **Analytics**: PostHog (`posthog-js`, production deploy only — see [Analytics](#analytics-posthog))
 - **Database**: Supabase Postgres (with RLS)
 - **Authentication**: Supabase Auth (Google OAuth, PKCE flow)
 - **Storage**: Supabase Storage (processed set images)
@@ -282,6 +283,7 @@ Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js supp
 | `BRICKSET_API_KEY` | Brickset API key (recommended, server-only) | https://brickset.com/tools/webservices/requestkey |
 | `NEXT_PUBLIC_REBRICKABLE_API_KEY` | Rebrickable API key (fallback) | https://rebrickable.com/api/ |
 | `REMBG_API_KEY` | rembg.com API key for background removal | https://www.rembg.com |
+| `POSTHOG_PROJECT_TOKEN` | PostHog project token (public by design; already set in `netlify.toml`) | PostHog > Settings > Project > General |
 
 ### Supabase Setup for Production
 
@@ -312,6 +314,14 @@ RLS policy summary:
 The browser uses the publishable key and is fully constrained by RLS. The two server routes that need to bypass RLS (`/api/collections` for member insert during create, `/api/remove-background` for Storage uploads) use `getAdminClient()` with `SUPABASE_SECRET_KEY` and verify the caller's JWT explicitly.
 
 Realtime is wired via `postgres_changes` channels in the data hooks — subscriptions trigger a refetch rather than patching local state.
+
+### Analytics (PostHog)
+
+`src/instrumentation-client.ts` starts PostHog via `src/lib/analytics.ts` before the app hydrates; pageviews (including App Router navigations), autocapture, and session replay use PostHog's defaults. `AuthProvider` identifies signed-in users by Supabase user ID only (never email or name) and resets the identity on sign-out.
+
+- **Production deploy only.** `next.config.ts` exposes `POSTHOG_PROJECT_TOKEN` to the client as `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` only when Netlify's `CONTEXT` is `production`. Local dev, deploy previews, branch deploys, and tests build without a token, so PostHog never starts and the SDK calls are no-ops. PostHog has no test-mode bucket, and this keeps owner/preview traffic out of the real data.
+- **Shared project and proxy.** Eggo reports into the same PostHog project as ryangrav.es (the free plan allows one project); filter by `$host` (`eggo.fun`) to separate them. Events go through the org's managed reverse proxy `a.ryangrav.es` so ad blockers don't drop them.
+- **Verify locally:** `CONTEXT=production POSTHOG_PROJECT_TOKEN=phc_... npm run build && npm start`, then open `http://localhost:3000/?__posthog_debug=true` and watch the console. Headless browsers are flagged as bots and their events are dropped.
 
 ## Getting Started
 
