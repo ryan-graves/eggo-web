@@ -4,6 +4,10 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # PostHog project token — public by design (it ships in the client bundle).
+  # next.config.ts only exposes it when CONTEXT=production, so previews stay
+  # untracked even though the variable is set for every deploy context.
+  POSTHOG_PROJECT_TOKEN = "phc_oGJKJ6N8vR4TNfof3955hzyY5tZpkpXbhFBVvAT7hoxk"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -14,6 +18,14 @@
   to = "https://eggo.fun/:splat"
   status = 301
   force = true
+
+# Fonts are fetched in CORS mode, and PostHog's session-replay player re-fetches
+# them cross-origin from us.posthog.com; without this, replays fall back to
+# system fonts. next/font self-hosts the font files under /_next/static/media.
+[[headers]]
+  for = "/_next/static/media/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
 
 # Headers for security
 [[headers]]

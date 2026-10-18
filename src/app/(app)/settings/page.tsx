@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useUserPreferences';
 import { Header } from '@/components/Header';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { ANALYTICS_EXCLUDE_CLASS } from '@/lib/analytics';
 import type { ThemePreference } from '@/types';
 import styles from './page.module.css';
 
@@ -33,7 +34,7 @@ function SettingsContent(): React.JSX.Element {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Account</h2>
           <div className={styles.card}>
-            <div className={styles.accountInfo}>
+            <div className={`${styles.accountInfo} ${ANALYTICS_EXCLUDE_CLASS}`}>
               {user?.user_metadata?.avatar_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.user_metadata?.avatar_url} alt="" className={styles.avatar} />
