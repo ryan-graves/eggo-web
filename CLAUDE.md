@@ -273,6 +273,17 @@ Hosted on Netlify with the `@netlify/plugin-nextjs` plugin for full Next.js supp
    - Site Settings > Environment Variables
    - Add all variables from `.env.local.example`
 
+### Response Headers
+
+Security headers are defined in two places, because Netlify serves responses two ways:
+
+- **Pages and route handlers** (SSR, prerendered pages, `/api/*`, `favicon.ico`) come from the Next.js server function. Netlify doesn't apply `netlify.toml` `[[headers]]` to function responses ([docs](https://docs.netlify.com/manage/routing/headers/#limitations)), so their headers come from `headers()` in `next.config.ts`. Next.js leaves them off `redirects()` responses such as the `/sign-in` 308, which is harmless for a same-origin redirect with no body.
+- **Files Netlify serves itself** (`/_next/static/*`, `public/`) bypass Next.js. Their headers come from `[[headers]]` in `netlify.toml`.
+
+Optimized images (`/_next/image`) go through Netlify Image CDN and get neither set in full; Netlify adds its own `Content-Security-Policy: script-src 'none'` there.
+
+Keep the shared security headers (`Content-Security-Policy: frame-ancestors …`, `X-Content-Type-Options`, `Referrer-Policy`) identical in both. Framing is limited with CSP `frame-ancestors 'self' https://us.posthog.com` rather than `X-Frame-Options`, because PostHog's in-app heatmaps load the site in an iframe on us.posthog.com. Don't add `X-Frame-Options: DENY` to either file. To check a change, `curl -sSI` a page (`/`, `/home`, `/share/<token>`) and a static asset on the deploy preview.
+
 ### Required Environment Variables
 
 | Variable | Description | Where to get it |

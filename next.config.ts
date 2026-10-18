@@ -36,6 +36,22 @@ function getSupabaseHost(): string | null {
   }
 }
 
+/**
+ * Security headers for pages and route handlers (Next.js leaves them off
+ * `redirects()` responses). On Netlify these come from a function, and Netlify
+ * doesn't apply `netlify.toml` `[[headers]]` to functions, so the same values
+ * are set in both files. See CLAUDE.md › Response Headers.
+ *
+ * Framing is restricted with CSP `frame-ancestors` rather than
+ * `X-Frame-Options`, which has no way to allow a specific origin: PostHog's
+ * in-app heatmaps load the site in an iframe on us.posthog.com.
+ */
+const SECURITY_HEADERS = [
+  { key: 'Content-Security-Policy', value: "frame-ancestors 'self' https://us.posthog.com" },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+];
+
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: getAppVersion(),
@@ -55,6 +71,14 @@ const nextConfig: NextConfig = {
         source: '/sign-in',
         destination: '/',
         permanent: true,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: SECURITY_HEADERS,
       },
     ];
   },
