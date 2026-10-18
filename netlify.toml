@@ -19,6 +19,14 @@
   status = 301
   force = true
 
+# Fonts are fetched in CORS mode, and PostHog's session-replay player re-fetches
+# them cross-origin from us.posthog.com; without this, replays fall back to
+# system fonts. next/font self-hosts the font files under /_next/static/media.
+[[headers]]
+  for = "/_next/static/media/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+
 # Headers for security
 [[headers]]
   for = "/*"

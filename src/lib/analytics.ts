@@ -8,6 +8,13 @@ const POSTHOG_API_HOST = 'https://a.ryangrav.es';
 const POSTHOG_UI_HOST = 'https://us.posthog.com';
 
 /**
+ * Add to an element to keep it out of PostHog entirely: session replay draws a
+ * blank placeholder in its place and autocapture ignores it. Replay masks form
+ * inputs by default but records visible text, so use this for personal details.
+ */
+export const ANALYTICS_EXCLUDE_CLASS = 'ph-no-capture';
+
+/**
  * Starts PostHog when a project token was baked into the build.
  * next.config.ts only exposes the token to Netlify's production deploy, so
  * local dev, deploy previews, and tests ship no analytics at all — that keeps
