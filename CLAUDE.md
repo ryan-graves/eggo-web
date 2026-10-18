@@ -320,7 +320,7 @@ Realtime is wired via `postgres_changes` channels in the data hooks — subscrip
 `src/instrumentation-client.ts` starts PostHog via `src/lib/analytics.ts` before the app hydrates; pageviews (including App Router navigations), autocapture, and session replay use PostHog's defaults. `AuthProvider` identifies signed-in users by Supabase user ID only (never email or name) and resets the identity on sign-out.
 
 - **Production deploy only.** `next.config.ts` exposes `POSTHOG_PROJECT_TOKEN` to the client as `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` only when Netlify's `CONTEXT` is `production`. Local dev, deploy previews, branch deploys, and tests build without a token, so PostHog never starts and the SDK calls are no-ops. PostHog has no test-mode bucket, and this keeps owner/preview traffic out of the real data.
-- **Shared project and proxy.** Eggo reports into the same PostHog project as ryangrav.es (the free plan allows one project); filter by `$host` (`eggo.fun`) to separate them. Events go through the org's managed reverse proxy `a.ryangrav.es` so ad blockers don't drop them.
+- **Own project, shared proxy.** Eggo has its own PostHog project ("Eggo"), separate from the ryangrav.es portfolio project in the same org. Events go through the org's managed reverse proxy `a.ryangrav.es` (set up for the portfolio) so ad blockers don't drop them; the project token alone decides which project they land in.
 - **Verify locally:** `CONTEXT=production POSTHOG_PROJECT_TOKEN=phc_... npm run build && npm start`, then open `http://localhost:3000/?__posthog_debug=true` and watch the console. Headless browsers are flagged as bots and their events are dropped.
 
 ## Getting Started

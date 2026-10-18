@@ -7,7 +7,7 @@
   # PostHog project token — public by design (it ships in the client bundle).
   # next.config.ts only exposes it when CONTEXT=production, so previews stay
   # untracked even though the variable is set for every deploy context.
-  POSTHOG_PROJECT_TOKEN = "phc_v6mVpuq3dUZ8b8rXE6bNNHVgDdLjH72CRxMHXbDEJhFm"
+  POSTHOG_PROJECT_TOKEN = "phc_oGJKJ6N8vR4TNfof3955hzyY5tZpkpXbhFBVvAT7hoxk"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
