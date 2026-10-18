@@ -36,6 +36,22 @@ function getSupabaseHost(): string | null {
   }
 }
 
+/**
+ * Headers for every response the Next.js runtime serves (SSR, prerendered,
+ * and route-handler responses). On Netlify, `netlify.toml` `[[headers]]` only
+ * reach files the CDN serves directly (`/_next/static/*`, `public/`), so page
+ * headers have to live here. Keep the two lists in sync.
+ *
+ * Framing is restricted with CSP `frame-ancestors` rather than
+ * `X-Frame-Options`, which has no way to allow a specific origin: PostHog's
+ * in-app heatmaps load the site in an iframe on us.posthog.com.
+ */
+const SECURITY_HEADERS = [
+  { key: 'Content-Security-Policy', value: "frame-ancestors 'self' https://us.posthog.com" },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+];
+
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: getAppVersion(),
@@ -55,6 +71,14 @@ const nextConfig: NextConfig = {
         source: '/sign-in',
         destination: '/',
         permanent: true,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: SECURITY_HEADERS,
       },
     ];
   },
