@@ -28,10 +28,10 @@
     Access-Control-Allow-Origin = "*"
 
 # Headers for security
-# These only reach files the CDN serves directly (/_next/static/*, public/).
-# Pages and route handlers go through the Next.js runtime, which ignores this
-# block; their headers are set by headers() in next.config.ts. Keep the two
-# lists in sync.
+# Netlify applies these only to files it serves itself (/_next/static/*,
+# public/), not to function responses such as Next.js pages and route handlers
+# (https://docs.netlify.com/manage/routing/headers/#limitations). Those get
+# their headers from headers() in next.config.ts. Keep the two lists in sync.
 [[headers]]
   for = "/*"
   [headers.values]

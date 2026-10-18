@@ -37,10 +37,10 @@ function getSupabaseHost(): string | null {
 }
 
 /**
- * Headers for every response the Next.js runtime serves (SSR, prerendered,
- * and route-handler responses). On Netlify, `netlify.toml` `[[headers]]` only
- * reach files the CDN serves directly (`/_next/static/*`, `public/`), so page
- * headers have to live here. Keep the two lists in sync.
+ * Security headers for pages and route handlers (Next.js leaves them off
+ * `redirects()` responses). On Netlify these come from a function, and Netlify
+ * doesn't apply `netlify.toml` `[[headers]]` to functions, so the same values
+ * are set in both files. See CLAUDE.md › Response Headers.
  *
  * Framing is restricted with CSP `frame-ancestors` rather than
  * `X-Frame-Options`, which has no way to allow a specific origin: PostHog's
