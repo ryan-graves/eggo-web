@@ -54,19 +54,19 @@
   max-width: 100%;
 }
 
+/* No well behind the cutout: processed images are already cropped to the
+   set with a sliver of padding, so the object sits directly on the page the
+   way it does on cards. The square keeps the layout stable while it loads. */
 .imageContainer {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background-color: var(--surface-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
 }
 
 .imageSkeleton {
   position: absolute;
   inset: 0;
+  border-radius: var(--radius-lg);
   background: linear-gradient(
     90deg,
     var(--surface-secondary) 25%,
@@ -81,7 +81,6 @@
 
 .image {
   object-fit: contain;
-  padding: var(--space-4);
   opacity: 0;
   transition: opacity var(--transition-normal);
 }
@@ -90,12 +89,17 @@
   opacity: 1;
 }
 
+/* The empty state keeps a soft frame of its own now that the image itself
+   has none, so "No Image" reads as a deliberate placeholder, not stray text. */
 .placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 100%;
+  background-color: var(--surface-secondary);
+  border: 1px dashed var(--border-primary);
+  border-radius: var(--radius-lg);
 
   /* Match the empty-state tone of the rest of the catalog: a display-scale
      headline rather than a plain-text label. */
@@ -161,7 +165,9 @@
   color: inherit;
   text-decoration: none;
   border-bottom: 1px solid var(--border-secondary);
-  transition: border-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .themeLink:hover {

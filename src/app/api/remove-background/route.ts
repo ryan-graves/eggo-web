@@ -6,6 +6,7 @@ import {
   verifyAuthToken,
 } from '@/lib/supabase/admin';
 import { sourceImageCandidates } from '@/lib/providers/bricksetMapping';
+import { trimTransparentMargins } from '@/lib/image/trimTransparent';
 
 /**
  * Background Removal API Route
@@ -213,7 +214,18 @@ export async function POST(request: NextRequest) {
     }
 
     const imageBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(imageBuffer);
+    let buffer: Buffer = Buffer.from(imageBuffer);
+
+    // rembg keeps the source photo's full canvas, so a set that sat to one
+    // side of its box art comes back off-center. Crop to the opaque pixels
+    // (with a little padding) so every cutout fills its frame the same way.
+    // An untrimmed cutout is still a good result, so a trim failure is
+    // logged and skipped rather than failing the request.
+    try {
+      buffer = await trimTransparentMargins(buffer);
+    } catch (trimError) {
+      console.error('[remove-background API] Trim failed, keeping untrimmed image:', trimError);
+    }
 
     // setId provided → upload to Storage. (Admin config was already
     // verified at the top of the route.)

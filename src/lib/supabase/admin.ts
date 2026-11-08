@@ -49,7 +49,9 @@ export async function verifyAuthToken(
 
 /**
  * Upload a processed-image PNG to Supabase Storage's `processed-images`
- * bucket at `{setId}.png`. Returns the public URL.
+ * bucket at `{setId}.png`. Returns the public URL with a version query so a
+ * re-processed image (Refresh, or a re-crop) isn't hidden behind the
+ * 30-day browser cache of the previous one at the same path.
  */
 export async function uploadProcessedImage(
   buffer: Buffer,
@@ -58,14 +60,12 @@ export async function uploadProcessedImage(
 ): Promise<string> {
   const supabase = getAdminClient();
   const path = `${setId}.png`;
-  const { error } = await supabase.storage
-    .from('processed-images')
-    .upload(path, buffer, {
-      contentType,
-      cacheControl: '2592000',
-      upsert: true,
-    });
+  const { error } = await supabase.storage.from('processed-images').upload(path, buffer, {
+    contentType,
+    cacheControl: '2592000',
+    upsert: true,
+  });
   if (error) throw new Error(`storage upload failed: ${error.message}`);
   const { data } = supabase.storage.from('processed-images').getPublicUrl(path);
-  return data.publicUrl;
+  return `${data.publicUrl}?v=${Date.now()}`;
 }
