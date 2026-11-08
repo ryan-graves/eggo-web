@@ -115,6 +115,12 @@ describe('POST /api/brickset/collection', () => {
       expect(res.status).toBe(400);
     });
 
+    it.each(['null', '[]', '"string"', '42'])('400s on a JSON body of %s', async (raw) => {
+      const res = await POST(postRequest(raw) as never);
+      expect(res.status).toBe(400);
+      expect(mockLogin).not.toHaveBeenCalled();
+    });
+
     it.each([
       ['missing username', { password: 'x' }],
       ['blank username', { username: '   ', password: 'x' }],
@@ -175,6 +181,15 @@ describe('POST /api/brickset/collection', () => {
       expect(mockSaveLink).toHaveBeenCalledWith('user-1', 'brickfan', 'hash-abc');
     });
 
+    it('still returns the sets when remembering the account fails', async () => {
+      mockSaveLink.mockRejectedValue(new Error('db down'));
+      const res = await POST(postRequest({ ...VALID_BODY, remember: true }) as never);
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ username: 'brickfan', sets: OWNED, linked: false });
+      const logged = (console.error as jest.Mock).mock.calls.flat().map(String).join(' ');
+      expect(logged).not.toContain('hash-abc');
+    });
+
     it('does not remember the account when linking is not configured', async () => {
       mockIsLinkConfigured.mockReturnValue(false);
       const res = await POST(postRequest({ ...VALID_BODY, remember: true }) as never);
@@ -232,6 +247,7 @@ describe('POST /api/brickset/collection', () => {
     const LINK = {
       username: 'brickfan',
       userHash: 'hash-saved',
+      ciphertext: 'v1.sealed',
       linkedAt: '2026-11-01T00:00:00Z',
       lastSyncedAt: null,
     };
@@ -269,8 +285,24 @@ describe('POST /api/brickset/collection', () => {
 
       expect(res.status).toBe(409);
       expect(await res.json()).toMatchObject({ code: 'link_expired' });
-      expect(mockDeleteLink).toHaveBeenCalledWith('user-1');
+      expect(mockDeleteLink).toHaveBeenCalledWith('user-1', 'v1.sealed');
       expect(mockMarkSynced).not.toHaveBeenCalled();
+    });
+
+    it('still returns the sets when recording the sync time fails', async () => {
+      mockGetLink.mockResolvedValue(LINK);
+      mockMarkSynced.mockRejectedValue(new Error('db down'));
+      const res = await POST(postRequest({ useLink: true }) as never);
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ linked: true });
+    });
+
+    it('answers not_linked when the stored link could not be opened (rotated key)', async () => {
+      // getBricksetLink removes an unreadable row and reports no link.
+      mockGetLink.mockResolvedValue(null);
+      const res = await POST(postRequest({ useLink: true }) as never);
+      expect(res.status).toBe(404);
+      expect(await res.json()).toMatchObject({ code: 'not_linked' });
     });
 
     it('does not drop the link on an unrelated Brickset failure', async () => {

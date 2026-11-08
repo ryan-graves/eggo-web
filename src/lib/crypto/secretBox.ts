@@ -12,6 +12,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 const FORMAT_VERSION = 'v1';
 const KEY_BYTES = 32;
 const IV_BYTES = 12;
+const TAG_BYTES = 16;
 
 export class SecretBoxError extends Error {
   constructor(message: string) {
@@ -63,7 +64,9 @@ export function openSecret(sealed: string, key: Buffer): string {
     throw new SecretBoxError('Sealed value is not in a recognized format.');
   }
   try {
-    const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(ivPart, 'base64url'));
+    const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(ivPart, 'base64url'), {
+      authTagLength: TAG_BYTES,
+    });
     decipher.setAuthTag(Buffer.from(tagPart, 'base64url'));
     const plaintext = Buffer.concat([
       decipher.update(Buffer.from(ctPart, 'base64url')),

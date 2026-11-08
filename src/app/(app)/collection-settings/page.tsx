@@ -12,7 +12,7 @@ import {
   disablePublicSharing,
   updatePublicViewSettings,
 } from '@/lib/supabase';
-import { getBricksetLinkStatus, unlinkBrickset } from '@/lib/import';
+import { formatBricksetSyncDate, getBricksetLinkStatus, unlinkBrickset } from '@/lib/import';
 import type { BricksetLinkStatus, PublicViewSettings } from '@/types';
 import styles from './page.module.css';
 
@@ -466,14 +466,17 @@ function CollectionSettingsContent(): React.JSX.Element {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Import</h2>
           <div className={styles.card}>
-            {bricksetLink?.linked ? (
+            {bricksetLink === null ? (
+              <p className={styles.settingDescription} role="status">
+                Checking for a linked Brickset account…
+              </p>
+            ) : bricksetLink.linked ? (
               <>
                 <p className={styles.settingDescription}>
                   Linked to Brickset as <strong>{bricksetLink.username}</strong>
                   {bricksetLink.lastSyncedAt &&
-                    ` · last synced ${new Date(bricksetLink.lastSyncedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`}
-                  . Pull in anything you&apos;ve marked as Owned since, into {activeCollection.name}
-                  .
+                    `. Last synced ${formatBricksetSyncDate(bricksetLink.lastSyncedAt)}`}
+                  . Sync to add anything new you&apos;ve marked as Owned to {activeCollection.name}.
                 </p>
                 <div className={styles.importActions}>
                   <button
@@ -486,6 +489,7 @@ function CollectionSettingsContent(): React.JSX.Element {
                   <button
                     type="button"
                     className="btn-default btn-ghost"
+                    aria-label="Unlink Brickset account"
                     onClick={handleUnlinkBrickset}
                     disabled={isUnlinking}
                   >

@@ -1,5 +1,5 @@
 import { getAdminClient } from './admin';
-import { openSecret, parseSecretKey, sealSecret } from '@/lib/crypto/secretBox';
+import { SecretBoxError, openSecret, parseSecretKey, sealSecret } from '@/lib/crypto/secretBox';
 
 /**
  * Server-only store for remembered Brickset accounts and the Brickset
@@ -14,11 +14,16 @@ const REQUESTS_TABLE = 'brickset_requests';
 
 export type BricksetRequestKind = 'login' | 'fetch';
 
-export interface BricksetLink {
+export interface BricksetLinkSummary {
   username: string;
-  userHash: string;
   linkedAt: string;
   lastSyncedAt: string | null;
+}
+
+export interface BricksetLink extends BricksetLinkSummary {
+  userHash: string;
+  /** The stored ciphertext, so a later delete can be made conditional on it. */
+  ciphertext: string;
 }
 
 interface LinkRow {
@@ -29,9 +34,20 @@ interface LinkRow {
   last_synced_at: string | null;
 }
 
-/** Whether this deployment can remember Brickset accounts at all. */
+/**
+ * Whether this deployment can remember Brickset accounts at all: the key
+ * must be present AND well-formed, so a mistyped key is caught here rather
+ * than after a Brickset sign-in has already spent quota.
+ */
 export function isBricksetLinkConfigured(): boolean {
-  return Boolean(process.env.BRICKSET_HASH_KEY);
+  const encoded = process.env.BRICKSET_HASH_KEY;
+  if (!encoded) return false;
+  try {
+    parseSecretKey(encoded);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function getKey(): Buffer {
@@ -40,6 +56,28 @@ function getKey(): Buffer {
   return parseSecretKey(encoded);
 }
 
+/** Link status without touching the sealed hash. Safe to call even if the key has changed. */
+export async function getBricksetLinkSummary(userId: string): Promise<BricksetLinkSummary | null> {
+  const { data, error } = await getAdminClient()
+    .from(LINKS_TABLE)
+    .select('brickset_username, linked_at, last_synced_at')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const row = data as Pick<LinkRow, 'brickset_username' | 'linked_at' | 'last_synced_at'>;
+  return {
+    username: row.brickset_username,
+    linkedAt: row.linked_at,
+    lastSyncedAt: row.last_synced_at,
+  };
+}
+
+/**
+ * The link with its session hash opened. A row sealed under a previous key
+ * (or otherwise unreadable) is useless, so it is removed and treated as
+ * "not linked": the user simply signs in and remembers the account again.
+ */
 export async function getBricksetLink(userId: string): Promise<BricksetLink | null> {
   const { data, error } = await getAdminClient()
     .from(LINKS_TABLE)
@@ -49,9 +87,18 @@ export async function getBricksetLink(userId: string): Promise<BricksetLink | nu
   if (error) throw new Error(error.message);
   if (!data) return null;
   const row = data as LinkRow;
+  let userHash: string;
+  try {
+    userHash = openSecret(row.user_hash_ciphertext, getKey());
+  } catch (err) {
+    if (!(err instanceof SecretBoxError)) throw err;
+    await deleteBricksetLink(userId, row.user_hash_ciphertext);
+    return null;
+  }
   return {
     username: row.brickset_username,
-    userHash: openSecret(row.user_hash_ciphertext, getKey()),
+    userHash,
+    ciphertext: row.user_hash_ciphertext,
     linkedAt: row.linked_at,
     lastSyncedAt: row.last_synced_at,
   };
@@ -80,8 +127,15 @@ export async function saveBricksetLink(
   if (error) throw new Error(error.message);
 }
 
-export async function deleteBricksetLink(userId: string): Promise<void> {
-  const { error } = await getAdminClient().from(LINKS_TABLE).delete().eq('user_id', userId);
+/**
+ * Forget the link. With `onlyIfCiphertext`, delete only the exact row that
+ * was read, so an in-flight request holding a dead session can't wipe a link
+ * the user has just re-created in another tab.
+ */
+export async function deleteBricksetLink(userId: string, onlyIfCiphertext?: string): Promise<void> {
+  let query = getAdminClient().from(LINKS_TABLE).delete().eq('user_id', userId);
+  if (onlyIfCiphertext !== undefined) query = query.eq('user_hash_ciphertext', onlyIfCiphertext);
+  const { error } = await query;
   if (error) throw new Error(error.message);
 }
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isAdminConfigured, verifyAuthToken } from '@/lib/supabase/admin';
 import {
   deleteBricksetLink,
-  getBricksetLink,
+  getBricksetLinkSummary,
   isBricksetLinkConfigured,
 } from '@/lib/supabase/bricksetLinks';
 import type { BricksetLinkStatus } from '@/types';
@@ -11,7 +11,7 @@ import type { BricksetLinkStatus } from '@/types';
  * /api/brickset/link — the caller's remembered Brickset account.
  *
  *   GET     Whether an account is linked (username and timestamps only; the
- *           session hash never leaves the server) and whether linking is
+ *           session hash is neither read nor returned) and whether linking is
  *           available on this deployment.
  *   DELETE  Forget the linked account.
  */
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const link = await getBricksetLink(auth.uid);
+    const link = await getBricksetLinkSummary(auth.uid);
     const payload: BricksetLinkStatus = link
       ? {
           available: true,

@@ -2,6 +2,7 @@ export {
   fetchBricksetOwnedSets,
   getBricksetLinkStatus,
   unlinkBrickset,
+  formatBricksetSyncDate,
   buildImportCandidates,
   updateCandidate,
   applyDetailsToAll,

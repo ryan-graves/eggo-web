@@ -12,6 +12,7 @@ import { getSetsForCollection } from '@/lib/supabase';
 import {
   fetchBricksetOwnedSets,
   getBricksetLinkStatus,
+  formatBricksetSyncDate,
   buildImportCandidates,
   updateCandidate,
   applyDetailsToAll,
@@ -56,14 +57,6 @@ function describeFetchError(err: unknown): string {
     }
   }
   return 'Something went wrong loading your collection. Please try again.';
-}
-
-function formatSyncDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 function pluralize(count: number, singular: string, plural = `${singular}s`): string {
@@ -158,6 +151,7 @@ function ImportBricksetContent(): React.JSX.Element {
   const [linkStatus, setLinkStatus] = useState<BricksetLinkStatus | null>(null);
   const [useDifferentAccount, setUseDifferentAccount] = useState(false);
   const showLinkedCard = Boolean(linkStatus?.linked) && !useDifferentAccount;
+  const linkedHeadingRef = useRef<HTMLHeadingElement>(null);
 
   // Review
   const [bricksetUsername, setBricksetUsername] = useState('');
@@ -204,8 +198,10 @@ function ImportBricksetContent(): React.JSX.Element {
   // has loaded and the link lookup has settled, so the effect keys on both.
   useEffect(() => {
     if (isInitializing || !collectionId) return;
-    if (step === 'connect' && linkStatus && !showLinkedCard) usernameRef.current?.focus();
-    else if (step === 'review') reviewHeadingRef.current?.focus();
+    if (step === 'connect' && linkStatus) {
+      if (showLinkedCard) linkedHeadingRef.current?.focus();
+      else usernameRef.current?.focus();
+    } else if (step === 'review') reviewHeadingRef.current?.focus();
     else if (step === 'importing') importingHeadingRef.current?.focus();
     else if (step === 'done') doneHeadingRef.current?.focus();
   }, [step, isInitializing, collectionId, linkStatus, showLinkedCard]);
@@ -244,6 +240,18 @@ function ImportBricksetContent(): React.JSX.Element {
       };
       setBricksetUsername(response.username);
       setAccountLinked(response.linked);
+      if (response.linked) {
+        // The server now remembers this account, so Back from review should
+        // land on the linked card rather than an empty form.
+        setLinkStatus((prev) => ({
+          available: true,
+          linked: true,
+          username: response.username,
+          lastSyncedAt: new Date().toISOString(),
+          linkedAt: prev?.linkedAt,
+        }));
+        setUseDifferentAccount(false);
+      }
       setBulk(defaults);
       setCandidates(buildImportCandidates(response.sets, existingSets, defaults));
       // The password has done its one job. Drop it from memory and the DOM.
@@ -279,6 +287,13 @@ function ImportBricksetContent(): React.JSX.Element {
   };
 
   const handleFetchLinked = () => loadSets({ kind: 'linked' });
+
+  // Switching between the linked card and the form must not carry an error
+  // from one across to the other.
+  const switchAccountView = (differentAccount: boolean) => {
+    setFetchError(null);
+    setUseDifferentAccount(differentAccount);
+  };
 
   const setAllSelected = useCallback((predicate: (candidate: ImportCandidate) => boolean) => {
     setCandidates((prev) => prev.map((c) => ({ ...c, selected: predicate(c) })));
@@ -415,17 +430,22 @@ function ImportBricksetContent(): React.JSX.Element {
               </section>
 
               {linkStatus === null ? (
-                <div className={styles.card} role="status" aria-busy="true">
+                <div className={styles.card} role="status">
                   <p className={styles.cardTextMuted}>Checking for a linked account…</p>
                 </div>
               ) : showLinkedCard ? (
                 <section className={styles.card} aria-labelledby="brickset-linked-title">
-                  <h3 id="brickset-linked-title" className={styles.cardTitle}>
+                  <h3
+                    id="brickset-linked-title"
+                    ref={linkedHeadingRef}
+                    tabIndex={-1}
+                    className={styles.cardTitle}
+                  >
                     Linked to Brickset as {linkStatus?.username}
                   </h3>
                   <p className={styles.cardText}>
                     {linkStatus?.lastSyncedAt
-                      ? `Last synced ${formatSyncDate(linkStatus.lastSyncedAt)}. `
+                      ? `Last synced ${formatBricksetSyncDate(linkStatus.lastSyncedAt)}. `
                       : ''}
                     Load your owned sets to see what’s new since then.
                   </p>
@@ -437,7 +457,7 @@ function ImportBricksetContent(): React.JSX.Element {
                   <button
                     type="button"
                     className={`btn-small btn-ghost ${styles.alignStart}`}
-                    onClick={() => setUseDifferentAccount(true)}
+                    onClick={() => switchAccountView(true)}
                     disabled={isFetching}
                   >
                     Use a different account
@@ -517,7 +537,7 @@ function ImportBricksetContent(): React.JSX.Element {
                     <button
                       type="button"
                       className={`btn-small btn-ghost ${styles.alignStart}`}
-                      onClick={() => setUseDifferentAccount(false)}
+                      onClick={() => switchAccountView(false)}
                       disabled={isFetching}
                     >
                       Back to {linkStatus.username}

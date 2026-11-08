@@ -82,7 +82,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   let body: CollectionRequestBody;
   try {
-    body = (await request.json()) as CollectionRequestBody;
+    const parsed: unknown = await request.json();
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      return errorResponse(400, 'bad_request', 'Invalid JSON body');
+    }
+    body = parsed as CollectionRequestBody;
   } catch {
     return errorResponse(400, 'bad_request', 'Invalid JSON body');
   }
@@ -132,10 +136,19 @@ async function respondWithFreshCollection(
   await takeBricksetRequestSlot(userId, 'fetch');
   const sets = await fetchBricksetOwnedSets(apiKey, userHash);
 
+  // Brickset has already answered by now; a storage hiccup must not throw
+  // that away. The user just gets the sets without the account remembered.
   let linked = false;
   if (remember && isBricksetLinkConfigured()) {
-    await saveBricksetLink(userId, username, userHash);
-    linked = true;
+    try {
+      await saveBricksetLink(userId, username, userHash);
+      linked = true;
+    } catch (error) {
+      console.error(
+        '[brickset/collection] Could not remember account:',
+        error instanceof Error ? error.message : 'unknown'
+      );
+    }
   }
 
   const payload: BricksetCollectionResponse = { username, sets, linked };
@@ -158,12 +171,22 @@ async function respondWithLinkedCollection(apiKey: string, userId: string): Prom
   } catch (error) {
     if (error instanceof BricksetApiError && error.code === 'invalid_user_hash') {
       // The saved session is dead; drop it so the UI falls back to sign-in.
-      await deleteBricksetLink(userId);
+      // Conditional on the ciphertext we read, so a link re-created in
+      // another tab meanwhile survives.
+      await deleteBricksetLink(userId, link.ciphertext);
       return errorResponse(409, 'link_expired', error.message);
     }
     throw error;
   }
-  await markBricksetLinkSynced(userId);
+  try {
+    await markBricksetLinkSynced(userId);
+  } catch (error) {
+    // Bookkeeping only; the sets are already in hand.
+    console.error(
+      '[brickset/collection] Could not record sync time:',
+      error instanceof Error ? error.message : 'unknown'
+    );
+  }
 
   const payload: BricksetCollectionResponse = { username: link.username, sets, linked: true };
   return NextResponse.json(payload);

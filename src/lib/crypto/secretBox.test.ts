@@ -35,6 +35,12 @@ describe('secretBox', () => {
     expect(() => openSecret(parts.join('.'), key)).toThrow(SecretBoxError);
   });
 
+  it('rejects a truncated authentication tag', () => {
+    const parts = sealSecret('secret', key).split('.');
+    parts[2] = Buffer.from(parts[2], 'base64url').subarray(0, 8).toString('base64url');
+    expect(() => openSecret(parts.join('.'), key)).toThrow(SecretBoxError);
+  });
+
   it('rejects values that are not in its format', () => {
     expect(() => openSecret('garbage', key)).toThrow(SecretBoxError);
     expect(() => openSecret('v9.a.b.c', key)).toThrow(SecretBoxError);

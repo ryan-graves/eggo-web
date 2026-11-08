@@ -113,6 +113,15 @@ export async function fetchBricksetOwnedSets(
   return (await response.json()) as BricksetCollectionResponse;
 }
 
+/** "Nov 7, 2026" style date for the last-synced line, in the viewer's locale. */
+export function formatBricksetSyncDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 /** Whether the signed-in user has a remembered Brickset account. */
 export async function getBricksetLinkStatus(): Promise<BricksetLinkStatus> {
   const response = await authorizedFetch('/api/brickset/link', { method: 'GET' });

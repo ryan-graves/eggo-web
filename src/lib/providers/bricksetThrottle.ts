@@ -32,16 +32,18 @@ export class BricksetThrottleError extends Error {
 }
 
 /**
- * Record one request of `kind` for the user, or throw if they are over the
- * limit for the current window. Record-then-check means a flood of parallel
- * requests can overshoot by at most a few; precise accounting isn't the goal.
+ * Record one request of `kind` for the user, then throw if that pushed them
+ * over the limit for the current window. Recording first means a burst of
+ * parallel requests all land in the log before any of them counts, so the
+ * cap holds under concurrency; the cost is that refused attempts also
+ * occupy a slot, which only lengthens the cool-down for someone hammering.
  */
 export async function takeBricksetRequestSlot(
   userId: string,
   kind: BricksetRequestKind
 ): Promise<void> {
+  await recordBricksetRequest(userId, kind);
   const since = new Date(Date.now() - WINDOW_MS);
   const recent = await countRecentBricksetRequests(userId, kind, since);
-  if (recent >= LIMITS[kind]) throw new BricksetThrottleError(kind);
-  await recordBricksetRequest(userId, kind);
+  if (recent > LIMITS[kind]) throw new BricksetThrottleError(kind);
 }

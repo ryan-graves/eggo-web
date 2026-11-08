@@ -6,7 +6,7 @@ import { DELETE, GET } from './route';
 const mockVerifyAuthToken = jest.fn();
 const mockIsAdminConfigured = jest.fn();
 const mockIsLinkConfigured = jest.fn();
-const mockGetLink = jest.fn();
+const mockGetSummary = jest.fn();
 const mockDeleteLink = jest.fn();
 
 jest.mock('@/lib/supabase/admin', () => ({
@@ -16,7 +16,7 @@ jest.mock('@/lib/supabase/admin', () => ({
 
 jest.mock('@/lib/supabase/bricksetLinks', () => ({
   isBricksetLinkConfigured: () => mockIsLinkConfigured(),
-  getBricksetLink: (...args: unknown[]) => mockGetLink(...args),
+  getBricksetLinkSummary: (...args: unknown[]) => mockGetSummary(...args),
   deleteBricksetLink: (...args: unknown[]) => mockDeleteLink(...args),
 }));
 
@@ -34,7 +34,7 @@ describe('/api/brickset/link', () => {
     mockIsAdminConfigured.mockReturnValue(true);
     mockIsLinkConfigured.mockReturnValue(true);
     mockVerifyAuthToken.mockResolvedValue({ uid: 'user-1', email: null });
-    mockGetLink.mockResolvedValue(null);
+    mockGetSummary.mockResolvedValue(null);
     mockDeleteLink.mockResolvedValue(undefined);
   });
 
@@ -51,7 +51,7 @@ describe('/api/brickset/link', () => {
       mockIsLinkConfigured.mockReturnValue(false);
       const res = await GET(request('GET') as never);
       expect(await res.json()).toEqual({ available: false, linked: false });
-      expect(mockGetLink).not.toHaveBeenCalled();
+      expect(mockGetSummary).not.toHaveBeenCalled();
     });
 
     it('reports no link', async () => {
@@ -59,10 +59,9 @@ describe('/api/brickset/link', () => {
       expect(await res.json()).toEqual({ available: true, linked: false });
     });
 
-    it('reports the linked account without the session hash', async () => {
-      mockGetLink.mockResolvedValue({
+    it('reports the linked account from the summary, never touching the session hash', async () => {
+      mockGetSummary.mockResolvedValue({
         username: 'brickfan',
-        userHash: 'hash-secret',
         linkedAt: '2026-11-01T00:00:00Z',
         lastSyncedAt: '2026-11-07T00:00:00Z',
       });
@@ -75,11 +74,11 @@ describe('/api/brickset/link', () => {
         linkedAt: '2026-11-01T00:00:00Z',
         lastSyncedAt: '2026-11-07T00:00:00Z',
       });
-      expect(JSON.stringify(body)).not.toContain('hash-secret');
+      expect(JSON.stringify(body)).not.toContain('hash');
     });
 
     it('500s cleanly when the store fails', async () => {
-      mockGetLink.mockRejectedValue(new Error('db down'));
+      mockGetSummary.mockRejectedValue(new Error('db down'));
       const res = await GET(request('GET') as never);
       expect(res.status).toBe(500);
     });
