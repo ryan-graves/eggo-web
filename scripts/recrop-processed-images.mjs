@@ -18,7 +18,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { trimTransparentMargins } from './lib/trim-transparent.mjs';
+import { cutoutExtension, trimTransparentMargins } from './lib/trim-transparent.mjs';
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const ONE = process.argv.includes('--one');
@@ -88,23 +88,29 @@ for (const [index, { path, rows }] of eligible.entries()) {
     const { data: file, error: downloadError } = await supabase.storage.from(BUCKET).download(path);
     if (downloadError) throw new Error(`download: ${downloadError.message}`);
     const original = Buffer.from(await file.arrayBuffer());
-    const { png, trimmed, removedRatio } = await trimTransparentMargins(original);
+    const { buffer, format, contentType, trimmed, removedRatio } =
+      await trimTransparentMargins(original);
     if (!trimmed) {
       unchanged++;
       console.log(`${label}: already tight`);
       continue;
     }
     const pct = `${Math.round(removedRatio * 100)}% empty space removed`;
+    // Older uploads stored WebP bytes under a .png name; the re-upload goes
+    // under the extension that matches the bytes, and the old object is
+    // removed once every row points at the new one.
+    const newPath = `${path.replace(/\.[a-z0-9]+$/i, '')}.${cutoutExtension(format)}`;
+    const renamed = newPath !== path;
     if (DRY_RUN) {
       changed++;
-      console.log(`${label}: would re-crop (${pct})`);
+      console.log(`${label}: would re-crop (${pct}${renamed ? `, ${format} → ${newPath}` : ''})`);
       continue;
     }
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
-      .upload(path, png, { contentType: 'image/png', cacheControl: '2592000', upsert: true });
+      .upload(newPath, buffer, { contentType, cacheControl: '2592000', upsert: true });
     if (uploadError) throw new Error(`upload: ${uploadError.message}`);
-    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(newPath);
     const { error: updateError } = await supabase
       .from('sets')
       .update({ custom_image_url: `${urlData.publicUrl}?v=${Date.now()}` })
@@ -113,8 +119,15 @@ for (const [index, { path, rows }] of eligible.entries()) {
         rows.map((r) => r.id)
       );
     if (updateError) throw new Error(`update: ${updateError.message}`);
+    if (renamed) {
+      const { error: removeError } = await supabase.storage.from(BUCKET).remove([path]);
+      if (removeError)
+        console.warn(
+          `${label}: new object in place but old ${path} not removed: ${removeError.message}`
+        );
+    }
     changed++;
-    console.log(`${label}: re-cropped (${pct})`);
+    console.log(`${label}: re-cropped (${pct}${renamed ? `, now ${newPath}` : ''})`);
   } catch (err) {
     failed++;
     console.error(`${label}: FAILED ${err.message}`);

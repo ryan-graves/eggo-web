@@ -21,7 +21,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { trimTransparentMargins } from './lib/trim-transparent.mjs';
+import { cutoutExtension, trimTransparentMargins } from './lib/trim-transparent.mjs';
 
 const FORCE = process.argv.includes('--force');
 const DRY_RUN = process.argv.includes('--dry-run');
@@ -214,23 +214,28 @@ async function removeBackground(imageUrl) {
     const text = await res.text();
     throw new Error(`rembg HTTP ${res.status}: ${text}`);
   }
-  // Same crop as /api/remove-background: drop the empty canvas around the set.
-  const { png } = await trimTransparentMargins(Buffer.from(await res.arrayBuffer()));
-  return png;
+  // Same crop as /api/remove-background: drop the empty canvas around the
+  // set, re-encoded in whatever format rembg sent (PNG or WebP).
+  const { buffer, format, contentType } = await trimTransparentMargins(
+    Buffer.from(await res.arrayBuffer())
+  );
+  return { buffer, format, contentType };
 }
 
 // ============================================================================
 // Supabase Storage upload — same as uploadProcessedImage in lib/supabase/admin
 // ============================================================================
 
-async function uploadToStorage(buffer, setId) {
-  const path = `${setId}.png`;
+async function uploadToStorage({ buffer, format, contentType }, setId) {
+  const path = `${setId}.${cutoutExtension(format)}`;
   const { error } = await supabase.storage
     .from('processed-images')
-    .upload(path, buffer, { contentType: 'image/png', cacheControl: '2592000', upsert: true });
+    .upload(path, buffer, { contentType, cacheControl: '2592000', upsert: true });
   if (error) throw new Error(`storage upload: ${error.message}`);
   const { data } = supabase.storage.from('processed-images').getPublicUrl(path);
-  return data.publicUrl;
+  // Same stamp as uploadProcessedImage: a re-processed image at the same
+  // path must not hide behind the browser's cache of the previous one.
+  return `${data.publicUrl}?v=${Date.now()}`;
 }
 
 // ============================================================================
@@ -296,10 +301,10 @@ for (let i = 0; i < targets.length; i++) {
       continue;
     }
 
-    const buffer = await removeBackground(lookup.imageUrl);
+    const cutout = await removeBackground(lookup.imageUrl);
     let publicUrl = null;
     if (!DRY_RUN) {
-      publicUrl = await uploadToStorage(buffer, s.id);
+      publicUrl = await uploadToStorage(cutout, s.id);
       const { error: upErr } = await supabase
         .from('sets')
         .update({

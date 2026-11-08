@@ -69,7 +69,11 @@ export async function removeImageBackground(
   } catch (error) {
     console.error('[removeBackground] Exception:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return { processedImageUrl: null, error: `Background removal failed: ${message}`, skipped: false };
+    return {
+      processedImageUrl: null,
+      error: `Background removal failed: ${message}`,
+      skipped: false,
+    };
   }
 }
 

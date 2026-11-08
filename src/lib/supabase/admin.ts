@@ -47,11 +47,17 @@ export async function verifyAuthToken(
   return { uid: data.user.id, email: data.user.email ?? null };
 }
 
+/** Object name for a processed image: `{setId}.png` or `{setId}.webp`, matching its bytes. */
+export function processedImagePath(setId: string, contentType: string): string {
+  return `${setId}.${contentType === 'image/webp' ? 'webp' : 'png'}`;
+}
+
 /**
- * Upload a processed-image PNG to Supabase Storage's `processed-images`
- * bucket at `{setId}.png`. Returns the public URL with a version query so a
- * re-processed image (Refresh, or a re-crop) isn't hidden behind the
- * 30-day browser cache of the previous one at the same path.
+ * Upload a processed image to Supabase Storage's `processed-images` bucket
+ * under `{setId}.{ext}`, with the extension matching the content type (rembg
+ * returns WebP for large images). Returns the public URL with a version
+ * query so a re-processed image at the same path isn't hidden behind the
+ * 30-day browser cache of the previous one.
  */
 export async function uploadProcessedImage(
   buffer: Buffer,
@@ -59,7 +65,7 @@ export async function uploadProcessedImage(
   contentType = 'image/png'
 ): Promise<string> {
   const supabase = getAdminClient();
-  const path = `${setId}.png`;
+  const path = processedImagePath(setId, contentType);
   const { error } = await supabase.storage.from('processed-images').upload(path, buffer, {
     contentType,
     cacheControl: '2592000',
