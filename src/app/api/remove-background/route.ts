@@ -6,6 +6,7 @@ import {
   verifyAuthToken,
 } from '@/lib/supabase/admin';
 import { sourceImageCandidates } from '@/lib/providers/bricksetMapping';
+import { trimTransparentMargins } from '@/lib/image/trimTransparent';
 
 /**
  * Background Removal API Route
@@ -56,6 +57,21 @@ function isAllowedImageUrl(raw: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * What rembg actually sent. Its Content-Type header is the first word; the
+ * RIFF/WEBP magic bytes settle it when the header is missing or generic.
+ */
+function detectCutoutContentType(buffer: Buffer, response: Response): 'image/png' | 'image/webp' {
+  const header = response.headers.get('content-type') ?? '';
+  if (header.includes('image/webp')) return 'image/webp';
+  if (header.includes('image/png')) return 'image/png';
+  const isWebp =
+    buffer.length >= 12 &&
+    buffer.toString('latin1', 0, 4) === 'RIFF' &&
+    buffer.toString('latin1', 8, 12) === 'WEBP';
+  return isWebp ? 'image/webp' : 'image/png';
 }
 
 export async function POST(request: NextRequest) {
@@ -213,14 +229,30 @@ export async function POST(request: NextRequest) {
     }
 
     const imageBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(imageBuffer);
+    let buffer: Buffer = Buffer.from(imageBuffer);
+    // rembg.com answers PNG for small images and WebP for large ones; keep
+    // whichever it sent so the stored object and its content type agree.
+    let contentType: 'image/png' | 'image/webp' = detectCutoutContentType(buffer, response);
+
+    // rembg keeps the source photo's full canvas, so a set that sat to one
+    // side of its box art comes back off-center. Crop to the opaque pixels
+    // (with a little padding) so every cutout fills its frame the same way.
+    // An untrimmed cutout is still a good result, so a trim failure is
+    // logged and skipped rather than failing the request.
+    try {
+      const trimmed = await trimTransparentMargins(buffer);
+      buffer = trimmed.buffer;
+      contentType = trimmed.contentType;
+    } catch (trimError) {
+      console.error('[remove-background API] Trim failed, keeping untrimmed image:', trimError);
+    }
 
     // setId provided → upload to Storage. (Admin config was already
     // verified at the top of the route.)
     if (setId) {
       try {
         console.log('[remove-background API] Uploading to Supabase Storage...');
-        const publicUrl = await uploadProcessedImage(buffer, setId, 'image/png');
+        const publicUrl = await uploadProcessedImage(buffer, setId, contentType);
         console.log('[remove-background API] Uploaded to Storage:', publicUrl);
         return NextResponse.json({ processedImageUrl: publicUrl });
       } catch (storageError) {
@@ -237,7 +269,7 @@ export async function POST(request: NextRequest) {
     // exists and we have an id to use as the Storage object path.
     console.log('[remove-background API] No setId, returning base64 preview');
     const base64 = buffer.toString('base64');
-    const dataUrl = `data:image/png;base64,${base64}`;
+    const dataUrl = `data:${contentType};base64,${base64}`;
     return NextResponse.json({ processedImageUrl: dataUrl });
   } catch (error) {
     console.error('[remove-background API] Exception:', error);

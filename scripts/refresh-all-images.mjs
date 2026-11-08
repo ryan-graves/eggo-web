@@ -1,7 +1,7 @@
 /**
  * Re-fetches metadata + processes images for every set in Supabase using the
  * same upstream services and image pipeline the live UI uses (Brickset → fallback
- * to Rebrickable → rembg.com → Supabase Storage). Inlines the upstream calls
+ * to Rebrickable → rembg.com → crop to content → Supabase Storage). Inlines the upstream calls
  * directly so the script doesn't need a running Next.js server.
  *
  * Mirrors `refreshSetMetadata` in src/lib/supabase/sets.ts: each set gets
@@ -21,6 +21,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { cutoutExtension, trimTransparentMargins } from './lib/trim-transparent.mjs';
 
 const FORCE = process.argv.includes('--force');
 const DRY_RUN = process.argv.includes('--dry-run');
@@ -72,7 +73,9 @@ function standardBricksetImage(url) {
 
 function sourceImageCandidates(url) {
   if (!url.includes('images.brickset.com/sets/')) return [url];
-  const large = url.replace('/sets/small/', '/sets/large/').replace('/sets/images/', '/sets/large/');
+  const large = url
+    .replace('/sets/small/', '/sets/large/')
+    .replace('/sets/images/', '/sets/large/');
   return large === url ? [url] : [large, url];
 }
 
@@ -211,31 +214,35 @@ async function removeBackground(imageUrl) {
     const text = await res.text();
     throw new Error(`rembg HTTP ${res.status}: ${text}`);
   }
-  return Buffer.from(await res.arrayBuffer());
+  // Same crop as /api/remove-background: drop the empty canvas around the
+  // set, re-encoded in whatever format rembg sent (PNG or WebP).
+  const { buffer, format, contentType } = await trimTransparentMargins(
+    Buffer.from(await res.arrayBuffer())
+  );
+  return { buffer, format, contentType };
 }
 
 // ============================================================================
 // Supabase Storage upload — same as uploadProcessedImage in lib/supabase/admin
 // ============================================================================
 
-async function uploadToStorage(buffer, setId) {
-  const path = `${setId}.png`;
+async function uploadToStorage({ buffer, format, contentType }, setId) {
+  const path = `${setId}.${cutoutExtension(format)}`;
   const { error } = await supabase.storage
     .from('processed-images')
-    .upload(path, buffer, { contentType: 'image/png', cacheControl: '2592000', upsert: true });
+    .upload(path, buffer, { contentType, cacheControl: '2592000', upsert: true });
   if (error) throw new Error(`storage upload: ${error.message}`);
   const { data } = supabase.storage.from('processed-images').getPublicUrl(path);
-  return data.publicUrl;
+  // Same stamp as uploadProcessedImage: a re-processed image at the same
+  // path must not hide behind the browser's cache of the previous one.
+  return `${data.publicUrl}?v=${Date.now()}`;
 }
 
 // ============================================================================
 // Main loop
 // ============================================================================
 
-const { data: sets, error } = await supabase
-  .from('sets')
-  .select('*')
-  .order('set_number');
+const { data: sets, error } = await supabase.from('sets').select('*').order('set_number');
 if (error) {
   console.error('Failed to read sets:', error.message);
   process.exit(1);
@@ -246,7 +253,9 @@ const totalEligible = targets.length;
 if (SKIP > 0) targets = targets.slice(SKIP);
 if (ONE) targets = targets.slice(0, 1);
 
-console.log(`Sets total: ${sets.length}, eligible: ${totalEligible}, processing: ${targets.length}`);
+console.log(
+  `Sets total: ${sets.length}, eligible: ${totalEligible}, processing: ${targets.length}`
+);
 console.log(`Mode: force=${FORCE}, dry-run=${DRY_RUN}, one=${ONE}, skip=${SKIP}`);
 console.log('');
 
@@ -257,7 +266,9 @@ let failed = 0;
 for (let i = 0; i < targets.length; i++) {
   const s = targets[i];
   const idx = SKIP + i + 1;
-  process.stdout.write(`[${idx}/${totalEligible}] ${s.set_number} ${s.name?.slice(0, 50) ?? ''} ... `);
+  process.stdout.write(
+    `[${idx}/${totalEligible}] ${s.set_number} ${s.name?.slice(0, 50) ?? ''} ... `
+  );
 
   try {
     const lookup = await lookupSet(s.set_number);
@@ -290,10 +301,10 @@ for (let i = 0; i < targets.length; i++) {
       continue;
     }
 
-    const buffer = await removeBackground(lookup.imageUrl);
+    const cutout = await removeBackground(lookup.imageUrl);
     let publicUrl = null;
     if (!DRY_RUN) {
-      publicUrl = await uploadToStorage(buffer, s.id);
+      publicUrl = await uploadToStorage(cutout, s.id);
       const { error: upErr } = await supabase
         .from('sets')
         .update({
@@ -312,7 +323,9 @@ for (let i = 0; i < targets.length; i++) {
       if (upErr) throw new Error(`db update: ${upErr.message}`);
     }
     success++;
-    console.log(`OK (${(buffer.length / 1024).toFixed(1)} KB${publicUrl ? `, ${publicUrl.slice(-40)}` : ''})`);
+    console.log(
+      `OK (${(buffer.length / 1024).toFixed(1)} KB${publicUrl ? `, ${publicUrl.slice(-40)}` : ''})`
+    );
   } catch (err) {
     failed++;
     console.log(`FAIL — ${err.message}`);
@@ -329,6 +342,8 @@ console.log(`Failed: ${failed}`);
 
 if (failed > 0) {
   console.log('');
-  console.log('Re-run with --skip <i> to resume from a specific index after fixing transient issues.');
+  console.log(
+    'Re-run with --skip <i> to resume from a specific index after fixing transient issues.'
+  );
   process.exit(1);
 }

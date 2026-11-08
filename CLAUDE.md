@@ -53,6 +53,8 @@ supabase/
 
 scripts/                       # Top-level scripts (sibling of src/)
 ├── code-review.sh             # Code review helper script
+├── lib/trim-transparent.mjs   # Script-side mirror of src/lib/image/trimTransparent.ts
+├── recrop-processed-images.mjs # Re-crop existing cutouts in Storage (no rembg calls)
 ├── refresh-all-images.mjs     # Batch re-fetch metadata + re-process images
 └── verify-supabase-schema.mjs # Sanity-check tables, RLS, helpers
 ```
@@ -255,6 +257,7 @@ Used for set metadata (piece count, themes, images). Better data coverage than R
 - Set numbers: Use format "12345-1" (with suffix), auto-added if missing
 - Shared record mapping lives in `src/lib/providers/bricksetMapping.ts`; both the browser provider and the server import use it
 - Images: Brickset serves `/sets/small/`, `/sets/images/` (standard, every set), and `/sets/large/` (newer sets only). Store the standard URL; `/api/remove-background` tries the large sibling first via `sourceImageCandidates` and falls back, so older sets never end up with a 404 image (migration 0010 rewrote earlier rows)
+- Cutouts are cropped to their opaque content after rembg (`src/lib/image/trimTransparent.ts`, sharp alpha bounding box + 4% padding; a no-op when every margin is already within the padding, so it's idempotent) so a set that sat off to one side of its box art isn't off-center in Eggo. rembg.com returns PNG for small images and lossy WebP for large ones; the crop re-encodes in the same format (re-encoding WebP as PNG inflates it ~6x, past the bucket's 5 MB cap) and `uploadProcessedImage` names the object `{setId}.png` or `{setId}.webp` to match, returning the URL with a `?v=` stamp so a re-processed image isn't masked by the 30-day browser cache. `scripts/recrop-processed-images.mjs` applies the crop to existing cutouts without spending rembg credits and moves WebP-under-.png objects to `.webp`.
 
 #### Brickset collection import
 
