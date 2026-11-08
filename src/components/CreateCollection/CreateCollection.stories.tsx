@@ -1,16 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import styles from './CreateCollection.module.css';
 
+interface DemoProps {
+  title?: string;
+  description?: string;
+}
+
 // Create a standalone demo component for Storybook
 // This avoids needing to mock the actual useCollection hook
-function CreateCollectionDemo(): React.JSX.Element {
+function CreateCollectionDemo({
+  title = 'Create Your Collection',
+  description = 'Set up your Lego collection to start tracking your sets.',
+}: DemoProps): React.JSX.Element {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <h2 className={styles.title}>Create Your Collection</h2>
-        <p className={styles.description}>
-          Set up your Lego collection to start tracking your sets.
-        </p>
+        <h2 className={styles.title}>{title}</h2>
+        <p className={styles.description}>{description}</p>
 
         <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
           <div className={styles.field}>
@@ -146,6 +152,16 @@ export default meta;
 
 export const Default: StoryObj = {
   render: () => <CreateCollectionDemo />,
+};
+
+/** The copy used on /collections/new, when the user already has a collection. */
+export const AdditionalCollection: StoryObj = {
+  render: () => (
+    <CreateCollectionDemo
+      title="Start another collection"
+      description="It gets its own sets, owners, and share link."
+    />
+  ),
 };
 
 export const WithError: StoryObj = {

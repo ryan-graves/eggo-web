@@ -288,6 +288,7 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
             collections={collections}
             activeCollection={activeCollection}
             onSelect={setActiveCollection}
+            onCreateClick={() => navigateTo('/collections/new')}
             onSettingsClick={activeCollection ? () => navigateTo('/collection-settings') : undefined}
           />
         }

@@ -12,6 +12,11 @@ import {
 } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
+  readStoredActiveCollectionId,
+  resolveActiveCollection,
+  storeActiveCollectionId,
+} from '@/lib/activeCollection';
+import {
   createCollection,
   subscribeToCollectionsForUser,
   subscribeToSetsForCollection,
@@ -86,21 +91,20 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       setCollectionsError(null);
       setCollectionsEverLoaded(true);
 
-      // Auto-select first collection if none selected, or update active collection with fresh data
+      // Pick up the remembered collection if none is selected yet, or swap in
+      // the fresh copy of the current one. Collections arrive newest-first,
+      // so without the remembered id every reload would land on whichever
+      // collection was created last.
       setActiveCollectionState((current) => {
-        if (!current && userCollections.length > 0) {
-          return userCollections[0];
-        }
         if (current) {
-          // Find the updated version of the current collection
           const updatedCollection = userCollections.find((c) => c.id === current.id);
           if (updatedCollection) {
             return updatedCollection;
           }
-          // Collection was deleted, select first available or null
-          return userCollections[0] || null;
+          // Collection was deleted (or the user left it): fall through to the
+          // same resolution as a cold start.
         }
-        return current;
+        return resolveActiveCollection(userCollections, readStoredActiveCollectionId(user.id));
       });
 
       // Mark collections as initialized after first successful load
@@ -169,6 +173,16 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
     };
   }, [activeCollection, setsInitialized, user?.id]);
 
+  // Remember the active collection per user so a reload (or the next sign-in
+  // on this browser) returns to it. One effect keyed on the id covers every
+  // way the selection changes: the selector, creating a collection, and the
+  // fallback when the active one is deleted.
+  const activeCollectionId = activeCollection?.id ?? null;
+  useEffect(() => {
+    if (!user?.id || !activeCollectionId) return;
+    storeActiveCollectionId(user.id, activeCollectionId);
+  }, [user?.id, activeCollectionId]);
+
   const setActiveCollection = useCallback((collection: Collection) => {
     setActiveCollectionState(collection);
   }, []);
@@ -198,9 +212,12 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
           if (prev.some((c) => c.id === collectionId)) {
             return prev;
           }
-          return [...prev, newCollection];
+          // Newest first, matching the server order the next refetch returns
+          return [newCollection, ...prev];
         });
-        setActiveCollectionState((current) => current ?? newCollection);
+        // Creating a collection always lands the user in it, whether it's
+        // their first or an additional one.
+        setActiveCollectionState(newCollection);
         // A brand-new collection has no sets — mark sets as initialized so
         // isInitializing resolves to false immediately (avoids skeleton flash)
         setSets([]);

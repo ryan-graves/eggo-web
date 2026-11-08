@@ -272,3 +272,9 @@
     font-size: var(--font-size-base);
   }
 }
+
+/* Note under the Collection field when a move will add owners to the destination. */
+.fieldHint {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}

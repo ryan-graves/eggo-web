@@ -6,6 +6,12 @@
   padding: var(--space-8);
 }
 
+/* Under a page header (/collections/new) the card is top-aligned, not floated. */
+.containerCompact {
+  min-height: 0;
+  padding: var(--space-4) 0;
+}
+
 .card {
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);

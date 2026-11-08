@@ -4,7 +4,30 @@ import { useState } from 'react';
 import { useCollection } from '@/hooks/useCollection';
 import styles from './CreateCollection.module.css';
 
-export function CreateCollection(): React.JSX.Element {
+interface CreateCollectionProps {
+  /** Heading above the form. Defaults to the first-run onboarding copy. */
+  title?: string;
+  /** Supporting line under the heading. Defaults to the onboarding copy. */
+  description?: string;
+  /**
+   * Called after the collection exists and has become the active one. The
+   * onboarding screen omits it because the browse layout unmounts this form
+   * as soon as the user has a collection.
+   */
+  onCreated?: (collectionId: string) => void;
+  /**
+   * Drops the onboarding screen's vertical centering so the card sits at
+   * the top of a page that already has a header.
+   */
+  compact?: boolean;
+}
+
+export function CreateCollection({
+  title = 'Create Your Collection',
+  description = 'Set up your Lego collection to start tracking your sets.',
+  onCreated,
+  compact = false,
+}: CreateCollectionProps): React.JSX.Element {
   const { createNewCollection } = useCollection();
   const [name, setName] = useState('');
   const [ownersInput, setOwnersInput] = useState('');
@@ -33,7 +56,8 @@ export function CreateCollection(): React.JSX.Element {
     setIsSubmitting(true);
 
     try {
-      await createNewCollection(name.trim(), owners);
+      const collectionId = await createNewCollection(name.trim(), owners);
+      onCreated?.(collectionId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create collection');
     } finally {
@@ -42,12 +66,10 @@ export function CreateCollection(): React.JSX.Element {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={compact ? `${styles.container} ${styles.containerCompact}` : styles.container}>
       <div className={styles.card}>
-        <h2 className={styles.title}>Create Your Collection</h2>
-        <p className={styles.description}>
-          Set up your Lego collection to start tracking your sets.
-        </p>
+        <h2 className={styles.title}>{title}</h2>
+        <p className={styles.description}>{description}</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.field}>
