@@ -62,6 +62,19 @@ describe('StatusPicker', () => {
     expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
   });
 
+  it('does not reopen on its own when re-enabled after being disabled while open', () => {
+    const { rerender } = render(<StatusPicker value="assembled" onChange={jest.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /change status/i }));
+    rerender(<StatusPicker value="assembled" onChange={jest.fn()} disabled />);
+    rerender(<StatusPicker value="assembled" onChange={jest.fn()} />);
+
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /change status/i })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+  });
+
   it('names the subject in its accessible labels', () => {
     render(<StatusPicker value="unopened" onChange={jest.fn()} subject="Galaxy Explorer" />);
 

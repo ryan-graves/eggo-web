@@ -348,13 +348,78 @@ describe('runBricksetImport', () => {
     expect(summary).toMatchObject({ imagesProcessed: 0, imageFailures: 0 });
   });
 
-  it('skips the image step for sets without an image', async () => {
-    await runBricksetImport(
+  it('skips the image phase entirely when no created set has an image', async () => {
+    const progress: ImportProgress[] = [];
+    const summary = await runBricksetImport(
       buildImportCandidates([owned({ imageUrl: null })], [], DEFAULTS),
+      options,
+      (p) => progress.push(p)
+    );
+    expect(mockRemoveImageBackground).not.toHaveBeenCalled();
+    expect(progress.some((p) => p.phase === 'images')).toBe(false);
+    expect(summary).toMatchObject({ setsCreated: 1, imagesProcessed: 0, imageFailures: 0 });
+  });
+
+  it('counts an image failure when the processed URL cannot be saved', async () => {
+    mockUpdateSet.mockRejectedValue(new Error('offline'));
+    const summary = await runBricksetImport(
+      buildImportCandidates([owned()], [], DEFAULTS),
       options,
       () => {}
     );
-    expect(mockRemoveImageBackground).not.toHaveBeenCalled();
+    expect(summary).toMatchObject({ setsCreated: 1, imagesProcessed: 0, imageFailures: 1 });
+  });
+
+  it('reports one failure per set, counting the copies that failed', async () => {
+    mockCreateSet
+      .mockRejectedValueOnce(new Error('RLS denied'))
+      .mockResolvedValueOnce('set-ok')
+      .mockRejectedValueOnce(new Error('RLS denied'));
+
+    const summary = await runBricksetImport(
+      buildImportCandidates([owned({ quantity: 3 })], [], DEFAULTS),
+      options,
+      () => {}
+    );
+
+    expect(summary.setsCreated).toBe(1);
+    expect(summary.failures).toEqual([
+      { set: owned({ quantity: 3 }), message: 'RLS denied', copies: 2 },
+    ]);
+  });
+
+  it('never runs more than three image jobs at once and drains them all', async () => {
+    let inFlight = 0;
+    let peak = 0;
+    const release: Array<() => void> = [];
+    mockRemoveImageBackground.mockImplementation(
+      (_url: string, setId: string) =>
+        new Promise((resolve) => {
+          inFlight++;
+          peak = Math.max(peak, inFlight);
+          release.push(() => {
+            inFlight--;
+            resolve({ processedImageUrl: `p/${setId}`, error: null, skipped: false });
+          });
+        })
+    );
+    const five = Array.from({ length: 5 }, (_, i) =>
+      owned({ bricksetSetId: i + 1, setNumber: String(10000 + i), sourceId: `${10000 + i}-1` })
+    );
+
+    const run = runBricksetImport(buildImportCandidates(five, [], DEFAULTS), options, () => {});
+    // Let the create pass and the first wave of image jobs start.
+    await new Promise((r) => setTimeout(r, 0));
+    expect(peak).toBe(3);
+    while (release.length > 0) {
+      release.shift()!();
+      await new Promise((r) => setTimeout(r, 0));
+    }
+    const summary = await run;
+
+    expect(peak).toBe(3);
+    expect(summary.imagesProcessed).toBe(5);
+    expect(mockUpdateSet).toHaveBeenCalledTimes(5);
   });
 
   it('records a failure and continues when a row cannot be created', async () => {
@@ -373,7 +438,7 @@ describe('runBricksetImport', () => {
     );
 
     expect(summary.setsCreated).toBe(1);
-    expect(summary.failures).toEqual([{ set: owned(), message: 'RLS denied' }]);
+    expect(summary.failures).toEqual([{ set: owned(), message: 'RLS denied', copies: 1 }]);
   });
 
   it('reports progress through both phases', async () => {

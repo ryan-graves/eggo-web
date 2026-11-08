@@ -20,11 +20,14 @@ const BRICKSET_API_BASE = 'https://brickset.com/api/v3.asmx';
 const PAGE_SIZE = 500;
 
 /**
- * Hard stop on pagination. 10,000 owned sets is far beyond any real
- * collection; this only guards against a misbehaving `matches` count
- * keeping the loop alive.
+ * Hard stop on pagination. 5,000 owned sets is far beyond any real
+ * collection; this bounds how much of the shared daily quota one request
+ * can spend and guards against a misbehaving `matches` count.
  */
-const MAX_PAGES = 20;
+const MAX_PAGES = 10;
+
+/** Per-call ceiling so a stalled Brickset fails cleanly instead of hitting the platform's function timeout. */
+const UPSTREAM_TIMEOUT_MS = 15_000;
 
 export type BricksetApiErrorCode =
   | 'invalid_credentials'
@@ -90,6 +93,7 @@ async function callBrickset<T extends BricksetStatusResponse>(
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams(form).toString(),
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
   } catch {
     throw new BricksetApiError('upstream', 'Could not reach Brickset.');
@@ -99,7 +103,12 @@ async function callBrickset<T extends BricksetStatusResponse>(
     throw new BricksetApiError('upstream', `Brickset responded with HTTP ${response.status}.`);
   }
 
-  const data = (await response.json()) as T;
+  let data: T;
+  try {
+    data = (await response.json()) as T;
+  } catch {
+    throw new BricksetApiError('upstream', 'Brickset returned an unreadable response.');
+  }
   if (data.status !== 'success') {
     throw classifyBricksetError(data.message);
   }
@@ -136,6 +145,11 @@ export async function fetchBricksetOwnedSets(
 ): Promise<BricksetOwnedSet[]> {
   const seen = new Set<number>();
   const owned: BricksetOwnedSet[] = [];
+  // Records Brickset has sent so far, including ones skipped below. The
+  // exit test compares this to `matches`, not `owned.length`, so a skipped
+  // record can't make the loop spend an extra page.
+  let received = 0;
+  let matches = 0;
 
   for (let pageNumber = 1; pageNumber <= MAX_PAGES; pageNumber++) {
     const data = await callBrickset<BricksetSetsResponse>('getSets', {
@@ -149,7 +163,12 @@ export async function fetchBricksetOwnedSets(
         pageNumber: String(pageNumber),
       }),
     });
+    if (!Array.isArray(data.sets)) {
+      throw new BricksetApiError('upstream', 'Brickset returned an unreadable response.');
+    }
 
+    matches = data.matches;
+    received += data.sets.length;
     for (const set of data.sets) {
       // A set the user has since un-owned can still echo back on the owned
       // filter in edge cases; respect the flag when Brickset provides it.
@@ -159,8 +178,13 @@ export async function fetchBricksetOwnedSets(
       owned.push(mapBricksetSetToOwnedSet(set));
     }
 
-    if (data.sets.length < PAGE_SIZE || owned.length >= data.matches) break;
+    if (data.sets.length < PAGE_SIZE || received >= matches) return owned;
   }
 
-  return owned;
+  // Ran out of pages with Brickset still reporting more. Surface it rather
+  // than hand back a silently truncated collection.
+  throw new BricksetApiError(
+    'upstream',
+    `This Brickset collection has more than ${(MAX_PAGES * PAGE_SIZE).toLocaleString()} owned sets, which is more than Eggo can import at once.`
+  );
 }

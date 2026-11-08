@@ -158,6 +158,51 @@ describe('fetchBricksetOwnedSets', () => {
     expect(owned.map((s) => s.bricksetSetId)).toEqual([1]);
   });
 
+  it('stops paging as soon as every reported match has arrived, even when some were skipped', async () => {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({
+        status: 'success',
+        matches: 2,
+        sets: [bricksetSet(1, '10300'), bricksetSet(2, '21333', { owned: false })],
+      })
+    );
+    await fetchBricksetOwnedSets('key', 'hash');
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses to hand back a truncated collection when the page limit is hit', async () => {
+    const fullPage = Array.from({ length: 500 }, (_, i) => bricksetSet(i + 1, String(i)));
+    mockFetch.mockResolvedValue(
+      jsonResponse({ status: 'success', matches: 99_999, sets: fullPage })
+    );
+
+    await expect(fetchBricksetOwnedSets('key', 'hash')).rejects.toMatchObject({
+      code: 'upstream',
+      message: expect.stringContaining('more than'),
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(10);
+  });
+
+  it('treats a 200 with an unreadable body as an upstream failure', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: () => Promise.reject(new SyntaxError('bad json')),
+    } as unknown as Response);
+    await expect(fetchBricksetOwnedSets('key', 'hash')).rejects.toMatchObject({ code: 'upstream' });
+  });
+
+  it('treats a success without a sets array as an upstream failure', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse({ status: 'success', matches: 1 }));
+    await expect(fetchBricksetOwnedSets('key', 'hash')).rejects.toMatchObject({ code: 'upstream' });
+  });
+
+  it('bounds every call with a timeout signal', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse({ status: 'success', hash: 'h' }));
+    await loginToBrickset('key', 'u', 'p');
+    expect(mockFetch.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+  });
+
   it('returns an empty list for an empty collection', async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse({ status: 'success', matches: 0, sets: [] }));
     expect(await fetchBricksetOwnedSets('key', 'hash')).toEqual([]);

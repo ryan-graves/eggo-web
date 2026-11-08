@@ -53,7 +53,10 @@ export function StatusPicker({
 }: StatusPickerProps): React.JSX.Element {
   const [isOpenRequested, setIsOpen] = useState(false);
   // Becoming disabled while open (e.g. the import review locking status for
-  // every set) must not leave an orphaned menu behind, so disabled wins.
+  // every set) must not leave an orphaned menu behind, nor a stale request
+  // that would pop the menu back open the moment the picker is re-enabled.
+  // Adjusting state during render is React's sanctioned way to derive this.
+  if (disabled && isOpenRequested) setIsOpen(false);
   const isOpen = isOpenRequested && !disabled;
 
   const rootRef = useRef<HTMLDivElement>(null);

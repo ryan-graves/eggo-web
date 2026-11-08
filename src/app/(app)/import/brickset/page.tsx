@@ -158,6 +158,7 @@ function ImportBricksetContent(): React.JSX.Element {
   // Importing / done
   const [progress, setProgress] = useState<ImportProgress | null>(null);
   const [summary, setSummary] = useState<ImportSummary | null>(null);
+  const importingHeadingRef = useRef<HTMLHeadingElement>(null);
   const doneHeadingRef = useRef<HTMLHeadingElement>(null);
 
   // Land focus on the step's first meaningful element for keyboard and
@@ -167,6 +168,7 @@ function ImportBricksetContent(): React.JSX.Element {
     if (isInitializing || !collectionId) return;
     if (step === 'connect') usernameRef.current?.focus();
     else if (step === 'review') reviewHeadingRef.current?.focus();
+    else if (step === 'importing') importingHeadingRef.current?.focus();
     else if (step === 'done') doneHeadingRef.current?.focus();
   }, [step, isInitializing, collectionId]);
 
@@ -274,9 +276,18 @@ function ImportBricksetContent(): React.JSX.Element {
     if (selectedSetCount === 0) return;
     setStep('importing');
     setProgress(null);
-    const result = await runBricksetImport(candidates, { collectionId }, setProgress);
-    setSummary(result);
-    setStep('done');
+    try {
+      const result = await runBricksetImport(candidates, { collectionId }, setProgress);
+      setSummary(result);
+      setStep('done');
+    } catch (err) {
+      // runBricksetImport absorbs per-set failures, so only something
+      // unexpected lands here. Don't strand the user on the progress screen.
+      toast.error('Import stopped unexpectedly', {
+        description: err instanceof Error ? err.message : undefined,
+      });
+      setStep('review');
+    }
   };
 
   const handleHeaderBack = () => {
@@ -660,8 +671,13 @@ function ImportBricksetContent(): React.JSX.Element {
 
           {step === 'importing' && (
             <div className={styles.stepContent} key="importing">
-              <section className={styles.card} aria-live="polite">
-                <h2 className={styles.cardTitle}>
+              {/* Announces phase changes only. Announcing every progress tick
+                  would queue hundreds of readouts on a big collection. */}
+              <p className={styles.srOnly} role="status">
+                {progress?.phase === 'images' ? 'Preparing images' : 'Adding sets'}
+              </p>
+              <section className={styles.card}>
+                <h2 ref={importingHeadingRef} tabIndex={-1} className={styles.cardTitle}>
                   {progress?.phase === 'images'
                     ? 'Preparing images'
                     : `Adding sets to ${collectionName}`}
@@ -678,6 +694,9 @@ function ImportBricksetContent(): React.JSX.Element {
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={progressPercent}
+                    aria-valuetext={
+                      progress ? `${progress.completed} of ${progress.total}` : 'Starting'
+                    }
                     aria-label={progress?.phase === 'images' ? 'Preparing images' : 'Adding sets'}
                   >
                     <div
@@ -729,7 +748,11 @@ function ImportBricksetContent(): React.JSX.Element {
                   {summary.failures.length > 0 && (
                     <li>
                       {pluralize(summary.failures.length, 'set', 'sets')} couldn’t be added:{' '}
-                      {summary.failures.map((f) => f.set.name).join(', ')}
+                      {summary.failures
+                        .map((f) =>
+                          f.copies > 1 ? `${f.set.name} (${f.copies} copies)` : f.set.name
+                        )
+                        .join(', ')}
                     </li>
                   )}
                 </ul>

@@ -184,6 +184,8 @@ export interface ImportProgress {
 export interface ImportFailure {
   set: BricksetOwnedSet;
   message: string;
+  /** Copies of this set that could not be created. */
+  copies: number;
 }
 
 export interface ImportSummary {
@@ -253,10 +255,10 @@ export async function runBricksetImport(
         });
         created.push({ setId, set });
       } catch (err) {
-        failures.push({
-          set,
-          message: err instanceof Error ? err.message : 'Could not add this set',
-        });
+        const message = err instanceof Error ? err.message : 'Could not add this set';
+        const existing = failures.find((f) => f.set.sourceId === set.sourceId);
+        if (existing) existing.copies++;
+        else failures.push({ set, message, copies: 1 });
       }
       copiesDone++;
       onProgress({
@@ -272,6 +274,10 @@ export async function runBricksetImport(
   let imagesDone = 0;
   let imagesProcessed = 0;
   let imageFailures = 0;
+
+  if (withImages.length === 0) {
+    return { setsCreated: created.length, imagesProcessed, imageFailures, failures };
+  }
 
   onProgress({ phase: 'images', completed: 0, total: withImages.length, currentName: null });
 

@@ -103,10 +103,10 @@ describe('POST /api/brickset/collection', () => {
     expect(mockFetchOwned).toHaveBeenCalledWith('bs-key', 'hash-abc');
   });
 
-  it('maps invalid Brickset credentials to 401 with a code the client can act on', async () => {
+  it('maps invalid Brickset credentials to 422, keeping 401 for Eggo auth', async () => {
     mockLogin.mockRejectedValue(new BricksetApiError('invalid_credentials', 'nope'));
     const res = await POST(postRequest(VALID_BODY) as never);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(422);
     expect(await res.json()).toEqual({ error: 'nope', code: 'invalid_credentials' });
   });
 
@@ -123,12 +123,38 @@ describe('POST /api/brickset/collection', () => {
     expect(res.status).toBe(502);
   });
 
-  it('never echoes the password or hash in an error response', async () => {
+  it('never echoes the password or hash in an error response or the server log', async () => {
     mockLogin.mockRejectedValue(new Error('unexpected'));
     const res = await POST(postRequest(VALID_BODY) as never);
     expect(res.status).toBe(502);
     const text = JSON.stringify(await res.json());
     expect(text).not.toContain('hunter2');
     expect(text).not.toContain('hash-abc');
+    const logged = (console.error as jest.Mock).mock.calls.flat().map(String).join(' ');
+    expect(logged).not.toContain('hunter2');
+    expect(logged).not.toContain('brickfan');
+  });
+
+  it('logs only the error code for a Brickset failure', async () => {
+    mockFetchOwned.mockRejectedValue(new BricksetApiError('rate_limited', 'limit hit'));
+    await POST(postRequest(VALID_BODY) as never);
+    const logged = (console.error as jest.Mock).mock.calls.flat().map(String).join(' ');
+    expect(logged).toContain('rate_limited');
+    expect(logged).not.toContain('hash-abc');
+  });
+
+  it('rejects an oversized body before parsing it', async () => {
+    const req = new Request('http://localhost:3000/api/brickset/collection', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer jwt-123',
+        'content-length': String(10_000),
+      },
+      body: JSON.stringify(VALID_BODY),
+    });
+    const res = await POST(req as never);
+    expect(res.status).toBe(413);
+    expect(mockLogin).not.toHaveBeenCalled();
   });
 });

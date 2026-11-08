@@ -23,13 +23,19 @@ import type { BricksetCollectionResponse } from '@/types';
 /** Generous upper bound on either credential; Brickset's own limits are far lower. */
 const MAX_CREDENTIAL_LENGTH = 200;
 
+/** The body is two short strings; anything bigger is not a real request. */
+const MAX_BODY_BYTES = 4096;
+
 interface CollectionRequestBody {
   username?: unknown;
   password?: unknown;
 }
 
+// Bad Brickset credentials are a problem with the submitted form, not with
+// the caller's Eggo session, so they must not look like a 401 to anything
+// that treats 401 as "signed out".
 const HTTP_STATUS_BY_CODE: Record<BricksetApiError['code'], number> = {
-  invalid_credentials: 401,
+  invalid_credentials: 422,
   rate_limited: 429,
   invalid_api_key: 502,
   upstream: 502,
@@ -47,6 +53,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const auth = await verifyAuthToken(request.headers.get('authorization'));
   if (!auth) {
     return NextResponse.json({ error: 'Sign in required', code: 'unauthorized' }, { status: 401 });
+  }
+
+  const contentLength = Number(request.headers.get('content-length') ?? 0);
+  if (contentLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'Request too large', code: 'bad_request' }, { status: 413 });
   }
 
   let body: CollectionRequestBody;

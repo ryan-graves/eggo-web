@@ -17,12 +17,13 @@ export interface BricksetSet {
   theme: string;
   themeGroup: string;
   subtheme: string | null;
-  pieces: number | null;
-  minifigs: number | null;
-  image: {
-    thumbnailURL: string | null;
-    imageURL: string | null;
-  };
+  pieces?: number | null;
+  minifigs?: number | null;
+  /** Absent on a handful of catalog records that have no picture at all. */
+  image?: {
+    thumbnailURL?: string | null;
+    imageURL?: string | null;
+  } | null;
   bricksetURL: string;
   /** The requesting user's collection record. Only meaningful when the request carried a userHash. */
   collection?: BricksetCollectionEntry;
@@ -87,7 +88,7 @@ export function upgradeToLargeImage(imageUrl: string | null): string | null {
 
 /** Prefer the standard image over the thumbnail, then upgrade to the large rendition. */
 function bestImageUrl(set: BricksetSet): string | null {
-  return upgradeToLargeImage(set.image.imageURL || set.image.thumbnailURL);
+  return upgradeToLargeImage(set.image?.imageURL || set.image?.thumbnailURL || null);
 }
 
 /** Brickset's canonical "number-variant" identifier, stored as `dataSourceId`. */
@@ -100,7 +101,7 @@ export function mapBricksetSetToLookupResult(set: BricksetSet): SetLookupResult 
     setNumber: displaySetNumber(set.number),
     name: set.name,
     year: set.year,
-    pieceCount: set.pieces,
+    pieceCount: set.pieces ?? null,
     theme: set.theme,
     subtheme: set.subtheme,
     imageUrl: bestImageUrl(set),
@@ -125,7 +126,7 @@ export function mapBricksetSetToOwnedSet(set: BricksetSet): BricksetOwnedSet {
     sourceId: sourceIdFor(set),
     name: set.name,
     year: set.year || null,
-    pieceCount: set.pieces,
+    pieceCount: set.pieces ?? null,
     theme: set.theme || null,
     subtheme: set.subtheme || null,
     imageUrl: bestImageUrl(set),
