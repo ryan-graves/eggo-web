@@ -23,7 +23,7 @@ function SetDetailLoading(): React.JSX.Element {
 function SetDetailContent(): React.JSX.Element {
   const params = useParams();
   const { navigateTo, router } = useNavigation();
-  const { sets, isInitializing } = useCollection();
+  const { sets, isInitializing, isSwitchingCollection } = useCollection();
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const setId = params.id as string;
@@ -40,12 +40,11 @@ function SetDetailContent(): React.JSX.Element {
     navigateTo(`/set/${setId}/edit`);
   };
 
-  if (isInitializing) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.loading}>Loading...</div>
-      </div>
-    );
+  // A collection switch (e.g. right after moving this set) keeps the previous
+  // list on screen until the new one arrives, so wait rather than judging
+  // "not found" against the wrong collection.
+  if (isInitializing || isSwitchingCollection) {
+    return <SetDetailLoading />;
   }
 
   if (!set) {

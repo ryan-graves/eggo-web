@@ -98,6 +98,41 @@ describe('CreateCollection', () => {
     expect(screen.getByLabelText(/owners/i)).toBeDisabled();
   });
 
+  it('reports the new collection id through onCreated', async () => {
+    const onCreated = jest.fn();
+    render(<CreateCollection onCreated={onCreated} />);
+
+    await userEvent.type(screen.getByLabelText(/collection name/i), 'Second Shelf');
+    await userEvent.type(screen.getByLabelText(/owners/i), 'Ryan');
+    fireEvent.click(screen.getByRole('button', { name: /create collection/i }));
+
+    await waitFor(() => {
+      expect(onCreated).toHaveBeenCalledWith('new-collection-id');
+    });
+  });
+
+  it('does not call onCreated when creation fails', async () => {
+    mockCreateNewCollection.mockRejectedValue(new Error('Network error'));
+    const onCreated = jest.fn();
+    render(<CreateCollection onCreated={onCreated} />);
+
+    await userEvent.type(screen.getByLabelText(/collection name/i), 'Second Shelf');
+    await userEvent.type(screen.getByLabelText(/owners/i), 'Ryan');
+    fireEvent.click(screen.getByRole('button', { name: /create collection/i }));
+
+    expect(await screen.findByText(/network error/i)).toBeInTheDocument();
+    expect(onCreated).not.toHaveBeenCalled();
+  });
+
+  it('uses onboarding copy by default and accepts custom copy', () => {
+    const { rerender } = render(<CreateCollection />);
+    expect(screen.getByRole('heading', { name: /create your collection/i })).toBeInTheDocument();
+
+    rerender(<CreateCollection title="New Collection" description="Start another one." />);
+    expect(screen.getByRole('heading', { name: /^new collection$/i })).toBeInTheDocument();
+    expect(screen.getByText('Start another one.')).toBeInTheDocument();
+  });
+
   it('shows error message on creation failure', async () => {
     mockCreateNewCollection.mockRejectedValue(new Error('Network error'));
 

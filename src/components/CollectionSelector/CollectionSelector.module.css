@@ -2,22 +2,11 @@
   position: relative;
   display: flex;
   align-items: center;
+
+  /* Lets the trigger shrink and truncate inside the header's flex row. */
+  min-width: 0;
   background-color: var(--surface-secondary);
   border-radius: var(--radius-md);
-}
-
-.singleContainer {
-  display: flex;
-  align-items: center;
-  background-color: var(--surface-secondary);
-  border-radius: var(--radius-md);
-}
-
-.singleCollection {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  padding: var(--space-1) var(--space-3);
 }
 
 .settingsButton {
@@ -46,6 +35,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
   padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
   background: none;
   border: none;
@@ -67,9 +57,13 @@
 .selectedName {
   font-weight: var(--font-weight-medium);
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chevron {
+  flex-shrink: 0;
   transition: transform var(--transition-fast);
   color: var(--text-tertiary);
 }
@@ -82,14 +76,20 @@
   position: absolute;
   top: 100%;
   left: 0;
+  display: flex;
+  flex-direction: column;
   margin-top: var(--space-1);
   min-width: var(--min-width-dropdown);
-  max-width: var(--max-width-dropdown);
+
+  /* The menu sits a wordmark's width in from the left edge, so on a phone
+     the viewport (minus a gutter) is the real limit, not the design width. */
+  max-width: min(var(--max-width-dropdown), calc(100vw - var(--space-8)));
+  max-height: var(--max-height-dropdown);
+  overflow-y: auto;
   background-color: var(--surface-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-dropdown);
-  list-style: none;
   padding: var(--space-1);
   z-index: var(--z-dropdown);
 }
@@ -100,6 +100,8 @@
   align-items: flex-start;
   gap: var(--space-1);
   width: 100%;
+  min-width: 0;
+  flex-shrink: 0;
   padding: var(--space-2) var(--space-3);
   background: none;
   border: none;
@@ -113,17 +115,47 @@
   background-color: var(--surface-secondary);
 }
 
+.option:focus-visible {
+  outline: var(--outline-width) solid var(--border-focus);
+  outline-offset: calc(-1 * var(--outline-width));
+}
+
 .optionSelected {
   background-color: var(--surface-secondary);
 }
 
 .optionName {
+  max-width: 100%;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .optionOwners {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
+}
+
+.separator {
+  border-top: 1px solid var(--border-primary);
+  margin: var(--space-1) 0;
+}
+
+/* The "New collection" action: a single row with a leading icon. */
+.createOption {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+}
+
+.createOption .optionName {
+  color: inherit;
+}
+
+.createOption:hover {
+  color: var(--text-primary);
 }

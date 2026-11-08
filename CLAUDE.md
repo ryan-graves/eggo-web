@@ -230,6 +230,15 @@ Groups of Lego sets (e.g., "The Graves Collection")
   - `showOccasion`: Show occasion
   - `showNotes`: Show notes
 
+**Multiple collections.** A user can belong to any number of collections.
+
+- The header `CollectionSelector` is always a dropdown (menu-button pattern: focus moves into the menu on open, Escape/Tab return it). Its "New collection" item opens `/collections/new`, which reuses `CreateCollection` in its `compact` variant; the new collection becomes active.
+- The active collection is remembered per user in localStorage (`eggo_active_collection:<userId>`, helpers in `src/lib/activeCollection.ts`). The remembered one wins on load; if it's gone, the newest collection is used.
+- A set is moved from the edit page's Collection field (shown with two or more collections). The set keeps its owners: any owner tag the destination lacks is appended to the destination's `owners` first (`updateCollection`), then one `updateSet` call writes `collection_id` with the other edits, and the app switches the active collection to the destination.
+- RLS requires membership of both collections for a move (`USING` on the old row, `WITH CHECK` on the new). `updateSet` throws when no row comes back, so an RLS-hidden update can't fail silently.
+- The source collection's realtime channel does not fire for a move (the `collection_id=eq.X` filter is evaluated against the new row), so the source list refreshes on the next switch to it.
+- The remembered Brickset account is per user, so "Sync from Brickset" imports into whichever collection is active.
+
 ### Sets
 
 Individual Lego sets with:

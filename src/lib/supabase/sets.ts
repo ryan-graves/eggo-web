@@ -172,6 +172,12 @@ export async function getSetsForCollection(
  * somehow got this collection id (stale localStorage, leaked URL) gets
  * an empty list rather than the public-RLS read of the collection's
  * sets. See issue #58.
+ *
+ * Supabase evaluates the `collection_id=eq.X` filter against the NEW row,
+ * so this channel does not fire when a set is moved OUT of the collection
+ * (only the destination's channel does). The app compensates by switching
+ * the active collection to the destination after a move; coming back to
+ * the source re-subscribes, and the initial refetch picks up the removal.
  */
 export function subscribeToSetsForCollection(
   collectionId: string,
@@ -220,13 +226,28 @@ export function subscribeToSetsForCollection(
   };
 }
 
+/**
+ * Updates the given columns. Throws when no row comes back: the set was
+ * deleted, or the caller isn't a member of its collection, in which case RLS
+ * hides the row and PostgREST updates nothing without reporting an error.
+ * Moving a set (`collectionId`) also requires membership of the destination;
+ * RLS's WITH CHECK rejects that with a Postgres error, which throws too.
+ */
 export async function updateSet(setId: string, data: UpdateLegoSetInput): Promise<void> {
+  const columns = toDb(data as Partial<LegoSet>);
+  // PostgREST treats an empty PATCH as a no-op that matches no rows, which
+  // would read as "not found" below.
+  if (Object.keys(columns).length === 0) return;
+
   const supabase = getSupabaseClient();
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from(TABLE)
-    .update(toDb(data as Partial<LegoSet>))
-    .eq('id', setId);
+    .update(columns)
+    .eq('id', setId)
+    .select('id')
+    .maybeSingle();
   if (error) throw new Error(error.message);
+  if (!updated) throw new Error('Set not found or you no longer have access to it');
 }
 
 export async function deleteSet(setId: string): Promise<void> {

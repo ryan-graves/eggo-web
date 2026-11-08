@@ -204,6 +204,7 @@ export interface BricksetLinkStatus {
 export type CreateLegoSetInput = Omit<LegoSet, 'id' | 'createdAt' | 'updatedAt'>;
 
 /**
- * Input for updating a set
+ * Input for updating a set. `collectionId` moves the set to another
+ * collection the user belongs to; `updatedAt` is owned by the database.
  */
-export type UpdateLegoSetInput = Partial<Omit<LegoSet, 'id' | 'collectionId' | 'createdAt'>>;
+export type UpdateLegoSetInput = Partial<Omit<LegoSet, 'id' | 'createdAt' | 'updatedAt'>>;

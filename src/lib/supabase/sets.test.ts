@@ -8,21 +8,22 @@
  */
 
 import { getSupabaseClient } from './client';
-import { findSetsByNumber, getSetsForCollection } from './sets';
+import { findSetsByNumber, getSetsForCollection, updateSet } from './sets';
 
 function makeChainMock() {
   const calls: { method: string; args: unknown[] }[] = [];
-  // The membership probe terminates with `.maybeSingle()`; the set
-  // fetch terminates with `.order()`. Each leg of the chain gets its
-  // own resolved value so we can simulate "non-member" without
-  // affecting the unrelated set-fetch resolution.
-  let membershipResolved: unknown = { data: { id: 'membership-row' }, error: null };
+  // The membership probe and `updateSet`'s row check both terminate with
+  // `.maybeSingle()`; the set fetch terminates with `.order()`. Each leg
+  // of the chain gets its own resolved value so we can simulate
+  // "non-member" or "no row updated" without affecting the unrelated
+  // set-fetch resolution.
+  let maybeSingleResolved: unknown = { data: { id: 'membership-row' }, error: null };
   let setsResolved: unknown = { data: [], error: null };
 
   const proxy: Record<string, unknown> = {};
   const handler = (method: string) => (...args: unknown[]) => {
     calls.push({ method, args });
-    if (method === 'maybeSingle') return Promise.resolve(membershipResolved);
+    if (method === 'maybeSingle') return Promise.resolve(maybeSingleResolved);
     if (method === 'order') return Promise.resolve(setsResolved);
     return proxy;
   };
@@ -31,15 +32,15 @@ function makeChainMock() {
   // calls) would otherwise fail with a confusing TypeError if rpc
   // were reintroduced. With it in the proxy, the call is recorded
   // and `expect(...).toBeUndefined()` fires with a clear message.
-  for (const m of ['from', 'select', 'eq', 'limit', 'maybeSingle', 'order', 'rpc']) {
+  for (const m of ['from', 'select', 'eq', 'limit', 'maybeSingle', 'order', 'rpc', 'update']) {
     proxy[m] = handler(m);
   }
 
   return {
     proxy,
     calls,
-    __resolveMembership(value: unknown) {
-      membershipResolved = value;
+    __resolveMaybeSingle(value: unknown) {
+      maybeSingleResolved = value;
     },
     __resolveSets(value: unknown) {
       setsResolved = value;
@@ -60,7 +61,7 @@ const mock = makeChainMock();
 
 beforeEach(() => {
   mock.calls.length = 0;
-  mock.__resolveMembership({ data: { id: 'membership-row' }, error: null });
+  mock.__resolveMaybeSingle({ data: { id: 'membership-row' }, error: null });
   mock.__resolveSets({ data: [], error: null });
   (getSupabaseClient as jest.Mock).mockReturnValue(mock.proxy);
 });
@@ -87,7 +88,7 @@ describe('getSetsForCollection', () => {
   });
 
   it('returns [] and skips the set fetch when the membership probe returns null (non-member)', async () => {
-    mock.__resolveMembership({ data: null, error: null });
+    mock.__resolveMaybeSingle({ data: null, error: null });
 
     const result = await getSetsForCollection('coll-1', 'user-abc');
 
@@ -106,12 +107,58 @@ describe('getSetsForCollection', () => {
 
 describe('findSetsByNumber', () => {
   it('runs the same RLS-bound short-circuit when userId is provided', async () => {
-    mock.__resolveMembership({ data: null, error: null });
+    mock.__resolveMaybeSingle({ data: null, error: null });
 
     const result = await findSetsByNumber('coll-1', '75192', 'user-abc');
 
     expect(result).toEqual([]);
     const fromCalls = mock.calls.filter((c) => c.method === 'from');
     expect(fromCalls.map((c) => c.args[0])).toEqual(['collection_members']);
+  });
+});
+
+describe('updateSet', () => {
+  it('writes collection_id alongside other columns and confirms a row came back', async () => {
+    mock.__resolveMaybeSingle({ data: { id: 'set-1' }, error: null });
+
+    await updateSet('set-1', { collectionId: 'coll-2', owners: ['Alyssa'] });
+
+    expect(mock.calls.find((c) => c.method === 'update')).toEqual({
+      method: 'update',
+      args: [{ collection_id: 'coll-2', owners: ['Alyssa'] }],
+    });
+    expect(mock.calls.find((c) => c.method === 'eq')).toEqual({
+      method: 'eq',
+      args: ['id', 'set-1'],
+    });
+    // The row check is what turns an RLS-hidden row into a visible failure.
+    expect(mock.calls.map((c) => c.method)).toEqual(
+      expect.arrayContaining(['select', 'maybeSingle'])
+    );
+  });
+
+  it('throws when the update matched no row (deleted, or RLS hid it)', async () => {
+    mock.__resolveMaybeSingle({ data: null, error: null });
+
+    await expect(updateSet('set-1', { name: 'Renamed' })).rejects.toThrow(
+      /no longer have access/
+    );
+  });
+
+  it('surfaces a Postgres error (e.g. WITH CHECK on the destination collection)', async () => {
+    mock.__resolveMaybeSingle({
+      data: null,
+      error: { message: 'new row violates row-level security policy for table "sets"' },
+    });
+
+    await expect(updateSet('set-1', { collectionId: 'coll-not-mine' })).rejects.toThrow(
+      /row-level security/
+    );
+  });
+
+  it('skips the request entirely for an empty update', async () => {
+    await updateSet('set-1', {});
+
+    expect(mock.calls).toEqual([]);
   });
 });

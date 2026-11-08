@@ -7,9 +7,12 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
-import { updateSet, deleteSet, refreshSetMetadata } from '@/lib/supabase';
+import { updateSet, deleteSet, refreshSetMetadata, updateCollection } from '@/lib/supabase';
 import type { LegoSet, SetStatus } from '@/types';
 import styles from './page.module.css';
+
+/** "Ryan", "Ryan and Alyssa", "Ryan, Alyssa, and Sam" */
+const OWNER_LIST_FORMAT = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
 
 const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
   { value: 'unopened', label: 'Unopened' },
@@ -22,11 +25,17 @@ const STATUS_OPTIONS: { value: SetStatus; label: string }[] = [
 function EditSetContent(): React.JSX.Element {
   const params = useParams();
   const { navigateBack, router } = useNavigation();
-  const { sets, activeCollection, isInitializing } = useCollection();
+  const {
+    sets,
+    collections,
+    activeCollection,
+    setActiveCollection,
+    isInitializing,
+    isSwitchingCollection,
+  } = useCollection();
 
   const setId = params.id as string;
   const set = sets.find((s) => s.id === setId);
-  const availableOwners = activeCollection?.owners ?? [];
 
   const [currentSet, setCurrentSet] = useState<LegoSet | null>(set ?? null);
   const [name, setName] = useState(set?.name ?? '');
@@ -36,6 +45,28 @@ function EditSetContent(): React.JSX.Element {
   const [dateReceived, setDateReceived] = useState(set?.dateReceived ?? '');
   const [notes, setNotes] = useState(set?.notes ?? '');
   const [hasBeenAssembled, setHasBeenAssembled] = useState(set?.hasBeenAssembled ?? false);
+  // The collection the set will live in after Save. Held as an id so a
+  // realtime refresh of `collections` can't strand a stale object here.
+  const [targetCollectionId, setTargetCollectionId] = useState<string | null>(
+    set?.collectionId ?? null
+  );
+
+  const targetCollection =
+    collections.find((c) => c.id === targetCollectionId) ?? activeCollection;
+  const canMove = collections.length > 1;
+  const isMoving =
+    set !== undefined && targetCollectionId !== null && targetCollectionId !== set.collectionId;
+  // Owner tags belong to a collection. A moved set keeps its owners: any the
+  // destination lacks (saved on the set, or picked just now before switching)
+  // stay available as chips here and are appended to the destination's owner
+  // list on save.
+  const destinationOwners = targetCollection?.owners ?? [];
+  const availableOwners = isMoving
+    ? Array.from(new Set([...destinationOwners, ...(set?.owners ?? []), ...selectedOwners]))
+    : destinationOwners;
+  const ownersToAdd = isMoving
+    ? selectedOwners.filter((owner) => !destinationOwners.includes(owner))
+    : [];
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -57,6 +88,7 @@ function EditSetContent(): React.JSX.Element {
       setDateReceived(set.dateReceived ?? '');
       setNotes(set.notes ?? '');
       setHasBeenAssembled(set.hasBeenAssembled ?? false);
+      setTargetCollectionId(set.collectionId);
     }
   }, [set]);
 
@@ -102,10 +134,29 @@ function EditSetContent(): React.JSX.Element {
       return;
     }
 
+    const destination = isMoving
+      ? collections.find((c) => c.id === targetCollectionId) ?? null
+      : null;
+    if (isMoving && !destination) {
+      setError('That collection is no longer available');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
     try {
+      if (destination && ownersToAdd.length > 0) {
+        // Owners first: if the move then fails, the destination only carries
+        // an extra tag. The reverse order could leave a moved set naming
+        // owners its collection doesn't list.
+        await updateCollection(destination.id, {
+          owners: [...destination.owners, ...ownersToAdd],
+        });
+      }
+
+      // The move rides along with the other edits in one write, and RLS
+      // checks membership of both collections in the same statement.
       await updateSet(setId, {
         name: name.trim(),
         status,
@@ -115,7 +166,15 @@ function EditSetContent(): React.JSX.Element {
         occasion: occasion.trim(),
         dateReceived: dateReceived || null,
         notes: notes.trim() || undefined,
+        ...(destination ? { collectionId: destination.id } : {}),
       });
+
+      if (destination) {
+        // Follow the set: the detail page behind us reads from the active
+        // collection's list, and the source channel won't report the move.
+        setActiveCollection(destination);
+        toast.success(`Set moved to ${destination.name}`);
+      }
 
       router.back();
     } catch (err) {
@@ -141,7 +200,7 @@ function EditSetContent(): React.JSX.Element {
 
   const isBusy = isSubmitting || isDeleting || isRefreshing;
 
-  if (isInitializing) {
+  if (isInitializing || isSwitchingCollection) {
     return (
       <div className={styles.page}>
         <Header variant="detail" title="Edit Set" backHref={`/set/${setId}`} />
@@ -226,6 +285,31 @@ function EditSetContent(): React.JSX.Element {
               </button>
             )}
           </div>
+
+          {/* Collection (only when there is somewhere else to move the set) */}
+          {canMove && (
+            <div className="form-field">
+              <label htmlFor="collection" className="form-label">Collection</label>
+              <select
+                id="collection"
+                value={targetCollectionId ?? ''}
+                onChange={(e) => setTargetCollectionId(e.target.value)}
+                className="form-select"
+              >
+                {collections.map((collection) => (
+                  <option key={collection.id} value={collection.id}>
+                    {collection.name}
+                  </option>
+                ))}
+              </select>
+              {ownersToAdd.length > 0 && targetCollection && (
+                <p className={styles.fieldHint}>
+                  {OWNER_LIST_FORMAT.format(ownersToAdd)} will be added to {targetCollection.name}
+                  &apos;s owners
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Status */}
           <div className="form-field">
