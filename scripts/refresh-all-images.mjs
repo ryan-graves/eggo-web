@@ -59,12 +59,21 @@ function normalizeSetNumber(n) {
   return n.includes('-') ? n : `${n}-1`;
 }
 
-function upgradeToLargeImage(url) {
+// Mirrors standardBricksetImage / sourceImageCandidates in
+// src/lib/providers/bricksetMapping.ts: store the standard rendition (every
+// set has one), but try the large sibling first when processing.
+function standardBricksetImage(url) {
   if (!url) return null;
   if (url.includes('images.brickset.com/sets/')) {
-    return url.replace('/sets/small/', '/sets/large/').replace('/sets/images/', '/sets/large/');
+    return url.replace('/sets/small/', '/sets/images/').replace('/sets/large/', '/sets/images/');
   }
   return url;
+}
+
+function sourceImageCandidates(url) {
+  if (!url.includes('images.brickset.com/sets/')) return [url];
+  const large = url.replace('/sets/small/', '/sets/large/').replace('/sets/images/', '/sets/large/');
+  return large === url ? [url] : [large, url];
 }
 
 async function bricksetLookup(setNumber) {
@@ -88,7 +97,7 @@ async function bricksetLookup(setNumber) {
     pieceCount: set.pieces ?? null,
     theme: set.theme ?? null,
     subtheme: set.subtheme ?? null,
-    imageUrl: upgradeToLargeImage(set.image.imageURL || set.image.thumbnailURL),
+    imageUrl: standardBricksetImage(set.image?.imageURL || set.image?.thumbnailURL || null),
     sourceId: String(set.setID),
     dataSource: 'brickset',
   };
@@ -177,8 +186,15 @@ async function lookupSet(setNumber) {
 // ============================================================================
 
 async function removeBackground(imageUrl) {
-  const imgRes = await fetch(imageUrl);
-  if (!imgRes.ok) throw new Error(`fetch source image: HTTP ${imgRes.status}`);
+  let imgRes = null;
+  for (const candidate of sourceImageCandidates(imageUrl)) {
+    const attempt = await fetch(candidate);
+    if (attempt.ok) {
+      imgRes = attempt;
+      break;
+    }
+  }
+  if (!imgRes) throw new Error('fetch source image: no rendition available');
   const imgBlob = await imgRes.blob();
 
   const form = new FormData();

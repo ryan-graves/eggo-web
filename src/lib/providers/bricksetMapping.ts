@@ -65,30 +65,51 @@ export function displaySetNumber(setNumber: string): string {
   return setNumber.replace(/-\d+$/, '');
 }
 
+const BRICKSET_SET_IMAGE_PATH = 'images.brickset.com/sets/';
+
 /**
- * Upgrade a Brickset image URL to the large version for better quality.
- * Brickset URLs follow patterns like:
- * - https://images.brickset.com/sets/small/12345-1.jpg (thumbnail ~140px)
- * - https://images.brickset.com/sets/images/12345-1.jpg (standard ~300px)
- * - https://images.brickset.com/sets/large/12345-1.jpg (large ~800px)
+ * Brickset serves set photos in three renditions:
+ * - https://images.brickset.com/sets/small/12345-1.jpg   (thumbnail)
+ * - https://images.brickset.com/sets/images/12345-1.jpg  (standard, ~700px, every set has one)
+ * - https://images.brickset.com/sets/large/12345-1.jpg   (~2400px, newer sets only)
  *
- * This function converts any Brickset set image URL to use the /large/ path.
+ * The large rendition is far better for background removal, but older sets
+ * (e.g. 6339 from 1995) simply don't have one and the URL 404s. So Eggo
+ * stores the standard URL, which always exists, and `/api/remove-background`
+ * tries the large sibling first when it fetches the source image.
  */
-export function upgradeToLargeImage(imageUrl: string | null): string | null {
+export function standardBricksetImage(imageUrl: string | null): string | null {
   if (!imageUrl) return null;
-
-  if (imageUrl.includes('images.brickset.com/sets/')) {
+  if (imageUrl.includes(BRICKSET_SET_IMAGE_PATH)) {
     return imageUrl
-      .replace('/sets/small/', '/sets/large/')
-      .replace('/sets/images/', '/sets/large/');
+      .replace('/sets/small/', '/sets/images/')
+      .replace('/sets/large/', '/sets/images/');
   }
-
   return imageUrl;
 }
 
-/** Prefer the standard image over the thumbnail, then upgrade to the large rendition. */
+/** The large rendition of a Brickset set image, or null for any other URL. May 404; callers must fall back. */
+export function bricksetLargeImageVariant(imageUrl: string): string | null {
+  if (!imageUrl.includes(BRICKSET_SET_IMAGE_PATH)) return null;
+  const large = imageUrl
+    .replace('/sets/small/', '/sets/large/')
+    .replace('/sets/images/', '/sets/large/');
+  return large === imageUrl ? null : large;
+}
+
+/**
+ * The source images to try for background removal, best first. Brickset
+ * standard URLs get their large sibling ahead of themselves; anything else
+ * is used as-is.
+ */
+export function sourceImageCandidates(imageUrl: string): string[] {
+  const large = bricksetLargeImageVariant(imageUrl);
+  return large ? [large, imageUrl] : [imageUrl];
+}
+
+/** Prefer the standard image over the thumbnail, normalized to the rendition every set has. */
 function bestImageUrl(set: BricksetSet): string | null {
-  return upgradeToLargeImage(set.image?.imageURL || set.image?.thumbnailURL || null);
+  return standardBricksetImage(set.image?.imageURL || set.image?.thumbnailURL || null);
 }
 
 /** Brickset's canonical "number-variant" identifier, stored as `dataSourceId`. */

@@ -5,6 +5,7 @@ import {
   uploadProcessedImage,
   verifyAuthToken,
 } from '@/lib/supabase/admin';
+import { sourceImageCandidates } from '@/lib/providers/bricksetMapping';
 
 /**
  * Background Removal API Route
@@ -71,7 +72,10 @@ export async function POST(request: NextRequest) {
   // configured, fail closed with a 503 instead of letting verifyAuthToken
   // throw and surface a 500.
   if (!isAdminConfigured()) {
-    return NextResponse.json({ error: 'Server is not configured for this operation' }, { status: 503 });
+    return NextResponse.json(
+      { error: 'Server is not configured for this operation' },
+      { status: 503 }
+    );
   }
 
   const auth = await verifyAuthToken(request.headers.get('Authorization'));
@@ -137,19 +141,36 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch the image first (rembg.com requires file upload, not URL).
+    // For Brickset the large rendition is tried before the stored standard
+    // URL; older sets have no large image and 404, so fall through.
     // redirect: 'error' so a 3xx from an allowlisted host can't bounce us
     // to an internal address — the host check above wouldn't see the
-    // redirect target.
+    // redirect target. Every candidate is a same-host variant of the
+    // allowlisted URL, so the check still covers them.
     console.log('[remove-background API] Fetching source image...');
-    let imageResponse: Response;
-    try {
-      imageResponse = await fetch(imageUrl, { redirect: 'error' });
-    } catch (fetchErr) {
-      console.error('[remove-background API] Source image fetch failed:', fetchErr);
-      return NextResponse.json({ error: 'Failed to fetch source image' }, { status: 400 });
+    let imageResponse: Response | null = null;
+    for (const candidate of sourceImageCandidates(imageUrl)) {
+      try {
+        const attempt = await fetch(candidate, { redirect: 'error' });
+        if (attempt.ok) {
+          imageResponse = attempt;
+          break;
+        }
+        console.log(
+          '[remove-background API] Source candidate unavailable:',
+          attempt.status,
+          candidate
+        );
+      } catch (fetchErr) {
+        console.error(
+          '[remove-background API] Source candidate fetch failed:',
+          candidate,
+          fetchErr
+        );
+      }
     }
-    if (!imageResponse.ok) {
-      console.error('[remove-background API] Failed to fetch source image:', imageResponse.status);
+    if (!imageResponse) {
+      console.error('[remove-background API] No source image candidate could be fetched');
       return NextResponse.json({ error: 'Failed to fetch source image' }, { status: 400 });
     }
 
