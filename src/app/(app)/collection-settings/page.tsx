@@ -169,7 +169,7 @@ function InlineEditField({
 }
 
 function CollectionSettingsContent(): React.JSX.Element {
-  const { navigateBack } = useNavigation();
+  const { navigateBack, navigateTo } = useNavigation();
   const { activeCollection, isInitializing } = useCollection();
 
   // Sharing state, synced from the active collection.
@@ -422,6 +422,23 @@ function CollectionSettingsContent(): React.JSX.Element {
                 </div>
               </>
             )}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Import</h2>
+          <div className={styles.card}>
+            <p className={styles.settingDescription}>
+              Already track your sets on Brickset? Bring everything you&apos;ve marked as Owned into{' '}
+              {activeCollection.name}, pictures and notes included.
+            </p>
+            <button
+              type="button"
+              className="btn-default btn-secondary"
+              onClick={() => navigateTo('/import/brickset')}
+            >
+              Import from Brickset
+            </button>
           </div>
         </section>
 

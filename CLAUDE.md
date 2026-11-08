@@ -27,7 +27,7 @@ src/
 ├── app/                    # Next.js App Router pages
 │   ├── (auth)/            # Auth routes (login)
 │   ├── (app)/             # Protected app routes
-│   ├── api/               # API routes (Brickset proxy, background removal)
+│   ├── api/               # API routes (Brickset proxy + collection import, background removal)
 │   ├── share/             # Public collection sharing routes
 │   ├── layout.tsx
 │   └── globals.css
@@ -41,6 +41,7 @@ src/
 ├── lib/
 │   ├── supabase/          # Supabase client, auth, data access, admin
 │   ├── image/             # Image processing (background removal)
+│   ├── import/            # Bulk import flows (Brickset collection import)
 │   └── providers/         # External data providers (Brickset/Rebrickable)
 ├── styles/
 │   ├── tokens.css         # Design tokens — Layer 1 primitives + Layer 2 aliases
@@ -252,6 +253,13 @@ Used for set metadata (piece count, themes, images). Better data coverage than R
 - API docs: https://brickset.com/article/52664/api-version-3-documentation
 - Get API key: https://brickset.com/tools/webservices/requestkey
 - Set numbers: Use format "12345-1" (with suffix), auto-added if missing
+- Shared record mapping lives in `src/lib/providers/bricksetMapping.ts`; both the browser provider and the server import use it
+
+#### Brickset collection import
+
+Collection Settings > Import > "Import from Brickset" (`/import/brickset`) pulls every set a user has marked as Owned on Brickset into the active collection. Brickset has no OAuth, so the user enters their Brickset username and password; `POST /api/brickset/collection` (signed-in Eggo users only) exchanges them for a Brickset `userHash` with one `login` call, pages through `getSets` with `owned: 1`, and returns the compact `BricksetOwnedSet` list. Credentials and hash are used in-request only: never stored, logged, or returned. All Brickset calls POST form bodies so the password never appears in a URL.
+
+The browser side (`src/lib/import/bricksetImport.ts`) matches the owned list against the collection (`buildImportCandidates`, duplicates start unticked) and seeds every row with a status, owner, and date received (defaults: Assembled, the first owner, today). The review step's "Same for every set" checklist locks each property (checked, the default) so its value applies to every row and the per-row control is disabled; unchecking a property frees it to be chosen set by set with `StatusPicker` (the controlled badge-and-menu that `StatusControl` wraps), owner chips, and a date input. Rows are kept in sync whenever a property is locked, so `runBricksetImport` reads each row's own details. It writes rows first via `createSet` and processes images second through `/api/remove-background`, three at a time. A set whose image step fails keeps Brickset's picture, same as a single add. Brickset notes and `qtyOwned` (one row per copy) come across; wanted lists, minifigs, ratings, and flags do not. Only `getSets` counts against the Brickset daily key quota, and a whole collection is one or two calls.
 
 ### Rebrickable (Fallback)
 
@@ -322,7 +330,7 @@ RLS policy summary:
 - `sets` — members of the parent collection can read/write; public read when the parent collection is public
 - `user_preferences` — only the owning user (`auth.uid() = user_id`)
 
-The browser uses the publishable key and is fully constrained by RLS. The two server routes that need to bypass RLS (`/api/collections` for member insert during create, `/api/remove-background` for Storage uploads) use `getAdminClient()` with `SUPABASE_SECRET_KEY` and verify the caller's JWT explicitly.
+The browser uses the publishable key and is fully constrained by RLS. The server routes that need the secret key (`/api/collections` for member insert during create, `/api/remove-background` for Storage uploads, `/api/brickset/collection` to verify the caller before spending Brickset quota) use `getAdminClient()` with `SUPABASE_SECRET_KEY` and verify the caller's JWT explicitly.
 
 Realtime is wired via `postgres_changes` channels in the data hooks — subscriptions trigger a refetch rather than patching local state.
 
