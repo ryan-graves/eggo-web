@@ -1,9 +1,11 @@
 import {
+  bricksetLargeImageVariant,
   displaySetNumber,
   mapBricksetSetToLookupResult,
   mapBricksetSetToOwnedSet,
   normalizeSetNumber,
-  upgradeToLargeImage,
+  sourceImageCandidates,
+  standardBricksetImage,
   type BricksetSet,
 } from './bricksetMapping';
 
@@ -40,14 +42,35 @@ describe('set number helpers', () => {
     expect(displaySetNumber('10300')).toBe('10300');
   });
 
-  it('upgrades Brickset image paths to the large rendition and passes others through', () => {
-    expect(upgradeToLargeImage('https://images.brickset.com/sets/small/1-1.jpg')).toBe(
-      'https://images.brickset.com/sets/large/1-1.jpg'
+  it('normalizes Brickset image paths to the standard rendition and passes others through', () => {
+    expect(standardBricksetImage('https://images.brickset.com/sets/small/1-1.jpg')).toBe(
+      'https://images.brickset.com/sets/images/1-1.jpg'
     );
-    expect(upgradeToLargeImage('https://cdn.rebrickable.com/x.jpg')).toBe(
+    expect(standardBricksetImage('https://images.brickset.com/sets/large/1-1.jpg')).toBe(
+      'https://images.brickset.com/sets/images/1-1.jpg'
+    );
+    expect(standardBricksetImage('https://cdn.rebrickable.com/x.jpg')).toBe(
       'https://cdn.rebrickable.com/x.jpg'
     );
-    expect(upgradeToLargeImage(null)).toBeNull();
+    expect(standardBricksetImage(null)).toBeNull();
+  });
+
+  it('derives the large variant only for Brickset set images', () => {
+    expect(bricksetLargeImageVariant('https://images.brickset.com/sets/images/1-1.jpg')).toBe(
+      'https://images.brickset.com/sets/large/1-1.jpg'
+    );
+    expect(bricksetLargeImageVariant('https://images.brickset.com/sets/large/1-1.jpg')).toBeNull();
+    expect(bricksetLargeImageVariant('https://cdn.rebrickable.com/x.jpg')).toBeNull();
+  });
+
+  it('tries the large rendition before the stored URL, and only the URL for other hosts', () => {
+    expect(sourceImageCandidates('https://images.brickset.com/sets/images/6339-1.jpg')).toEqual([
+      'https://images.brickset.com/sets/large/6339-1.jpg',
+      'https://images.brickset.com/sets/images/6339-1.jpg',
+    ]);
+    expect(sourceImageCandidates('https://cdn.rebrickable.com/x.jpg')).toEqual([
+      'https://cdn.rebrickable.com/x.jpg',
+    ]);
   });
 });
 
@@ -64,7 +87,7 @@ describe('mapBricksetSetToOwnedSet', () => {
       pieceCount: 1872,
       theme: 'Icons',
       subtheme: 'Back to the Future',
-      imageUrl: 'https://images.brickset.com/sets/large/10300-1.jpg',
+      imageUrl: 'https://images.brickset.com/sets/images/10300-1.jpg',
       quantity: 2,
       notes: 'Gift',
     });
@@ -83,7 +106,7 @@ describe('mapBricksetSetToOwnedSet', () => {
       image: { thumbnailURL: 'https://images.brickset.com/sets/small/10300-1.jpg' },
     });
     expect(mapBricksetSetToOwnedSet(set).imageUrl).toBe(
-      'https://images.brickset.com/sets/large/10300-1.jpg'
+      'https://images.brickset.com/sets/images/10300-1.jpg'
     );
   });
 
@@ -120,7 +143,7 @@ describe('mapBricksetSetToLookupResult', () => {
       pieceCount: 1872,
       theme: 'Icons',
       subtheme: 'Back to the Future',
-      imageUrl: 'https://images.brickset.com/sets/large/10300-1.jpg',
+      imageUrl: 'https://images.brickset.com/sets/images/10300-1.jpg',
       sourceId: '10300-1',
       dataSource: 'brickset',
     });

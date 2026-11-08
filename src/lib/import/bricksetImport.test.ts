@@ -41,7 +41,7 @@ function owned(overrides: Partial<BricksetOwnedSet> = {}): BricksetOwnedSet {
     pieceCount: 1872,
     theme: 'Icons',
     subtheme: 'Back to the Future',
-    imageUrl: 'https://images.brickset.com/sets/large/10300-1.jpg',
+    imageUrl: 'https://images.brickset.com/sets/images/10300-1.jpg',
     quantity: 1,
     notes: null,
     ...overrides,

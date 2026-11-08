@@ -123,7 +123,7 @@ describe('fetchBricksetOwnedSets', () => {
         bricksetSetId: 1,
         setNumber: '10300',
         sourceId: '10300-1',
-        imageUrl: 'https://images.brickset.com/sets/large/10300-1.jpg',
+        imageUrl: 'https://images.brickset.com/sets/images/10300-1.jpg',
         quantity: 2,
         notes: 'Gift from Dad',
       }),

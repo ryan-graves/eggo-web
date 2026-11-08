@@ -254,6 +254,7 @@ Used for set metadata (piece count, themes, images). Better data coverage than R
 - Get API key: https://brickset.com/tools/webservices/requestkey
 - Set numbers: Use format "12345-1" (with suffix), auto-added if missing
 - Shared record mapping lives in `src/lib/providers/bricksetMapping.ts`; both the browser provider and the server import use it
+- Images: Brickset serves `/sets/small/`, `/sets/images/` (standard, every set), and `/sets/large/` (newer sets only). Store the standard URL; `/api/remove-background` tries the large sibling first via `sourceImageCandidates` and falls back, so older sets never end up with a 404 image (migration 0010 rewrote earlier rows)
 
 #### Brickset collection import
 
