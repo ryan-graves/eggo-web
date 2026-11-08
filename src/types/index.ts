@@ -181,6 +181,21 @@ export interface BricksetOwnedSet {
 export interface BricksetCollectionResponse {
   username: string;
   sets: BricksetOwnedSet[];
+  /** True when the account is remembered for "Sync from Brickset". */
+  linked: boolean;
+}
+
+/**
+ * Response body of `GET /api/brickset/link`: whether the signed-in user has
+ * a remembered Brickset account, and whether this deployment can remember
+ * one at all (requires the server-side encryption key).
+ */
+export interface BricksetLinkStatus {
+  available: boolean;
+  linked: boolean;
+  username?: string;
+  linkedAt?: string;
+  lastSyncedAt?: string | null;
 }
 
 /**

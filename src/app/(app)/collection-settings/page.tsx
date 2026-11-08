@@ -12,7 +12,8 @@ import {
   disablePublicSharing,
   updatePublicViewSettings,
 } from '@/lib/supabase';
-import type { PublicViewSettings } from '@/types';
+import { formatBricksetSyncDate, getBricksetLinkStatus, unlinkBrickset } from '@/lib/import';
+import type { BricksetLinkStatus, PublicViewSettings } from '@/types';
 import styles from './page.module.css';
 
 const DEFAULT_VIEW_SETTINGS: PublicViewSettings = {
@@ -179,6 +180,10 @@ function CollectionSettingsContent(): React.JSX.Element {
   const [isSharingLoading, setIsSharingLoading] = useState(false);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
+  // Brickset link state (per user, not per collection).
+  const [bricksetLink, setBricksetLink] = useState<BricksetLinkStatus | null>(null);
+  const [isUnlinking, setIsUnlinking] = useState(false);
+
   // Delete state.
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -202,6 +207,35 @@ function CollectionSettingsContent(): React.JSX.Element {
     // handleViewSettingChange.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collectionId, activeCollection?.isPublic, activeCollection?.publicShareToken]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getBricksetLinkStatus()
+      .then((status) => {
+        if (!cancelled) setBricksetLink(status);
+      })
+      .catch(() => {
+        if (!cancelled) setBricksetLink({ available: false, linked: false });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleUnlinkBrickset = useCallback(async () => {
+    setIsUnlinking(true);
+    try {
+      await unlinkBrickset();
+      setBricksetLink((prev) => (prev ? { available: prev.available, linked: false } : prev));
+      toast.success('Brickset account unlinked');
+    } catch (err) {
+      toast.error("Couldn't unlink Brickset", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setIsUnlinking(false);
+    }
+  }, []);
 
   const handleSaveName = useCallback(
     async (next: string) => {
@@ -378,7 +412,11 @@ function CollectionSettingsContent(): React.JSX.Element {
                     className={styles.shareUrlInput}
                     onClick={(e) => e.currentTarget.select()}
                   />
-                  <button type="button" onClick={handleCopyShareUrl} className="btn-default btn-primary">
+                  <button
+                    type="button"
+                    onClick={handleCopyShareUrl}
+                    className="btn-default btn-primary"
+                  >
                     {copyStatus || 'Copy'}
                   </button>
                 </div>
@@ -416,8 +454,8 @@ function CollectionSettingsContent(): React.JSX.Element {
                     </label>
                   </div>
                   <p className={styles.viewSettingsHelp}>
-                    Adds a curated Home tab to your shared collection. Visitors can always browse the
-                    full set list.
+                    Adds a curated Home tab to your shared collection. Visitors can always browse
+                    the full set list.
                   </p>
                 </div>
               </>
@@ -428,17 +466,52 @@ function CollectionSettingsContent(): React.JSX.Element {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Import</h2>
           <div className={styles.card}>
-            <p className={styles.settingDescription}>
-              Already track your sets on Brickset? Bring everything you&apos;ve marked as Owned into{' '}
-              {activeCollection.name}, pictures and notes included.
-            </p>
-            <button
-              type="button"
-              className="btn-default btn-secondary"
-              onClick={() => navigateTo('/import/brickset')}
-            >
-              Import from Brickset
-            </button>
+            {bricksetLink === null ? (
+              <p className={styles.settingDescription} role="status">
+                Checking for a linked Brickset account…
+              </p>
+            ) : bricksetLink.linked ? (
+              <>
+                <p className={styles.settingDescription}>
+                  Linked to Brickset as <strong>{bricksetLink.username}</strong>
+                  {bricksetLink.lastSyncedAt &&
+                    `. Last synced ${formatBricksetSyncDate(bricksetLink.lastSyncedAt)}`}
+                  . Sync to add anything new you&apos;ve marked as Owned to {activeCollection.name}.
+                </p>
+                <div className={styles.importActions}>
+                  <button
+                    type="button"
+                    className="btn-default btn-secondary"
+                    onClick={() => navigateTo('/import/brickset')}
+                  >
+                    Sync from Brickset
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-default btn-ghost"
+                    aria-label="Unlink Brickset account"
+                    onClick={handleUnlinkBrickset}
+                    disabled={isUnlinking}
+                  >
+                    {isUnlinking ? 'Unlinking…' : 'Unlink'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className={styles.settingDescription}>
+                  Already track your sets on Brickset? Bring everything you&apos;ve marked as Owned
+                  into {activeCollection.name}, pictures and notes included.
+                </p>
+                <button
+                  type="button"
+                  className="btn-default btn-secondary"
+                  onClick={() => navigateTo('/import/brickset')}
+                >
+                  Import from Brickset
+                </button>
+              </>
+            )}
           </div>
         </section>
 

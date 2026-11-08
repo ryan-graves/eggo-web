@@ -259,6 +259,8 @@ Used for set metadata (piece count, themes, images). Better data coverage than R
 
 Collection Settings > Import > "Import from Brickset" (`/import/brickset`) pulls every set a user has marked as Owned on Brickset into the active collection. Brickset has no OAuth, so the user enters their Brickset username and password; `POST /api/brickset/collection` (signed-in Eggo users only) exchanges them for a Brickset `userHash` with one `login` call, pages through `getSets` with `owned: 1`, and returns the compact `BricksetOwnedSet` list. Credentials and hash are used in-request only: never stored, logged, or returned. All Brickset calls POST form bodies so the password never appears in a URL.
 
+**Remembered accounts and sync.** With `remember` in the request (the form's "Remember this account" checkbox, shown only when `BRICKSET_HASH_KEY` is set), the route seals the Brickset `userHash` with `src/lib/crypto/secretBox.ts` (AES-256-GCM) and stores it in `brickset_links` via `src/lib/supabase/bricksetLinks.ts`. `GET`/`DELETE /api/brickset/link` report and forget it (the hash never leaves the server). Collection Settings then shows "Sync from Brickset", and the import page's connect step offers the linked account; `{ useLink: true }` fetches with the stored hash. If Brickset answers "Invalid user hash" the route deletes the link and returns `409 link_expired`, and the UI falls back to the sign-in form. `src/lib/providers/bricksetThrottle.ts` caps each user at 6 sign-ins and 12 fetches per 15 minutes using `brickset_requests` (record first, then count, so the cap holds under a parallel burst), so one account can't drain the shared quota or use Eggo as a Brickset password-guessing proxy. A link sealed under a previous `BRICKSET_HASH_KEY` can't be opened; `getBricksetLink` deletes it and reports "not linked", so rotating the key just means users sign in and remember the account again. `GET /api/brickset/link` reads a summary without the ciphertext, so status works regardless of the key. Bad Brickset credentials answer `422`, keeping `401` for the Eggo session.
+
 The browser side (`src/lib/import/bricksetImport.ts`) matches the owned list against the collection (`buildImportCandidates`, duplicates start unticked) and seeds every row with a status, owner, and date received (defaults: Assembled, the first owner, today). The review step's "Same for every set" checklist locks each property (checked, the default) so its value applies to every row and the per-row control is disabled; unchecking a property frees it to be chosen set by set with `StatusPicker` (the controlled badge-and-menu that `StatusControl` wraps), owner chips, and a date input. Rows are kept in sync whenever a property is locked, so `runBricksetImport` reads each row's own details. It writes rows first via `createSet` and processes images second through `/api/remove-background`, three at a time. A set whose image step fails keeps Brickset's picture, same as a single add. Brickset notes and `qtyOwned` (one row per copy) come across; wanted lists, minifigs, ratings, and flags do not. Only `getSets` counts against the Brickset daily key quota, and a whole collection is one or two calls.
 
 ### Rebrickable (Fallback)
@@ -300,6 +302,7 @@ Keep the shared security headers (`Content-Security-Policy: frame-ancestors …`
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser-safe key (subject to RLS), `sb_publishable_…` | Supabase Dashboard > Project Settings > API Keys |
 | `SUPABASE_SECRET_KEY` | Server-only key that bypasses RLS, `sb_secret_…` — never expose to the browser | Supabase Dashboard > Project Settings > API Keys |
 | `BRICKSET_API_KEY` | Brickset API key (recommended, server-only) | https://brickset.com/tools/webservices/requestkey |
+| `BRICKSET_HASH_KEY` | Server-only 32-byte key (base64) that seals remembered Brickset session hashes; unset disables "remember this account" | `openssl rand -base64 32` |
 | `NEXT_PUBLIC_REBRICKABLE_API_KEY` | Rebrickable API key (fallback) | https://rebrickable.com/api/ |
 | `REMBG_API_KEY` | rembg.com API key for background removal | https://www.rembg.com |
 | `POSTHOG_PROJECT_TOKEN` | PostHog project token (public by design; already set in `netlify.toml`) | PostHog > Settings > Project > General |
@@ -322,6 +325,7 @@ Schema lives in `supabase/migrations/`:
 - `0003_drop_claim_flow.sql` — drops the temporary claim infrastructure once all returning users have signed in. Adds the `replace_collection_members()` RPC for atomic membership replacement.
 - `0004_harden_replace_members.sql` — re-creates `replace_collection_members()` with guards rejecting empty arrays and inputs missing `auth.uid()`, so the RPC can't lock everyone out of a collection via RLS.
 - `0005_fix_members_select_policy.sql` — broadens the `collection_members` SELECT policy from "your own row only" to "any row where you're a member of the same collection", so the embed in `Collection.memberUserIds` returns the full membership list.
+- `0009_brickset_links.sql` — `brickset_links` (one remembered Brickset account per user: username + sealed session hash + sync timestamps) and `brickset_requests` (per-user log of Brickset sign-ins/fetches used for throttling). Both are server-only: RLS enabled with no policies and all privileges revoked from `anon`/`authenticated`; only the secret-key client touches them.
 
 RLS policy summary:
 
@@ -329,6 +333,7 @@ RLS policy summary:
 - `collection_members` — members of the same collection can read; the API route inserts via the secret-key client during creation
 - `sets` — members of the parent collection can read/write; public read when the parent collection is public
 - `user_preferences` — only the owning user (`auth.uid() = user_id`)
+- `brickset_links`, `brickset_requests` — no policies; unreachable from the browser, server routes only
 
 The browser uses the publishable key and is fully constrained by RLS. The server routes that need the secret key (`/api/collections` for member insert during create, `/api/remove-background` for Storage uploads, `/api/brickset/collection` to verify the caller before spending Brickset quota) use `getAdminClient()` with `SUPABASE_SECRET_KEY` and verify the caller's JWT explicitly.
 

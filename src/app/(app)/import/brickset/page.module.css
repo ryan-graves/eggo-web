@@ -129,6 +129,39 @@
   align-items: center;
 }
 
+.rememberRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.rememberRow .checkbox {
+  margin-top: var(--space-0-5);
+}
+
+.rememberText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+}
+
+.rememberTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.rememberDescription {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: var(--line-height-relaxed);
+}
+
+.alignStart {
+  align-self: flex-start;
+}
+
 .privacyNote {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);

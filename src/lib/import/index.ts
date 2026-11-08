@@ -1,5 +1,8 @@
 export {
   fetchBricksetOwnedSets,
+  getBricksetLinkStatus,
+  unlinkBrickset,
+  formatBricksetSyncDate,
   buildImportCandidates,
   updateCandidate,
   applyDetailsToAll,
@@ -7,6 +10,7 @@ export {
   runBricksetImport,
   BricksetImportError,
   type BricksetImportErrorCode,
+  type BricksetAccess,
   type ImportDetails,
   type ImportDetailKey,
   type ImportCandidate,

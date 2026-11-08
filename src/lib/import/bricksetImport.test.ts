@@ -3,7 +3,9 @@ import {
   applyDetailsToAll,
   buildImportCandidates,
   fetchBricksetOwnedSets,
+  getBricksetLinkStatus,
   runBricksetImport,
+  unlinkBrickset,
   todayIsoDate,
   updateCandidate,
   type ImportDetails,
@@ -86,22 +88,38 @@ describe('todayIsoDate', () => {
 });
 
 describe('fetchBricksetOwnedSets', () => {
-  it('sends the credentials with the Eggo bearer token and returns the payload', async () => {
-    const payload = { username: 'brickfan', sets: [owned()] };
+  const credentials = {
+    kind: 'credentials',
+    username: 'brickfan',
+    password: 'pw',
+    remember: true,
+  } as const;
+
+  it('sends the credentials and remember flag with the Eggo bearer token and returns the payload', async () => {
+    const payload = { username: 'brickfan', sets: [owned()], linked: true };
     mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(payload) });
 
-    const result = await fetchBricksetOwnedSets('brickfan', 'pw');
+    const result = await fetchBricksetOwnedSets(credentials);
 
     expect(result).toEqual(payload);
     const [url, init] = mockFetch.mock.calls[0];
     expect(url).toBe('/api/brickset/collection');
     expect(init.headers.Authorization).toBe('Bearer jwt');
-    expect(JSON.parse(init.body)).toEqual({ username: 'brickfan', password: 'pw' });
+    expect(JSON.parse(init.body)).toEqual({ username: 'brickfan', password: 'pw', remember: true });
+  });
+
+  it('asks for the remembered account without sending credentials', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ username: 'brickfan', sets: [], linked: true }),
+    });
+    await fetchBricksetOwnedSets({ kind: 'linked' });
+    expect(JSON.parse(mockFetch.mock.calls[0][1].body)).toEqual({ useLink: true });
   });
 
   it('fails fast without a session instead of calling the API', async () => {
     mockGetAccessToken.mockResolvedValue(null);
-    await expect(fetchBricksetOwnedSets('u', 'p')).rejects.toMatchObject({
+    await expect(fetchBricksetOwnedSets(credentials)).rejects.toMatchObject({
       code: 'unauthorized',
     });
     expect(mockFetch).not.toHaveBeenCalled();
@@ -110,15 +128,27 @@ describe('fetchBricksetOwnedSets', () => {
   it('surfaces the server error code and message', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      status: 401,
+      status: 422,
       json: () => Promise.resolve({ error: 'Bad login', code: 'invalid_credentials' }),
     });
 
-    const err = await fetchBricksetOwnedSets('u', 'p').catch((e) => e);
+    const err = await fetchBricksetOwnedSets(credentials).catch((e) => e);
     expect(err).toBeInstanceOf(BricksetImportError);
     expect(err.code).toBe('invalid_credentials');
     expect(err.message).toBe('Bad login');
   });
+
+  it.each(['link_expired', 'not_linked', 'too_many_requests'])(
+    'recognizes the %s code',
+    async (code) => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: () => Promise.resolve({ error: 'x', code }),
+      });
+      await expect(fetchBricksetOwnedSets({ kind: 'linked' })).rejects.toMatchObject({ code });
+    }
+  );
 
   it('falls back to an upstream code when the error body is unusable', async () => {
     mockFetch.mockResolvedValueOnce({
@@ -126,12 +156,39 @@ describe('fetchBricksetOwnedSets', () => {
       status: 500,
       json: () => Promise.reject(new Error('not json')),
     });
-    await expect(fetchBricksetOwnedSets('u', 'p')).rejects.toMatchObject({ code: 'upstream' });
+    await expect(fetchBricksetOwnedSets(credentials)).rejects.toMatchObject({ code: 'upstream' });
   });
 
   it('reports a network failure distinctly', async () => {
     mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
-    await expect(fetchBricksetOwnedSets('u', 'p')).rejects.toMatchObject({ code: 'network' });
+    await expect(fetchBricksetOwnedSets(credentials)).rejects.toMatchObject({ code: 'network' });
+  });
+});
+
+describe('link status helpers', () => {
+  it('reads the link status with the bearer token', async () => {
+    const status = { available: true, linked: true, username: 'brickfan' };
+    mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(status) });
+    expect(await getBricksetLinkStatus()).toEqual(status);
+    const [url, init] = mockFetch.mock.calls[0];
+    expect(url).toBe('/api/brickset/link');
+    expect(init.method).toBe('GET');
+    expect(init.headers.Authorization).toBe('Bearer jwt');
+  });
+
+  it('unlinks with DELETE and resolves on 204', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 204 });
+    await expect(unlinkBrickset()).resolves.toBeUndefined();
+    expect(mockFetch.mock.calls[0][1].method).toBe('DELETE');
+  });
+
+  it('throws a typed error when unlinking fails', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({ error: 'nope', code: 'upstream' }),
+    });
+    await expect(unlinkBrickset()).rejects.toMatchObject({ code: 'upstream', message: 'nope' });
   });
 });
 

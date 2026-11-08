@@ -208,6 +208,15 @@ describe('fetchBricksetOwnedSets', () => {
     expect(await fetchBricksetOwnedSets('key', 'hash')).toEqual([]);
   });
 
+  it('classifies a rejected saved session distinctly from bad credentials', async () => {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({ status: 'error', message: 'Invalid user hash' })
+    );
+    await expect(fetchBricksetOwnedSets('key', 'stale')).rejects.toMatchObject({
+      code: 'invalid_user_hash',
+    });
+  });
+
   it('classifies the daily API limit', async () => {
     mockFetch.mockResolvedValueOnce(
       jsonResponse({ status: 'error', message: 'API limit exceeded' })
