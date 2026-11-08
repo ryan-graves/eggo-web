@@ -1,76 +1,14 @@
 import type { SetLookupResult } from '@/types';
 import type { SetDataProvider } from './types';
+import {
+  mapBricksetSetToLookupResult,
+  normalizeSetNumber,
+  displaySetNumber,
+  type BricksetSetsResponse,
+} from './bricksetMapping';
 
 // Use our API proxy to avoid CORS issues
 const BRICKSET_API_PROXY = '/api/brickset';
-
-interface BricksetSet {
-  setID: number;
-  number: string;
-  numberVariant: number;
-  name: string;
-  year: number;
-  theme: string;
-  themeGroup: string;
-  subtheme: string | null;
-  pieces: number | null;
-  minifigs: number | null;
-  image: {
-    thumbnailURL: string | null;
-    imageURL: string | null;
-  };
-  bricksetURL: string;
-}
-
-interface BricksetResponse {
-  status: string;
-  matches: number;
-  sets: BricksetSet[];
-  message?: string;
-}
-
-/**
- * Normalize a set number by adding the "-1" suffix if not present.
- * LEGO set numbers in databases typically use format "12345-1" where
- * the suffix indicates the variant (usually 1 for the standard release).
- */
-function normalizeSetNumber(setNumber: string): string {
-  if (setNumber.includes('-')) {
-    return setNumber;
-  }
-  return `${setNumber}-1`;
-}
-
-/**
- * Remove the variant suffix from a set number for display.
- * Converts "12345-1" back to "12345".
- */
-function displaySetNumber(setNumber: string): string {
-  return setNumber.replace(/-\d+$/, '');
-}
-
-/**
- * Upgrade a Brickset image URL to the large version for better quality.
- * Brickset URLs follow patterns like:
- * - https://images.brickset.com/sets/small/12345-1.jpg (thumbnail ~140px)
- * - https://images.brickset.com/sets/images/12345-1.jpg (standard ~300px)
- * - https://images.brickset.com/sets/large/12345-1.jpg (large ~800px)
- *
- * This function converts any Brickset set image URL to use the /large/ path.
- */
-function upgradeToLargeImage(imageUrl: string | null): string | null {
-  if (!imageUrl) return null;
-
-  // Check if it's a Brickset sets image URL
-  if (imageUrl.includes('images.brickset.com/sets/')) {
-    // Replace /small/ or /images/ with /large/
-    return imageUrl
-      .replace('/sets/small/', '/sets/large/')
-      .replace('/sets/images/', '/sets/large/');
-  }
-
-  return imageUrl;
-}
 
 export class BricksetProvider implements SetDataProvider {
   readonly name = 'brickset';
@@ -80,7 +18,7 @@ export class BricksetProvider implements SetDataProvider {
   private async fetch(
     method: string,
     params: Record<string, string>
-  ): Promise<BricksetResponse> {
+  ): Promise<BricksetSetsResponse> {
     // Build URL with query params - use relative URL for browser compatibility
     const searchParams = new URLSearchParams();
     searchParams.set('method', method);
@@ -103,7 +41,7 @@ export class BricksetProvider implements SetDataProvider {
       throw new Error(`Brickset API error: ${response.status} ${response.statusText}`);
     }
 
-    const data: BricksetResponse = await response.json();
+    const data: BricksetSetsResponse = await response.json();
 
     if (data.status !== 'success') {
       console.error('Brickset API returned error:', data);
@@ -111,23 +49,6 @@ export class BricksetProvider implements SetDataProvider {
     }
 
     return data;
-  }
-
-  private mapToResult(set: BricksetSet): SetLookupResult {
-    // Prefer imageURL over thumbnailURL, and upgrade to large version for better quality
-    const baseImageUrl = set.image.imageURL || set.image.thumbnailURL;
-
-    return {
-      setNumber: displaySetNumber(set.number),
-      name: set.name,
-      year: set.year,
-      pieceCount: set.pieces,
-      theme: set.theme,
-      subtheme: set.subtheme,
-      imageUrl: upgradeToLargeImage(baseImageUrl),
-      sourceId: `${set.number}-${set.numberVariant}`,
-      dataSource: 'brickset',
-    };
   }
 
   async lookupSet(setNumber: string): Promise<SetLookupResult | null> {
@@ -154,13 +75,13 @@ export class BricksetProvider implements SetDataProvider {
         );
 
         if (exactMatch) {
-          return this.mapToResult(exactMatch);
+          return mapBricksetSetToLookupResult(exactMatch);
         }
 
         return null;
       }
 
-      return this.mapToResult(response.sets[0]);
+      return mapBricksetSetToLookupResult(response.sets[0]);
     } catch (error) {
       console.error('Brickset lookup error for', setNumber, ':', error);
       throw error; // Re-throw to surface the actual error
@@ -182,7 +103,7 @@ export class BricksetProvider implements SetDataProvider {
 
     try {
       const response = await this.fetch('getSets', params);
-      return response.sets.map((set) => this.mapToResult(set));
+      return response.sets.map(mapBricksetSetToLookupResult);
     } catch (error) {
       console.error('Brickset search error:', error);
       return [];

@@ -152,6 +152,38 @@ export interface SetLookupResult {
 }
 
 /**
+ * A set the user has marked as owned on Brickset, as returned by
+ * `POST /api/brickset/collection`. Metadata matches what a Brickset lookup
+ * would produce for the same set; `quantity` and `notes` come from the
+ * user's Brickset collection record.
+ */
+export interface BricksetOwnedSet {
+  /** Brickset's internal integer id for the set (what `setCollection` keys on). */
+  bricksetSetId: number;
+  /** Display form without the variant suffix, e.g. "10300". */
+  setNumber: string;
+  /** Brickset's "number-variant" identifier, e.g. "10300-1". Stored as `dataSourceId`. */
+  sourceId: string;
+  name: string;
+  year: number | null;
+  pieceCount: number | null;
+  theme: string | null;
+  subtheme: string | null;
+  imageUrl: string | null;
+  /** Copies owned according to Brickset. Always at least 1. */
+  quantity: number;
+  notes: string | null;
+}
+
+/**
+ * Response body of `POST /api/brickset/collection`.
+ */
+export interface BricksetCollectionResponse {
+  username: string;
+  sets: BricksetOwnedSet[];
+}
+
+/**
  * Input for creating a new set
  */
 export type CreateLegoSetInput = Omit<LegoSet, 'id' | 'createdAt' | 'updatedAt'>;

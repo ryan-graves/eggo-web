@@ -1,5 +1,5 @@
 /*
- * StatusControl — status badge with an anchored dropdown menu. The badge
+ * StatusPicker — status badge with an anchored dropdown menu. The badge
  * stays put; the panel is `position: absolute` so it floats above content
  * without pushing surrounding layout.
  */
@@ -26,10 +26,15 @@
 }
 
 /* aria-disabled (not native :disabled) so the badge stays focusable while a
-   save is in flight — see the comment in StatusControl.tsx. */
+   save is in flight — see the comment in StatusPicker.tsx. */
 .badge[aria-disabled='true'] {
   opacity: var(--opacity-muted);
   cursor: progress;
+}
+
+.badge:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: default;
 }
 
 .badgeCaret {
