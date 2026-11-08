@@ -31,6 +31,8 @@ const UPSTREAM_TIMEOUT_MS = 15_000;
 
 export type BricksetApiErrorCode =
   | 'invalid_credentials'
+  /** A stored userHash Brickset no longer accepts: the user must sign in again. */
+  | 'invalid_user_hash'
   | 'invalid_api_key'
   | 'rate_limited'
   | 'upstream';
@@ -66,6 +68,12 @@ function classifyBricksetError(message: string | undefined): BricksetApiError {
     return new BricksetApiError(
       'invalid_credentials',
       'Brickset did not recognize that username and password.'
+    );
+  }
+  if (normalized.includes('invalid user hash')) {
+    return new BricksetApiError(
+      'invalid_user_hash',
+      'Brickset no longer recognizes the saved sign-in. Please sign in again.'
     );
   }
   if (normalized.includes('invalid api key')) {

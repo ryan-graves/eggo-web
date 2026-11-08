@@ -1,13 +1,20 @@
 import { createSet, getAccessToken, updateSet } from '@/lib/supabase';
 import { removeImageBackground } from '@/lib/image';
 import { displaySetNumber } from '@/lib/providers/bricksetMapping';
-import type { BricksetCollectionResponse, BricksetOwnedSet, LegoSet, SetStatus } from '@/types';
+import type {
+  BricksetCollectionResponse,
+  BricksetLinkStatus,
+  BricksetOwnedSet,
+  LegoSet,
+  SetStatus,
+} from '@/types';
 
 /**
  * Browser-side half of "Import from Brickset".
  *
  * 1. `fetchBricksetOwnedSets` asks `POST /api/brickset/collection` for the
- *    user's owned sets (the server does the Brickset login).
+ *    user's owned sets, either signing in (the server does the Brickset
+ *    login) or using the account the server remembers for this user.
  * 2. `buildImportCandidates` lines those up against what's already in the
  *    target collection so the review step can flag duplicates, and seeds
  *    each row's status, owners, and date, which the review step then edits
@@ -22,7 +29,10 @@ import type { BricksetCollectionResponse, BricksetOwnedSet, LegoSet, SetStatus }
 export type BricksetImportErrorCode =
   | 'invalid_credentials'
   | 'rate_limited'
+  | 'too_many_requests'
   | 'not_configured'
+  | 'not_linked'
+  | 'link_expired'
   | 'unauthorized'
   | 'network'
   | 'upstream';
@@ -40,49 +50,84 @@ export class BricksetImportError extends Error {
 const KNOWN_CODES: ReadonlySet<string> = new Set<BricksetImportErrorCode>([
   'invalid_credentials',
   'rate_limited',
+  'too_many_requests',
   'not_configured',
+  'not_linked',
+  'link_expired',
   'unauthorized',
   'upstream',
 ]);
 
-/** Ask the server to sign in to Brickset and return the user's owned sets. */
-export async function fetchBricksetOwnedSets(
-  username: string,
-  password: string
-): Promise<BricksetCollectionResponse> {
+/** How to reach Brickset: fresh credentials, or the account the server remembers. */
+export type BricksetAccess =
+  | { kind: 'credentials'; username: string; password: string; remember: boolean }
+  | { kind: 'linked' };
+
+async function authorizedFetch(path: string, init: RequestInit): Promise<Response> {
   const token = await getAccessToken();
   if (!token) {
     throw new BricksetImportError('unauthorized', 'Your Eggo session has expired. Sign in again.');
   }
-
-  let response: Response;
   try {
-    response = await fetch('/api/brickset/collection', {
-      method: 'POST',
+    return await fetch(path, {
+      ...init,
       headers: {
-        'Content-Type': 'application/json',
+        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
         Authorization: `Bearer ${token}`,
+        ...(init.headers ?? {}),
       },
-      body: JSON.stringify({ username, password }),
     });
   } catch {
     throw new BricksetImportError('network', 'Could not reach Eggo. Check your connection.');
   }
+}
 
-  if (!response.ok) {
-    let code: BricksetImportErrorCode = 'upstream';
-    let message = 'Could not load your Brickset collection.';
-    try {
-      const data = (await response.json()) as { error?: string; code?: string };
-      if (data.code && KNOWN_CODES.has(data.code)) code = data.code as BricksetImportErrorCode;
-      if (data.error) message = data.error;
-    } catch {
-      // Non-JSON error body: keep the generic message.
-    }
-    throw new BricksetImportError(code, message);
+async function throwForResponse(response: Response, fallback: string): Promise<never> {
+  let code: BricksetImportErrorCode = 'upstream';
+  let message = fallback;
+  try {
+    const data = (await response.json()) as { error?: string; code?: string };
+    if (data.code && KNOWN_CODES.has(data.code)) code = data.code as BricksetImportErrorCode;
+    if (data.error) message = data.error;
+  } catch {
+    // Non-JSON error body: keep the generic message.
   }
+  throw new BricksetImportError(code, message);
+}
 
+/** Ask the server for the user's owned Brickset sets, signing in or using the remembered account. */
+export async function fetchBricksetOwnedSets(
+  access: BricksetAccess
+): Promise<BricksetCollectionResponse> {
+  const body =
+    access.kind === 'linked'
+      ? { useLink: true }
+      : { username: access.username, password: access.password, remember: access.remember };
+  const response = await authorizedFetch('/api/brickset/collection', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    await throwForResponse(response, 'Could not load your Brickset collection.');
+  }
   return (await response.json()) as BricksetCollectionResponse;
+}
+
+/** Whether the signed-in user has a remembered Brickset account. */
+export async function getBricksetLinkStatus(): Promise<BricksetLinkStatus> {
+  const response = await authorizedFetch('/api/brickset/link', { method: 'GET' });
+  if (!response.ok) {
+    await throwForResponse(response, 'Could not check your Brickset link.');
+  }
+  return (await response.json()) as BricksetLinkStatus;
+}
+
+/** Forget the remembered Brickset account. */
+export async function unlinkBrickset(): Promise<void> {
+  const response = await authorizedFetch('/api/brickset/link', { method: 'DELETE' });
+  if (!response.ok) {
+    await throwForResponse(response, 'Could not unlink your Brickset account.');
+  }
 }
 
 /** The per-set choices the user makes in the review step. */

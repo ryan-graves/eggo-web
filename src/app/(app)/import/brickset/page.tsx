@@ -11,18 +11,21 @@ import { StatusPicker } from '@/components/StatusPicker';
 import { getSetsForCollection } from '@/lib/supabase';
 import {
   fetchBricksetOwnedSets,
+  getBricksetLinkStatus,
   buildImportCandidates,
   updateCandidate,
   applyDetailsToAll,
   todayIsoDate,
   runBricksetImport,
   BricksetImportError,
+  type BricksetAccess,
   type ImportCandidate,
   type ImportDetails,
   type ImportDetailKey,
   type ImportProgress,
   type ImportSummary,
 } from '@/lib/import';
+import type { BricksetLinkStatus } from '@/types';
 import styles from './page.module.css';
 
 type Step = 'connect' | 'review' | 'importing' | 'done';
@@ -37,6 +40,11 @@ function describeFetchError(err: unknown): string {
         return 'Brickset didn’t recognize that username and password. Check them and try again.';
       case 'rate_limited':
         return 'Brickset has hit its daily request limit for Eggo. Please try again tomorrow.';
+      case 'too_many_requests':
+        return err.message;
+      case 'link_expired':
+      case 'not_linked':
+        return 'Brickset no longer recognizes the saved sign-in. Sign in again to continue.';
       case 'not_configured':
         return 'Brickset import isn’t available on this deployment.';
       case 'unauthorized':
@@ -48,6 +56,14 @@ function describeFetchError(err: unknown): string {
     }
   }
   return 'Something went wrong loading your collection. Please try again.';
+}
+
+function formatSyncDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function pluralize(count: number, singular: string, plural = `${singular}s`): string {
@@ -133,12 +149,19 @@ function ImportBricksetContent(): React.JSX.Element {
   // Connect
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const usernameRef = useRef<HTMLInputElement>(null);
+  // The remembered Brickset account, if any. null until the lookup settles so
+  // the form doesn't flash before the linked card can take its place.
+  const [linkStatus, setLinkStatus] = useState<BricksetLinkStatus | null>(null);
+  const [useDifferentAccount, setUseDifferentAccount] = useState(false);
+  const showLinkedCard = Boolean(linkStatus?.linked) && !useDifferentAccount;
 
   // Review
   const [bricksetUsername, setBricksetUsername] = useState('');
+  const [accountLinked, setAccountLinked] = useState(false);
   const [candidates, setCandidates] = useState<ImportCandidate[]>([]);
   // The "same for every set" checklist: its values, and which properties are
   // locked to them. A locked property is applied to every row and disabled
@@ -161,16 +184,31 @@ function ImportBricksetContent(): React.JSX.Element {
   const importingHeadingRef = useRef<HTMLHeadingElement>(null);
   const doneHeadingRef = useRef<HTMLHeadingElement>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    getBricksetLinkStatus()
+      .then((status) => {
+        if (!cancelled) setLinkStatus(status);
+      })
+      .catch(() => {
+        // Treat an unanswered lookup as "not linked": the form still works.
+        if (!cancelled) setLinkStatus({ available: false, linked: false });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Land focus on the step's first meaningful element for keyboard and
   // screen-reader users. The connect input only exists once the collection
-  // has loaded, so the effect keys on that too.
+  // has loaded and the link lookup has settled, so the effect keys on both.
   useEffect(() => {
     if (isInitializing || !collectionId) return;
-    if (step === 'connect') usernameRef.current?.focus();
+    if (step === 'connect' && linkStatus && !showLinkedCard) usernameRef.current?.focus();
     else if (step === 'review') reviewHeadingRef.current?.focus();
     else if (step === 'importing') importingHeadingRef.current?.focus();
     else if (step === 'done') doneHeadingRef.current?.focus();
-  }, [step, isInitializing, collectionId]);
+  }, [step, isInitializing, collectionId, linkStatus, showLinkedCard]);
 
   // A reload or tab close mid-import would strand half the sets without
   // images, so ask first. In-app navigation is handled by handleHeaderBack.
@@ -191,18 +229,12 @@ function ImportBricksetContent(): React.JSX.Element {
     [candidates]
   );
 
-  const handleFetch = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!username.trim() || !password) {
-      setFetchError('Enter your Brickset username and password.');
-      return;
-    }
-
+  const loadSets = async (access: BricksetAccess) => {
     setIsFetching(true);
     setFetchError(null);
     try {
       const [response, existingSets] = await Promise.all([
-        fetchBricksetOwnedSets(username.trim(), password),
+        fetchBricksetOwnedSets(access),
         getSetsForCollection(collectionId, user?.id),
       ]);
       const defaults: ImportDetails = {
@@ -211,17 +243,42 @@ function ImportBricksetContent(): React.JSX.Element {
         dateReceived: todayIsoDate(),
       };
       setBricksetUsername(response.username);
+      setAccountLinked(response.linked);
       setBulk(defaults);
       setCandidates(buildImportCandidates(response.sets, existingSets, defaults));
       // The password has done its one job. Drop it from memory and the DOM.
       setPassword('');
       setStep('review');
     } catch (err) {
+      if (
+        err instanceof BricksetImportError &&
+        (err.code === 'link_expired' || err.code === 'not_linked')
+      ) {
+        // The server has already dropped a dead link; fall back to the form.
+        setLinkStatus((prev) => (prev ? { ...prev, linked: false } : prev));
+        setUseDifferentAccount(false);
+      }
       setFetchError(describeFetchError(err));
     } finally {
       setIsFetching(false);
     }
   };
+
+  const handleFetch = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!username.trim() || !password) {
+      setFetchError('Enter your Brickset username and password.');
+      return;
+    }
+    await loadSets({
+      kind: 'credentials',
+      username: username.trim(),
+      password,
+      remember: remember && Boolean(linkStatus?.available),
+    });
+  };
+
+  const handleFetchLinked = () => loadSets({ kind: 'linked' });
 
   const setAllSelected = useCallback((predicate: (candidate: ImportCandidate) => boolean) => {
     setCandidates((prev) => prev.map((c) => ({ ...c, selected: predicate(c) })));
@@ -357,57 +414,117 @@ function ImportBricksetContent(): React.JSX.Element {
                 </p>
               </section>
 
-              <form id="brickset-connect-form" className={styles.card} onSubmit={handleFetch}>
-                <div className={styles.fields}>
-                  <div className="form-field">
-                    <label htmlFor="brickset-username" className="form-label">
-                      Brickset username
-                    </label>
-                    <input
-                      ref={usernameRef}
-                      id="brickset-username"
-                      name="username"
-                      type="text"
-                      className="form-input"
-                      autoComplete="username"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      disabled={isFetching}
-                      aria-invalid={fetchError ? true : undefined}
-                      aria-describedby={fetchError ? 'brickset-connect-error' : undefined}
-                    />
-                  </div>
-                  <div className="form-field">
-                    <label htmlFor="brickset-password" className="form-label">
-                      Brickset password
-                    </label>
-                    <input
-                      id="brickset-password"
-                      name="password"
-                      type="password"
-                      className="form-input"
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={isFetching}
-                      aria-invalid={fetchError ? true : undefined}
-                      aria-describedby={fetchError ? 'brickset-connect-error' : undefined}
-                    />
-                  </div>
+              {linkStatus === null ? (
+                <div className={styles.card} role="status" aria-busy="true">
+                  <p className={styles.cardTextMuted}>Checking for a linked account…</p>
                 </div>
-                <p className={styles.privacyNote}>
-                  Your details are sent to Brickset once to read your collection and are never
-                  stored.
-                </p>
-                {fetchError && (
-                  <p id="brickset-connect-error" role="alert" className="form-error">
-                    {fetchError}
+              ) : showLinkedCard ? (
+                <section className={styles.card} aria-labelledby="brickset-linked-title">
+                  <h3 id="brickset-linked-title" className={styles.cardTitle}>
+                    Linked to Brickset as {linkStatus?.username}
+                  </h3>
+                  <p className={styles.cardText}>
+                    {linkStatus?.lastSyncedAt
+                      ? `Last synced ${formatSyncDate(linkStatus.lastSyncedAt)}. `
+                      : ''}
+                    Load your owned sets to see what’s new since then.
                   </p>
-                )}
-              </form>
+                  {fetchError && (
+                    <p role="alert" className="form-error">
+                      {fetchError}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    className={`btn-small btn-ghost ${styles.alignStart}`}
+                    onClick={() => setUseDifferentAccount(true)}
+                    disabled={isFetching}
+                  >
+                    Use a different account
+                  </button>
+                </section>
+              ) : (
+                <form id="brickset-connect-form" className={styles.card} onSubmit={handleFetch}>
+                  <div className={styles.fields}>
+                    <div className="form-field">
+                      <label htmlFor="brickset-username" className="form-label">
+                        Brickset username
+                      </label>
+                      <input
+                        ref={usernameRef}
+                        id="brickset-username"
+                        name="username"
+                        type="text"
+                        className="form-input"
+                        autoComplete="username"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        disabled={isFetching}
+                        aria-invalid={fetchError ? true : undefined}
+                        aria-describedby={fetchError ? 'brickset-connect-error' : undefined}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label htmlFor="brickset-password" className="form-label">
+                        Brickset password
+                      </label>
+                      <input
+                        id="brickset-password"
+                        name="password"
+                        type="password"
+                        className="form-input"
+                        autoComplete="current-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={isFetching}
+                        aria-invalid={fetchError ? true : undefined}
+                        aria-describedby={fetchError ? 'brickset-connect-error' : undefined}
+                      />
+                    </div>
+                  </div>
+                  {linkStatus?.available && (
+                    <label className={styles.rememberRow}>
+                      <input
+                        type="checkbox"
+                        className={styles.checkbox}
+                        checked={remember}
+                        onChange={(e) => setRemember(e.target.checked)}
+                        disabled={isFetching}
+                      />
+                      <span className={styles.rememberText}>
+                        <span className={styles.rememberTitle}>Remember this account</span>
+                        <span className={styles.rememberDescription}>
+                          Lets you sync new sets later without signing in again. Eggo keeps an
+                          encrypted Brickset session key, never your password.
+                        </span>
+                      </span>
+                    </label>
+                  )}
+                  <p className={styles.privacyNote}>
+                    {linkStatus?.available
+                      ? 'Your password is sent to Brickset once to read your collection and is never stored.'
+                      : 'Your details are sent to Brickset once to read your collection and are never stored.'}
+                  </p>
+                  {fetchError && (
+                    <p id="brickset-connect-error" role="alert" className="form-error">
+                      {fetchError}
+                    </p>
+                  )}
+                  {linkStatus?.linked && (
+                    <button
+                      type="button"
+                      className={`btn-small btn-ghost ${styles.alignStart}`}
+                      onClick={() => setUseDifferentAccount(false)}
+                      disabled={isFetching}
+                    >
+                      Back to {linkStatus.username}
+                    </button>
+                  )}
+                </form>
+              )}
             </div>
           )}
 
@@ -745,6 +862,12 @@ function ImportBricksetContent(): React.JSX.Element {
                       original picture. Use Refresh on a set’s page to try again.
                     </li>
                   )}
+                  {accountLinked && (
+                    <li>
+                      {bricksetUsername} stays linked. Sync again any time from Collection Settings
+                      to pull in new sets.
+                    </li>
+                  )}
                   {summary.failures.length > 0 && (
                     <li>
                       {pluralize(summary.failures.length, 'set', 'sets')} couldn’t be added:{' '}
@@ -773,14 +896,25 @@ function ImportBricksetContent(): React.JSX.Element {
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              form="brickset-connect-form"
-              className="btn-default btn-primary"
-              disabled={isFetching || !username.trim() || !password}
-            >
-              {isFetching ? 'Loading your sets…' : 'Load my sets'}
-            </button>
+            {showLinkedCard ? (
+              <button
+                type="button"
+                className="btn-default btn-primary"
+                onClick={handleFetchLinked}
+                disabled={isFetching}
+              >
+                {isFetching ? 'Loading your sets…' : 'Load my sets'}
+              </button>
+            ) : (
+              <button
+                type="submit"
+                form="brickset-connect-form"
+                className="btn-default btn-primary"
+                disabled={isFetching || linkStatus === null || !username.trim() || !password}
+              >
+                {isFetching ? 'Loading your sets…' : 'Load my sets'}
+              </button>
+            )}
           </>
         )}
 
