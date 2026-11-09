@@ -261,6 +261,8 @@ Application users with:
 - Color mode preference: `system`, `light`, `dark`
 - Collection memberships
 
+`useAuth().user` keeps its object identity across same-account auth events (token refresh, tab focus, another tab recovering the session); only a change to `id`, `email`, or `user_metadata` produces a new object. Key effects and callbacks on `user.id`, not on `user`, so a refreshed session never restarts a data stream.
+
 ## External APIs
 
 ### Brickset (Primary)

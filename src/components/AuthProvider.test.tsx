@@ -24,6 +24,17 @@ function wrapper({ children }: { children: ReactNode }): React.JSX.Element {
   return <AuthProvider>{children}</AuthProvider>;
 }
 
+function makeUser(overrides: Partial<User>): User {
+  return {
+    id: 'user-1',
+    app_metadata: {},
+    user_metadata: {},
+    aud: 'authenticated',
+    created_at: '',
+    ...overrides,
+  };
+}
+
 describe('AuthProvider analytics', () => {
   let emitAuthChange: (user: User | null) => void;
 
@@ -108,17 +119,6 @@ describe('AuthProvider analytics', () => {
   });
 });
 
-function makeUser(overrides: Partial<User>): User {
-  return {
-    id: 'user-1',
-    app_metadata: {},
-    user_metadata: {},
-    aud: 'authenticated',
-    created_at: '',
-    ...overrides,
-  };
-}
-
 describe('AuthProvider user identity', () => {
   let emitAuthChange: (user: User | null) => void;
 
@@ -162,10 +162,10 @@ describe('AuthProvider user identity', () => {
   it('replaces the user when a different account signs in', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
-    act(() => emitAuthChange({ id: 'user-1' } as User));
+    act(() => emitAuthChange(makeUser({ id: 'user-1' })));
     await waitFor(() => expect(result.current.user?.id).toBe('user-1'));
 
-    act(() => emitAuthChange({ id: 'user-2' } as User));
+    act(() => emitAuthChange(makeUser({ id: 'user-2' })));
 
     expect(result.current.user?.id).toBe('user-2');
   });

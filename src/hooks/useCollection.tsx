@@ -192,7 +192,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
 
   const createNewCollection = useCallback(
     async (name: string, owners: string[]): Promise<string> => {
-      if (!user) {
+      if (!userId) {
         throw new Error('Must be logged in to create a collection');
       }
 
@@ -207,7 +207,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
           id: collectionId,
           name,
           owners,
-          memberUserIds: [user.id],
+          memberUserIds: [userId],
           createdAt: now,
           updatedAt: now,
         };
@@ -234,7 +234,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
         throw err;
       }
     },
-    [user]
+    [userId]
   );
 
   // Compute isInitializing: true until auth is resolved AND we have loaded collections AND sets
