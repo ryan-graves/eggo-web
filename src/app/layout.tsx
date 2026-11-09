@@ -38,8 +38,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>): React.JSX.Element {
+  // data-scroll-behavior lets Next suspend the smooth scrolling from
+  // globals.css while it scrolls a new route to the top; without it the jump
+  // from a scrolled list to a set's detail page plays as an animation.
   return (
-    <html lang="en" className={radioCanadaBig.variable}>
+    <html lang="en" className={radioCanadaBig.variable} data-scroll-behavior="smooth">
       <body>
         <Providers>{children}</Providers>
       </body>

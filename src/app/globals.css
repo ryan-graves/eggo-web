@@ -100,7 +100,8 @@ img {
   outline-offset: var(--outline-offset);
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling for in-page scrolls. Route changes opt out via
+   data-scroll-behavior="smooth" on <html> in app/layout.tsx. */
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
