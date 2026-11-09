@@ -334,6 +334,7 @@ Keep the shared security headers (`Content-Security-Policy: frame-ancestors …`
    - Authentication > Providers > Google
    - Add your Google client ID/secret and the Netlify redirect URL (`https://your-site.netlify.app/auth/callback`)
 2. Add your site URL and any deploy-preview URLs under Authentication > URL Configuration
+   - `/auth/callback` is a client page (`src/app/auth/callback/page.tsx`) that exchanges the PKCE code itself. Don't turn it into a route handler that redirects: on Netlify, `new URL(path, request.url)` in a function resolves to the deploy's canonical host (the permalink host on deploy previews, not `deploy-preview-N--…`), which is a different origin from the one holding the PKCE verifier, so sign-in stalls on previews.
 3. Run the SQL migrations in `supabase/migrations/` against the project (in order)
 4. Verify RLS, helpers, and tables with `node scripts/verify-supabase-schema.mjs`
 

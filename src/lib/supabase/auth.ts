@@ -10,7 +10,8 @@ export type User = SupabaseUser;
 /**
  * Trigger the OAuth redirect flow for Google sign-in. The user is sent to
  * Google, then to Supabase's `/auth/v1/callback`, then back to our
- * `/auth/callback` route which exchanges the code for a session.
+ * `/auth/callback` page, which exchanges the code for a session on the same
+ * origin that stored the PKCE verifier.
  */
 export async function signInWithGoogle(): Promise<void> {
   const supabase = getSupabaseClient();
