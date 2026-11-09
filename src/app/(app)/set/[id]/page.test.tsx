@@ -20,11 +20,12 @@ jest.mock('@/hooks/useCollection', () => ({ useCollection: jest.fn() }));
 
 const mockUseCollection = useCollection as jest.MockedFunction<typeof useCollection>;
 
-function makeSet(setNumber: string): LegoSet {
+function makeSet(setNumber: string, dataSourceId?: string): LegoSet {
   return {
     id: 'set-1',
     collectionId: 'collection-1',
     setNumber,
+    dataSourceId,
     name: 'Millennium Falcon',
     pieceCount: 7541,
     year: 2017,
@@ -58,6 +59,16 @@ describe('SetDetailPage Brickset link', () => {
     expect(link).toHaveAttribute('href', 'https://brickset.com/sets/75192-1');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('uses the provider id so a variant set links to its own page', () => {
+    // Both providers store the display number without the variant and keep
+    // "number-variant" in dataSourceId.
+    renderWithSet(makeSet('6075', '6075-2'));
+
+    expect(
+      screen.getByRole('link', { name: 'View on Brickset (opens in a new tab)' })
+    ).toHaveAttribute('href', 'https://brickset.com/sets/6075-2');
   });
 
   it('adds the -1 variant suffix when the stored number lacks one', () => {

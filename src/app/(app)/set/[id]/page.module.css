@@ -185,6 +185,7 @@
   width: var(--size-icon-xs);
   height: var(--size-icon-xs);
   color: var(--text-tertiary);
+  transition: color var(--transition-fast);
 }
 
 .externalLink:hover .externalIcon {

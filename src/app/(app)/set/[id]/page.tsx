@@ -82,8 +82,12 @@ function SetDetailContent(): React.JSX.Element {
     );
   }
   // Brickset has a page for nearly every set whatever source we used, so the
-  // link doesn't depend on dataSource.
-  const bricksetHref = `https://brickset.com/sets/${normalizeSetNumber(set.setNumber)}`;
+  // link doesn't depend on dataSource. dataSourceId keeps the "number-variant"
+  // both providers report (setNumber drops the variant for display), so a
+  // 6075-2 doesn't land on 6075-1; sets without one fall back to the number.
+  const bricksetHref = `https://brickset.com/sets/${encodeURIComponent(
+    set.dataSourceId ?? normalizeSetNumber(set.setNumber)
+  )}`;
   metadataParts.push(
     <a
       key="brickset"
@@ -172,20 +176,18 @@ function SetDetailContent(): React.JSX.Element {
               >
                 {set.name}
               </h1>
-              {metadataParts.length > 0 && (
-                <p className={styles.metadata}>
-                  {metadataParts.map((node, idx) => (
-                    <span key={idx} className={styles.metadataItem}>
-                      {idx > 0 && (
-                        <span className={styles.metadataSep} aria-hidden="true">
-                          {'·'}
-                        </span>
-                      )}
-                      {node}
-                    </span>
-                  ))}
-                </p>
-              )}
+              <p className={styles.metadata}>
+                {metadataParts.map((node, idx) => (
+                  <span key={idx} className={styles.metadataItem}>
+                    {idx > 0 && (
+                      <span className={styles.metadataSep} aria-hidden="true">
+                        {'·'}
+                      </span>
+                    )}
+                    {node}
+                  </span>
+                ))}
+              </p>
               <div className={styles.statusRow}>
                 <StatusControl setId={set.id} currentStatus={set.status} />
               </div>
