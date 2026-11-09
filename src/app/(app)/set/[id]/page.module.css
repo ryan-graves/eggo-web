@@ -175,6 +175,23 @@
   border-bottom-color: var(--text-primary);
 }
 
+.externalLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.externalIcon {
+  width: var(--size-icon-xs);
+  height: var(--size-icon-xs);
+  color: var(--text-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.externalLink:hover .externalIcon {
+  color: inherit;
+}
+
 /* align-self: flex-start keeps this wrapper from stretching across the
    heading column (a column flex container stretches cross-axis by default).
    The StatusControl inside is content-sized. */
