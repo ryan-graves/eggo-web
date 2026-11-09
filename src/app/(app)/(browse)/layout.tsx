@@ -10,7 +10,8 @@ import { Header } from '@/components/Header';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
 import { SetCardSkeleton } from '@/components/SetCardSkeleton';
-import { LAST_BROWSE_PATH_KEY, SCROLL_POSITION_PREFIX, useNavigation } from '@/hooks/useNavigation';
+import { LAST_BROWSE_PATH_KEY, useNavigation } from '@/hooks/useNavigation';
+import { resetScrollPosition, useScrollMemory } from '@/hooks/useScrollMemory';
 import styles from './page.module.css';
 
 interface CollectionLayoutProps {
@@ -176,19 +177,10 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     );
   }, [pathname, searchParams]);
 
-  // Restore scroll position when returning to this browse view
-  useEffect(() => {
-    if (isInitializing) return;
-
-    const key = `${SCROLL_POSITION_PREFIX}${pathname}`;
-    const savedScroll = sessionStorage.getItem(key);
-    if (savedScroll) {
-      const scrollY = parseInt(savedScroll, 10);
-      sessionStorage.removeItem(key);
-      // Restore saved scroll position
-      window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior });
-    }
-  }, [pathname, isInitializing]);
+  // Restore scroll when returning to a browse view (e.g. back from a set
+  // detail page). Saving pauses during the view toggle's transition, whose
+  // skeleton shrinks the page and would record a clamped position.
+  useScrollMemory(pathname, { paused: isPending, ready: !isInitializing });
 
   // Prefetch sibling routes for instant navigation
   useEffect(() => {
@@ -229,6 +221,8 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
     // Track pending view for immediate visual feedback
     setPendingView(view);
+    // The toggle lands at the top by design; a later return should too.
+    resetScrollPosition(targetPath);
 
     // Navigate in a transition so it doesn't block the UI
     startTransition(() => {

@@ -72,10 +72,13 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
   // Track which collection the sets subscription was last started for
   const subscribedCollectionIdRef = useRef<string | null>(null);
 
-  // Subscribe to user's collections
+  // Subscribe to user's collections. Keyed on the id rather than the user
+  // object: a refreshed session for the same account must not restart the
+  // stream (which would reset `isInitializing` and remount every browse view).
+  const userId = user?.id ?? null;
   useEffect(() => {
     // No user - reset state immediately (valid synchronous update for auth state change)
-    if (!user) {
+    if (!userId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state on logout is intentional
       setCollectionsInitialized(false);
       setSetsInitialized(false);
@@ -86,7 +89,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       return;
     }
 
-    const unsubscribe = subscribeToCollectionsForUser(user.id, (userCollections) => {
+    const unsubscribe = subscribeToCollectionsForUser(userId, (userCollections) => {
       setCollections(userCollections);
       setCollectionsError(null);
       setCollectionsEverLoaded(true);
@@ -104,7 +107,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
           // Collection was deleted (or the user left it): fall through to the
           // same resolution as a cold start.
         }
-        return resolveActiveCollection(userCollections, readStoredActiveCollectionId(user.id));
+        return resolveActiveCollection(userCollections, readStoredActiveCollectionId(userId));
       });
 
       // Mark collections as initialized after first successful load
@@ -124,7 +127,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
       setSets([]);
       loadedCollectionIdRef.current = null;
     };
-  }, [user]);
+  }, [userId]);
 
   // Subscribe to sets for active collection
   useEffect(() => {
@@ -189,7 +192,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
 
   const createNewCollection = useCallback(
     async (name: string, owners: string[]): Promise<string> => {
-      if (!user) {
+      if (!userId) {
         throw new Error('Must be logged in to create a collection');
       }
 
@@ -204,7 +207,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
           id: collectionId,
           name,
           owners,
-          memberUserIds: [user.id],
+          memberUserIds: [userId],
           createdAt: now,
           updatedAt: now,
         };
@@ -231,7 +234,7 @@ export function CollectionProvider({ children }: CollectionProviderProps): React
         throw err;
       }
     },
-    [user]
+    [userId]
   );
 
   // Compute isInitializing: true until auth is resolved AND we have loaded collections AND sets

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { SetCard } from '@/components/SetCard';
 import { FilterSheet } from '@/components/FilterSheet';
 import { FilterTags } from '@/components/FilterTags';
+import { ALL_SETS_QUERY_KEY } from '@/hooks/useNavigation';
 import { getDateSortString } from '@/lib/date';
 import type { LegoSet, SetStatus, PublicViewSettings } from '@/types';
 import styles from './SetList.module.css';
@@ -18,12 +19,40 @@ interface SetListProps {
   viewSettings?: PublicViewSettings;
   /** Empty state message when collection has no sets at all */
   emptyMessage?: string;
-  /** Mirror status/theme filters into the URL (the /all deep-link flow only). */
+  /** Mirror filters and sort into the URL (the /all route only). */
   syncFiltersToUrl?: boolean;
 }
 
 type SortField = 'name' | 'dateReceived' | 'pieceCount' | 'setNumber';
 type SortDirection = 'asc' | 'desc';
+
+interface SetListFilters {
+  status: SetStatus | 'all';
+  owner: string;
+  theme: string;
+  query: string;
+  sortField: SortField;
+  sortDirection: SortDirection;
+}
+
+const DEFAULT_FILTERS: SetListFilters = {
+  status: 'all',
+  owner: 'all',
+  theme: 'all',
+  query: '',
+  sortField: 'dateReceived',
+  sortDirection: 'desc',
+};
+
+/** URL search param for each filter. Defaults are omitted from the URL. */
+const FILTER_PARAMS: Record<keyof SetListFilters, string> = {
+  status: 'status',
+  owner: 'owner',
+  theme: 'theme',
+  query: 'q',
+  sortField: 'sort',
+  sortDirection: 'dir',
+};
 
 const STATUS_OPTIONS: { value: SetStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'All Status' },
@@ -41,6 +70,84 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'pieceCount', label: 'Piece Count' },
 ];
 
+/**
+ * Owner and theme are checked against the current collection: a remembered or
+ * shared query from another collection would otherwise leave an empty list
+ * behind a desktop select that still reads "All". Theme matches
+ * case-insensitively, like the filter itself.
+ */
+function parseFilters(
+  params: URLSearchParams,
+  availableOwners: string[],
+  availableThemes: string[]
+): SetListFilters {
+  const status = params.get(FILTER_PARAMS.status);
+  const owner = params.get(FILTER_PARAMS.owner);
+  const theme = params.get(FILTER_PARAMS.theme);
+  const sortField = params.get(FILTER_PARAMS.sortField);
+  const sortDirection = params.get(FILTER_PARAMS.sortDirection);
+  return {
+    status: STATUS_OPTIONS.some((o) => o.value === status)
+      ? (status as SetStatus | 'all')
+      : DEFAULT_FILTERS.status,
+    owner: owner && availableOwners.includes(owner) ? owner : DEFAULT_FILTERS.owner,
+    theme:
+      theme && availableThemes.some((t) => t.toLowerCase() === theme.toLowerCase())
+        ? theme
+        : DEFAULT_FILTERS.theme,
+    query: params.get(FILTER_PARAMS.query) ?? DEFAULT_FILTERS.query,
+    sortField: SORT_OPTIONS.some((o) => o.value === sortField)
+      ? (sortField as SortField)
+      : DEFAULT_FILTERS.sortField,
+    sortDirection:
+      sortDirection === 'asc' || sortDirection === 'desc'
+        ? sortDirection
+        : DEFAULT_FILTERS.sortDirection,
+  };
+}
+
+function serializeFilters(filters: SetListFilters): string {
+  const params = new URLSearchParams();
+  (Object.keys(FILTER_PARAMS) as (keyof SetListFilters)[]).forEach((key) => {
+    if (filters[key] !== DEFAULT_FILTERS[key]) params.set(FILTER_PARAMS[key], filters[key]);
+  });
+  return params.toString();
+}
+
+/**
+ * The URL wins when it carries any filter (a "View All" deep link from home,
+ * a shared link, a refresh). A bare /all falls back to the query from the
+ * last visit in this tab, so leaving and coming back keeps the same view.
+ */
+function readInitialFilters(
+  searchParams: URLSearchParams,
+  availableOwners: string[],
+  availableThemes: string[]
+): SetListFilters {
+  const hasUrlFilters = Object.values(FILTER_PARAMS).some((param) => searchParams.has(param));
+  if (hasUrlFilters || typeof window === 'undefined') {
+    return parseFilters(searchParams, availableOwners, availableThemes);
+  }
+  let remembered: string | null = null;
+  try {
+    remembered = sessionStorage.getItem(ALL_SETS_QUERY_KEY);
+  } catch {
+    // Storage can be unavailable (private browsing, blocked by policy); the
+    // URL alone still works.
+  }
+  return remembered
+    ? parseFilters(new URLSearchParams(remembered), availableOwners, availableThemes)
+    : DEFAULT_FILTERS;
+}
+
+function collectThemes(sets: LegoSet[]): string[] {
+  const themeSet = new Set<string>();
+  sets.forEach((set) => {
+    if (set.theme) themeSet.add(set.theme);
+  });
+  return Array.from(themeSet).sort();
+}
+
 export function SetList({
   sets,
   availableOwners,
@@ -49,51 +156,54 @@ export function SetList({
   emptyMessage = 'No sets in your collection yet. Add your first set!',
   syncFiltersToUrl = false,
 }: SetListProps): React.JSX.Element {
-  // Status/theme filters are deep-linked from the home "View All" links — only
-  // when syncFiltersToUrl is set (the /all route), never on public share pages.
+  // Filters and sort live in the URL — only when syncFiltersToUrl is set (the
+  // /all route), never on public share pages.
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
-  const [statusFilter, setStatusFilter] = useState<SetStatus | 'all'>(() => {
-    if (!syncFiltersToUrl) return 'all';
-    const param = searchParams.get('status');
-    return STATUS_OPTIONS.some((o) => o.value === param)
-      ? (param as SetStatus | 'all')
-      : 'all';
-  });
-  const [ownerFilter, setOwnerFilter] = useState<string>('all');
-  const [themeFilter, setThemeFilter] = useState<string>(() =>
-    syncFiltersToUrl ? (searchParams.get('theme') ?? 'all') : 'all'
+  const themes = useMemo(() => collectThemes(sets), [sets]);
+  const [filters, setFilters] = useState<SetListFilters>(() =>
+    syncFiltersToUrl
+      ? readInitialFilters(new URLSearchParams(searchParams), availableOwners, themes)
+      : DEFAULT_FILTERS
   );
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortField, setSortField] = useState<SortField>('dateReceived');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const {
+    status: statusFilter,
+    owner: ownerFilter,
+    theme: themeFilter,
+    query: searchQuery,
+    sortField,
+    sortDirection,
+  } = filters;
+  const setFilter = useCallback(
+    <K extends keyof SetListFilters>(key: K, value: SetListFilters[K]): void => {
+      setFilters((prev) => (prev[key] === value ? prev : { ...prev, [key]: value }));
+    },
+    []
+  );
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
-  // Mirror the deep-linkable filters back into the URL so back navigation,
-  // refresh, and sharing reflect the current filter rather than the original
-  // deep link. router.replace keeps it out of the history stack. Gated to the
-  // /all route so it never rewrites the public share page's URL.
+  // Mirror the filters back into the URL so back navigation, refresh, and
+  // sharing reflect the current view, and remember them for the next bare
+  // visit to /all. The History API integrates with the Next router (it updates
+  // useSearchParams) without a navigation on every search keystroke, and
+  // replaceState keeps it out of the history stack. The comparison goes
+  // through URLSearchParams so a deep link's %20 and our + don't differ.
   useEffect(() => {
     if (!syncFiltersToUrl) return;
-    const params = new URLSearchParams();
-    if (statusFilter !== 'all') params.set('status', statusFilter);
-    if (themeFilter !== 'all') params.set('theme', themeFilter);
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  }, [syncFiltersToUrl, statusFilter, themeFilter, pathname, router]);
+    const query = serializeFilters(filters);
+    const currentQuery = new URLSearchParams(window.location.search).toString();
+    if (window.location.pathname !== pathname || currentQuery !== query) {
+      window.history.replaceState(null, '', query ? `${pathname}?${query}` : pathname);
+    }
+    try {
+      sessionStorage.setItem(ALL_SETS_QUERY_KEY, query);
+    } catch {
+      // Storage unavailable: the URL still carries the view.
+    }
+  }, [syncFiltersToUrl, filters, pathname]);
 
   const hideOwner = viewSettings ? !viewSettings.showOwner : false;
   const hideStatus = viewSettings ? !(viewSettings.showStatus ?? true) : false;
-
-  // Get unique themes from sets
-  const themes = useMemo(() => {
-    const themeSet = new Set<string>();
-    sets.forEach((set) => {
-      if (set.theme) themeSet.add(set.theme);
-    });
-    return Array.from(themeSet).sort();
-  }, [sets]);
 
   // Filter and sort sets
   const filteredSets = useMemo(() => {
@@ -151,12 +261,15 @@ export function SetList({
     return result;
   }, [sets, searchQuery, statusFilter, ownerFilter, themeFilter, sortField, sortDirection, hideOwner, hideStatus]);
 
-  const handleSortChange = (field: SortField) => {
+  const toggleSortDirection = (): void => {
+    setFilter('sortDirection', sortDirection === 'asc' ? 'desc' : 'asc');
+  };
+
+  const handleSortChange = (field: SortField): void => {
     if (field === sortField) {
-      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      toggleSortDirection();
     } else {
-      setSortField(field);
-      setSortDirection('desc');
+      setFilters((prev) => ({ ...prev, sortField: field, sortDirection: 'desc' }));
     }
   };
 
@@ -170,7 +283,7 @@ export function SetList({
         key: 'status',
         label: 'Status',
         value: statusLabel,
-        onRemove: () => setStatusFilter('all'),
+        onRemove: () => setFilter('status', 'all'),
       });
     }
 
@@ -179,7 +292,7 @@ export function SetList({
         key: 'owner',
         label: 'Owner',
         value: ownerFilter,
-        onRemove: () => setOwnerFilter('all'),
+        onRemove: () => setFilter('owner', 'all'),
       });
     }
 
@@ -188,12 +301,12 @@ export function SetList({
         key: 'theme',
         label: 'Theme',
         value: themeFilter,
-        onRemove: () => setThemeFilter('all'),
+        onRemove: () => setFilter('theme', 'all'),
       });
     }
 
     return tags;
-  }, [statusFilter, ownerFilter, themeFilter, hideOwner, hideStatus]);
+  }, [statusFilter, ownerFilter, themeFilter, hideOwner, hideStatus, setFilter]);
 
   const activeFilterCount = filterTags.length;
 
@@ -205,7 +318,7 @@ export function SetList({
           type="search"
           placeholder="Search sets..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => setFilter('query', e.target.value)}
           className={styles.searchInput}
         />
         <button
@@ -243,14 +356,14 @@ export function SetList({
           type="search"
           placeholder="Search sets..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => setFilter('query', e.target.value)}
           className={styles.searchInput}
         />
 
         {!hideStatus && (
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as SetStatus | 'all')}
+            onChange={(e) => setFilter('status', e.target.value as SetStatus | 'all')}
             className={styles.select}
           >
             {STATUS_OPTIONS.map((opt) => (
@@ -264,7 +377,7 @@ export function SetList({
         {!hideOwner && (
           <select
             value={ownerFilter}
-            onChange={(e) => setOwnerFilter(e.target.value)}
+            onChange={(e) => setFilter('owner', e.target.value)}
             className={styles.select}
           >
             <option value="all">All Owners</option>
@@ -278,7 +391,7 @@ export function SetList({
 
         <select
           value={themeFilter}
-          onChange={(e) => setThemeFilter(e.target.value)}
+          onChange={(e) => setFilter('theme', e.target.value)}
           className={styles.select}
         >
           <option value="all">All Themes</option>
@@ -305,7 +418,7 @@ export function SetList({
           </select>
           <button
             type="button"
-            onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+            onClick={toggleSortDirection}
             className={styles.sortButton}
             aria-label={`Sort ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
           >
@@ -347,15 +460,15 @@ export function SetList({
         isOpen={isFilterSheetOpen}
         onClose={() => setIsFilterSheetOpen(false)}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
+        onStatusChange={(status) => setFilter('status', status)}
         ownerFilter={ownerFilter}
-        onOwnerChange={setOwnerFilter}
+        onOwnerChange={(owner) => setFilter('owner', owner)}
         themeFilter={themeFilter}
-        onThemeChange={setThemeFilter}
+        onThemeChange={(theme) => setFilter('theme', theme)}
         sortField={sortField}
-        onSortFieldChange={(field) => setSortField(field as SortField)}
+        onSortFieldChange={(field) => setFilter('sortField', field as SortField)}
         sortDirection={sortDirection}
-        onSortDirectionChange={setSortDirection}
+        onSortDirectionChange={(direction) => setFilter('sortDirection', direction)}
         availableOwners={hideOwner ? [] : availableOwners}
         availableThemes={themes}
         statusOptions={STATUS_OPTIONS}

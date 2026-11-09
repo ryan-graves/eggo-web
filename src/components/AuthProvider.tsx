@@ -32,6 +32,22 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Supabase hands every auth event (token refresh, tab regaining focus, another
+ * tab signing in via BroadcastChannel) a freshly built user object for the same
+ * account. Treating each one as a new user would tear down everything keyed on
+ * `user` further down the tree, so only identity-relevant fields count.
+ */
+function isSameUser(a: User | null, b: User | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return (
+    a.id === b.id &&
+    a.email === b.email &&
+    JSON.stringify(a.user_metadata) === JSON.stringify(b.user_metadata)
+  );
+}
+
 export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,7 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.JSX.Element
 
     try {
       const unsubscribe = subscribeToAuthChanges((supabaseUser) => {
-        setUser(supabaseUser);
+        setUser((current) => (isSameUser(current, supabaseUser) ? current : supabaseUser));
         setLoading(false);
       });
 
