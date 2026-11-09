@@ -80,6 +80,30 @@ describe('useScrollMemory', () => {
     expect(scrollTo).toHaveBeenCalledWith({ top: 2000, behavior: 'instant' });
   });
 
+  it('takes over scroll restoration from the browser while mounted', () => {
+    window.history.scrollRestoration = 'auto';
+
+    renderHook(() => useScrollMemory('/all', { paused: false, ready: true }));
+
+    expect(window.history.scrollRestoration).toBe('manual');
+  });
+
+  it('saves and restores under a custom key for pages that swap views in place', () => {
+    window.history.replaceState(null, '', '/share/abc');
+    sessionStorage.setItem(`${SCROLL_POSITION_PREFIX}/share/abc:all`, '640');
+    const { rerender } = renderHook(
+      ({ key }) => useScrollMemory('/share/abc', { paused: false, ready: true, key }),
+      { initialProps: { key: '/share/abc:all' } }
+    );
+    expect(scrollTo).toHaveBeenCalledWith({ top: 640, behavior: 'instant' });
+
+    rerender({ key: '/share/abc:home' });
+    act(() => scrollWindowTo(150));
+
+    expect(sessionStorage.getItem(`${SCROLL_POSITION_PREFIX}/share/abc:home`)).toBe('150');
+    expect(sessionStorage.getItem(`${SCROLL_POSITION_PREFIX}/share/abc:all`)).toBe('640');
+  });
+
   it('does nothing when there is no saved position', () => {
     renderHook(() => useScrollMemory('/all', { paused: false, ready: true }));
 
