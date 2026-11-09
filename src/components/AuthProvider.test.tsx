@@ -107,3 +107,66 @@ describe('AuthProvider analytics', () => {
     expect(resetAnalyticsUser).not.toHaveBeenCalled();
   });
 });
+
+function makeUser(overrides: Partial<User>): User {
+  return {
+    id: 'user-1',
+    app_metadata: {},
+    user_metadata: {},
+    aud: 'authenticated',
+    created_at: '',
+    ...overrides,
+  };
+}
+
+describe('AuthProvider user identity', () => {
+  let emitAuthChange: (user: User | null) => void;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (isSupabaseConfigured as jest.Mock).mockReturnValue(true);
+    mockSubscribe.mockImplementation((callback) => {
+      emitAuthChange = callback;
+      return jest.fn();
+    });
+  });
+
+  it('keeps the same user object when a refreshed session is for the same account', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    const metadata = { full_name: 'Ryan', avatar_url: 'https://example.com/a.png' };
+
+    act(() => emitAuthChange(makeUser({ email: 'r@example.com', user_metadata: metadata })));
+    await waitFor(() => expect(result.current.user?.id).toBe('user-1'));
+    const firstUser = result.current.user;
+
+    // Supabase builds a fresh object for every event (token refresh, another
+    // tab recovering the session, the tab regaining focus).
+    act(() => emitAuthChange(makeUser({ email: 'r@example.com', user_metadata: { ...metadata } })));
+
+    expect(result.current.user).toBe(firstUser);
+  });
+
+  it('replaces the user when the profile changes', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    act(() => emitAuthChange(makeUser({ user_metadata: { full_name: 'Ryan' } })));
+    await waitFor(() => expect(result.current.user?.id).toBe('user-1'));
+    const firstUser = result.current.user;
+
+    act(() => emitAuthChange(makeUser({ user_metadata: { full_name: 'Ryan G' } })));
+
+    expect(result.current.user).not.toBe(firstUser);
+    expect(result.current.user?.user_metadata.full_name).toBe('Ryan G');
+  });
+
+  it('replaces the user when a different account signs in', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    act(() => emitAuthChange({ id: 'user-1' } as User));
+    await waitFor(() => expect(result.current.user?.id).toBe('user-1'));
+
+    act(() => emitAuthChange({ id: 'user-2' } as User));
+
+    expect(result.current.user?.id).toBe('user-2');
+  });
+});

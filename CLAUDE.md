@@ -248,6 +248,12 @@ Individual Lego sets with:
 - User data: `status`, `owner`, `occasion`, `dateReceived`
 - Status values: `unopened`, `in_progress`, `rebuild_in_progress`, `assembled`, `disassembled`
 
+### Browse views (`/home`, `/all`)
+
+- Every `/all` filter and sort lives in the URL (`status`, `owner`, `theme`, `q`, `sort`, `dir`; defaults omitted), written with `history.replaceState` so typing in search doesn't trigger a navigation. The last `/all` query is also kept in sessionStorage (`ALL_SETS_QUERY_KEY`): a bare `/all` (the Home/All Sets toggle) restores it, while a URL that carries any filter (home "View All" deep links, shared links) wins over it.
+- The browse layout saves each view's scroll position on every scroll event (`SCROLL_POSITION_PREFIX`) and restores it once per mount, so returning from a set detail page (card click, header back, or browser back) lands where the user left off. The Home/All Sets toggle still starts at the top.
+- `AuthProvider` keeps the same `user` object across Supabase auth events for the same account (token refresh, another tab recovering the session via BroadcastChannel, tab regaining focus), and `CollectionProvider` keys its subscriptions on the user id. A fresh object per event used to reset `isInitializing`, remounting the browse views and wiping their filters and scroll, e.g. on middle-clicking a set into a new tab.
+
 ### Users
 
 Application users with:

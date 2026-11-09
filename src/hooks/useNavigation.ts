@@ -9,6 +9,9 @@ export const LAST_BROWSE_PATH_KEY = 'eggo_last_browse_path';
 /** SessionStorage key prefix for saving scroll positions per path */
 export const SCROLL_POSITION_PREFIX = 'eggo_scroll_';
 
+/** SessionStorage key for the last filter/sort query used on /all */
+export const ALL_SETS_QUERY_KEY = 'eggo_all_sets_query';
+
 /**
  * Hook providing navigation helpers with scroll position tracking.
  * Saves scroll position on forward navigation so browse views can

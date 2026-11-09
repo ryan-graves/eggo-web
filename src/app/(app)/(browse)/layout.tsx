@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useTransition } from 'react';
+import { useState, useEffect, useRef, Suspense, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -176,17 +176,31 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     );
   }, [pathname, searchParams]);
 
-  // Restore scroll position when returning to this browse view
+  // Remember how far down each browse view is scrolled. Saved on every scroll
+  // rather than on click, since set cards navigate with router.push (inside
+  // the morph transition) and the browser's own back/forward never goes
+  // through navigateTo. The pathname guard skips the scroll-to-top Next
+  // performs for the page being navigated to.
   useEffect(() => {
-    if (isInitializing) return;
+    const saveScroll = (): void => {
+      if (window.location.pathname !== pathname) return;
+      sessionStorage.setItem(`${SCROLL_POSITION_PREFIX}${pathname}`, String(window.scrollY));
+    };
+    window.addEventListener('scroll', saveScroll, { passive: true });
+    return () => window.removeEventListener('scroll', saveScroll);
+  }, [pathname]);
 
-    const key = `${SCROLL_POSITION_PREFIX}${pathname}`;
-    const savedScroll = sessionStorage.getItem(key);
+  // Restore the saved scroll position when returning to the browse views
+  // (e.g. back from a set detail page). Once per mount: switching between
+  // Home and All Sets with the toggle starts each view at the top.
+  const hasRestoredScrollRef = useRef(false);
+  useEffect(() => {
+    if (isInitializing || hasRestoredScrollRef.current) return;
+    hasRestoredScrollRef.current = true;
+
+    const savedScroll = sessionStorage.getItem(`${SCROLL_POSITION_PREFIX}${pathname}`);
     if (savedScroll) {
-      const scrollY = parseInt(savedScroll, 10);
-      sessionStorage.removeItem(key);
-      // Restore saved scroll position
-      window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior });
+      window.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'instant' as ScrollBehavior });
     }
   }, [pathname, isInitializing]);
 
