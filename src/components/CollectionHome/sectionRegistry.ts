@@ -40,10 +40,16 @@ function seededSortKey(seed: number, id: string): number {
  */
 function randomSample<T extends { id: string }>(items: T[], count: number, seed?: number): T[] {
   const effectiveSeed = seed ?? Math.random();
-  return [...items]
-    .sort((a, b) => seededSortKey(effectiveSeed, a.id) - seededSortKey(effectiveSeed, b.id))
-    .slice(0, count);
+  // Keys are computed once per item, not once per comparison.
+  return items
+    .map((item) => ({ item, key: seededSortKey(effectiveSeed, item.id) }))
+    .sort((a, b) => a.key - b.key)
+    .slice(0, count)
+    .map(({ item }) => item);
 }
+
+/** How many sets Discover shows. */
+export const DISCOVER_COUNT = 24;
 
 let sessionShuffleSeed: number | null = null;
 
@@ -51,6 +57,10 @@ let sessionShuffleSeed: number | null = null;
  * One shuffle seed for the life of the loaded app. Random sections keep the
  * same picks while the user navigates into sets and back, across realtime
  * refetches, and between collections; a reload or a fresh tab draws new ones.
+ *
+ * Browser-only by design: the server would draw its own seed, so seeded
+ * output must never be server-rendered (today the home and share views
+ * render nothing until their data loads on the client).
  */
 export function getSessionShuffleSeed(): number {
   if (sessionShuffleSeed === null) {
@@ -88,7 +98,7 @@ const SMART_SECTIONS: Record<SmartSectionType, SmartSectionDefinition> = {
     getSets: (sets, seed) =>
       randomSample(
         sets.filter((s) => s.status === 'unopened' || s.status === 'disassembled'),
-        24,
+        DISCOVER_COUNT,
         seed
       ),
     emptyMessage: 'All sets have been built!',

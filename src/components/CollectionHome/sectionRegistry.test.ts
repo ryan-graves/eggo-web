@@ -1,4 +1,4 @@
-import { getSessionShuffleSeed, resolveSection } from './sectionRegistry';
+import { DISCOVER_COUNT, getSessionShuffleSeed, resolveSection } from './sectionRegistry';
 import type { LegoSet } from '@/types';
 
 function makeSet(id: string): LegoSet {
@@ -31,13 +31,20 @@ describe('discover section', () => {
     const first = discover.getSets(pool, 0.42);
     const second = discover.getSets([...pool].reverse(), 0.42);
 
-    expect(first).toHaveLength(24);
+    expect(first).toHaveLength(DISCOVER_COUNT);
     expect(ids(second)).toEqual(ids(first));
   });
 
   it('keeps the other picks in place when one set leaves the pool', () => {
     const before = discover.getSets(pool, 0.42);
     const removed = before[5].id;
+    // The order is total, so the first set outside the picks is the one that
+    // should slide in at the end.
+    const picked = new Set(ids(before));
+    const next = discover.getSets(
+      pool.filter((s) => !picked.has(s.id)),
+      0.42
+    )[0];
 
     const after = discover.getSets(
       pool.filter((s) => s.id !== removed),
@@ -47,9 +54,8 @@ describe('discover section', () => {
     expect(ids(after)).toEqual(
       ids(before)
         .filter((id) => id !== removed)
-        .concat(ids(after).slice(-1))
+        .concat(next.id)
     );
-    expect(ids(after)).not.toContain(removed);
   });
 
   it('orders differently for a different seed', () => {
