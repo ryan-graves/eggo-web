@@ -137,7 +137,7 @@ export default function HomePage(): React.JSX.Element {
   // Two error sources both end up next to the CTA:
   //   1. `contextError` — failures from the in-page signInWithGoogle call
   //      (e.g. Supabase rejects the redirect request).
-  //   2. `?error=` query param — set by /auth/callback when the provider
+  //   2. `?error=` query param — set by the /auth/callback page when the provider
   //      returns an OAuth error and bounces back to /. Without surfacing
   //      it here that message would silently disappear after the redirect.
   // contextError wins when both are present (it's the more recent signal).
