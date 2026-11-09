@@ -70,9 +70,20 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'pieceCount', label: 'Piece Count' },
 ];
 
-function parseFilters(params: URLSearchParams, availableOwners: string[]): SetListFilters {
+/**
+ * Owner and theme are checked against the current collection: a remembered or
+ * shared query from another collection would otherwise leave an empty list
+ * behind a desktop select that still reads "All". Theme matches
+ * case-insensitively, like the filter itself.
+ */
+function parseFilters(
+  params: URLSearchParams,
+  availableOwners: string[],
+  availableThemes: string[]
+): SetListFilters {
   const status = params.get(FILTER_PARAMS.status);
   const owner = params.get(FILTER_PARAMS.owner);
+  const theme = params.get(FILTER_PARAMS.theme);
   const sortField = params.get(FILTER_PARAMS.sortField);
   const sortDirection = params.get(FILTER_PARAMS.sortDirection);
   return {
@@ -80,7 +91,10 @@ function parseFilters(params: URLSearchParams, availableOwners: string[]): SetLi
       ? (status as SetStatus | 'all')
       : DEFAULT_FILTERS.status,
     owner: owner && availableOwners.includes(owner) ? owner : DEFAULT_FILTERS.owner,
-    theme: params.get(FILTER_PARAMS.theme) ?? DEFAULT_FILTERS.theme,
+    theme:
+      theme && availableThemes.some((t) => t.toLowerCase() === theme.toLowerCase())
+        ? theme
+        : DEFAULT_FILTERS.theme,
     query: params.get(FILTER_PARAMS.query) ?? DEFAULT_FILTERS.query,
     sortField: SORT_OPTIONS.some((o) => o.value === sortField)
       ? (sortField as SortField)
@@ -105,15 +119,33 @@ function serializeFilters(filters: SetListFilters): string {
  * a shared link, a refresh). A bare /all falls back to the query from the
  * last visit in this tab, so leaving and coming back keeps the same view.
  */
-function readInitialFilters(searchParams: URLSearchParams, availableOwners: string[]): SetListFilters {
+function readInitialFilters(
+  searchParams: URLSearchParams,
+  availableOwners: string[],
+  availableThemes: string[]
+): SetListFilters {
   const hasUrlFilters = Object.values(FILTER_PARAMS).some((param) => searchParams.has(param));
   if (hasUrlFilters || typeof window === 'undefined') {
-    return parseFilters(searchParams, availableOwners);
+    return parseFilters(searchParams, availableOwners, availableThemes);
   }
-  const remembered = sessionStorage.getItem(ALL_SETS_QUERY_KEY);
+  let remembered: string | null = null;
+  try {
+    remembered = sessionStorage.getItem(ALL_SETS_QUERY_KEY);
+  } catch {
+    // Storage can be unavailable (private browsing, blocked by policy); the
+    // URL alone still works.
+  }
   return remembered
-    ? parseFilters(new URLSearchParams(remembered), availableOwners)
+    ? parseFilters(new URLSearchParams(remembered), availableOwners, availableThemes)
     : DEFAULT_FILTERS;
+}
+
+function collectThemes(sets: LegoSet[]): string[] {
+  const themeSet = new Set<string>();
+  sets.forEach((set) => {
+    if (set.theme) themeSet.add(set.theme);
+  });
+  return Array.from(themeSet).sort();
 }
 
 export function SetList({
@@ -128,9 +160,10 @@ export function SetList({
   // /all route), never on public share pages.
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const themes = useMemo(() => collectThemes(sets), [sets]);
   const [filters, setFilters] = useState<SetListFilters>(() =>
     syncFiltersToUrl
-      ? readInitialFilters(new URLSearchParams(searchParams), availableOwners)
+      ? readInitialFilters(new URLSearchParams(searchParams), availableOwners, themes)
       : DEFAULT_FILTERS
   );
   const {
@@ -152,29 +185,25 @@ export function SetList({
   // Mirror the filters back into the URL so back navigation, refresh, and
   // sharing reflect the current view, and remember them for the next bare
   // visit to /all. The History API integrates with the Next router (it updates
-  // useSearchParams) without the server round trip router.replace would make
-  // on every search keystroke; replaceState keeps it out of the history stack.
+  // useSearchParams) without a navigation on every search keystroke, and
+  // replaceState keeps it out of the history stack. The comparison goes
+  // through URLSearchParams so a deep link's %20 and our + don't differ.
   useEffect(() => {
     if (!syncFiltersToUrl) return;
     const query = serializeFilters(filters);
-    const url = query ? `${pathname}?${query}` : pathname;
-    if (`${window.location.pathname}${window.location.search}` !== url) {
-      window.history.replaceState(null, '', url);
+    const currentQuery = new URLSearchParams(window.location.search).toString();
+    if (window.location.pathname !== pathname || currentQuery !== query) {
+      window.history.replaceState(null, '', query ? `${pathname}?${query}` : pathname);
     }
-    sessionStorage.setItem(ALL_SETS_QUERY_KEY, query);
+    try {
+      sessionStorage.setItem(ALL_SETS_QUERY_KEY, query);
+    } catch {
+      // Storage unavailable: the URL still carries the view.
+    }
   }, [syncFiltersToUrl, filters, pathname]);
 
   const hideOwner = viewSettings ? !viewSettings.showOwner : false;
   const hideStatus = viewSettings ? !(viewSettings.showStatus ?? true) : false;
-
-  // Get unique themes from sets
-  const themes = useMemo(() => {
-    const themeSet = new Set<string>();
-    sets.forEach((set) => {
-      if (set.theme) themeSet.add(set.theme);
-    });
-    return Array.from(themeSet).sort();
-  }, [sets]);
 
   // Filter and sort sets
   const filteredSets = useMemo(() => {

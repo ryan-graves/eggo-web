@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense, useTransition } from 'react';
+import { useState, useEffect, Suspense, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -10,7 +10,8 @@ import { Header } from '@/components/Header';
 import { CreateCollection } from '@/components/CreateCollection';
 import { CollectionSelector } from '@/components/CollectionSelector';
 import { SetCardSkeleton } from '@/components/SetCardSkeleton';
-import { LAST_BROWSE_PATH_KEY, SCROLL_POSITION_PREFIX, useNavigation } from '@/hooks/useNavigation';
+import { LAST_BROWSE_PATH_KEY, useNavigation } from '@/hooks/useNavigation';
+import { resetScrollPosition, useScrollMemory } from '@/hooks/useScrollMemory';
 import styles from './page.module.css';
 
 interface CollectionLayoutProps {
@@ -176,33 +177,10 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
     );
   }, [pathname, searchParams]);
 
-  // Remember how far down each browse view is scrolled. Saved on every scroll
-  // rather than on click, since set cards navigate with router.push (inside
-  // the morph transition) and the browser's own back/forward never goes
-  // through navigateTo. The pathname guard skips the scroll-to-top Next
-  // performs for the page being navigated to.
-  useEffect(() => {
-    const saveScroll = (): void => {
-      if (window.location.pathname !== pathname) return;
-      sessionStorage.setItem(`${SCROLL_POSITION_PREFIX}${pathname}`, String(window.scrollY));
-    };
-    window.addEventListener('scroll', saveScroll, { passive: true });
-    return () => window.removeEventListener('scroll', saveScroll);
-  }, [pathname]);
-
-  // Restore the saved scroll position when returning to the browse views
-  // (e.g. back from a set detail page). Once per mount: switching between
-  // Home and All Sets with the toggle starts each view at the top.
-  const hasRestoredScrollRef = useRef(false);
-  useEffect(() => {
-    if (isInitializing || hasRestoredScrollRef.current) return;
-    hasRestoredScrollRef.current = true;
-
-    const savedScroll = sessionStorage.getItem(`${SCROLL_POSITION_PREFIX}${pathname}`);
-    if (savedScroll) {
-      window.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'instant' as ScrollBehavior });
-    }
-  }, [pathname, isInitializing]);
+  // Restore scroll when returning to a browse view (e.g. back from a set
+  // detail page). Saving pauses during the view toggle's transition, whose
+  // skeleton shrinks the page and would record a clamped position.
+  useScrollMemory(pathname, { paused: isPending, ready: !isInitializing });
 
   // Prefetch sibling routes for instant navigation
   useEffect(() => {
@@ -243,6 +221,8 @@ function CollectionLayoutContent({ children }: CollectionLayoutProps): React.JSX
 
     // Track pending view for immediate visual feedback
     setPendingView(view);
+    // The toggle lands at the top by design; a later return should too.
+    resetScrollPosition(targetPath);
 
     // Navigate in a transition so it doesn't block the UI
     startTransition(() => {

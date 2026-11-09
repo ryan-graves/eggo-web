@@ -10,5 +10,14 @@ export default function AllSetsPage(): React.JSX.Element | null {
     return null;
   }
 
-  return <SetList sets={sets} availableOwners={activeCollection.owners} syncFiltersToUrl />;
+  // Keyed per collection so a switch re-reads the filters against the new
+  // collection's owners and themes (sort and search carry over via the URL).
+  return (
+    <SetList
+      key={activeCollection.id}
+      sets={sets}
+      availableOwners={activeCollection.owners}
+      syncFiltersToUrl
+    />
+  );
 }

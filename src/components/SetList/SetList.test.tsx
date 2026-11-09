@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { SetList } from './SetList';
 import { ALL_SETS_QUERY_KEY } from '@/hooks/useNavigation';
@@ -82,7 +83,9 @@ function currentUrl(): string {
   return `${window.location.pathname}${window.location.search}`;
 }
 
-function renderList(props: Partial<React.ComponentProps<typeof SetList>> = {}) {
+function renderList(
+  props: Partial<React.ComponentProps<typeof SetList>> = {}
+): ReturnType<typeof render> {
   return render(<SetList sets={sets} availableOwners={OWNERS} syncFiltersToUrl {...props} />);
 }
 
@@ -92,6 +95,10 @@ describe('SetList URL state', () => {
     mockSearch = '';
     sessionStorage.clear();
     window.history.replaceState(null, '', '/all');
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('defaults to date received, newest first', () => {
@@ -114,6 +121,7 @@ describe('SetList URL state', () => {
 
   it('reads the search query from the URL', () => {
     mockSearch = 'q=boat';
+    window.history.replaceState(null, '', `/all?${mockSearch}`);
 
     renderList();
 
@@ -121,12 +129,71 @@ describe('SetList URL state', () => {
     expect(screen.getAllByPlaceholderText('Search sets...')[0]).toHaveValue('boat');
   });
 
-  it('ignores unknown owners, sort fields, and directions in the URL', () => {
-    mockSearch = 'owner=Nobody&sort=bogus&dir=sideways&status=bogus';
+  it('ignores unknown owners, themes, sort fields, and directions in the URL', () => {
+    mockSearch = 'owner=Nobody&theme=Space&sort=bogus&dir=sideways&status=bogus';
+    window.history.replaceState(null, '', `/all?${mockSearch}`);
 
     renderList();
 
     expect(renderedNames()).toEqual(['Castle Keep', 'Boat House', 'Apple Orchard']);
+    expect(currentUrl()).toBe('/all');
+    expect(sessionStorage.getItem(ALL_SETS_QUERY_KEY)).toBe('');
+  });
+
+  it('matches a deep-linked theme case-insensitively', () => {
+    mockSearch = 'theme=castle';
+    window.history.replaceState(null, '', `/all?${mockSearch}`);
+
+    renderList();
+
+    expect(renderedNames()).toEqual(['Castle Keep']);
+  });
+
+  it('drops a remembered theme the current collection does not have', () => {
+    // Remembered from a different collection; only the sort should survive.
+    sessionStorage.setItem(ALL_SETS_QUERY_KEY, 'theme=Space&owner=Nobody&sort=name&dir=asc');
+
+    renderList();
+
+    expect(renderedNames()).toEqual(['Apple Orchard', 'Boat House', 'Castle Keep']);
+    expect(currentUrl()).toBe('/all?sort=name&dir=asc');
+    expect(sessionStorage.getItem(ALL_SETS_QUERY_KEY)).toBe('sort=name&dir=asc');
+  });
+
+  it('does not rewrite a deep link that already matches, even after Next re-renders', () => {
+    mockSearch = 'theme=Star%20Wars';
+    window.history.replaceState(null, '', `/all?${mockSearch}`);
+    const starWars = [makeSet({ id: 'd', name: 'X-Wing', theme: 'Star Wars' })];
+    const replaceState = jest.spyOn(window.history, 'replaceState');
+
+    const { rerender } = render(
+      <SetList sets={starWars} availableOwners={OWNERS} syncFiltersToUrl />
+    );
+    expect(renderedNames()).toEqual(['X-Wing']);
+    // encodeURIComponent's %20 and URLSearchParams' + are the same query.
+    expect(currentUrl()).toBe('/all?theme=Star%20Wars');
+    expect(replaceState).not.toHaveBeenCalled();
+
+    // Next re-renders with fresh search params after any URL change.
+    mockSearch = 'theme=Star+Wars';
+    rerender(<SetList sets={starWars} availableOwners={OWNERS} syncFiltersToUrl />);
+
+    expect(replaceState).not.toHaveBeenCalled();
+  });
+
+  it('is stable under StrictMode double rendering', () => {
+    sessionStorage.setItem(ALL_SETS_QUERY_KEY, 'owner=Alyssa');
+    const replaceState = jest.spyOn(window.history, 'replaceState');
+
+    render(
+      <StrictMode>
+        <SetList sets={sets} availableOwners={OWNERS} syncFiltersToUrl />
+      </StrictMode>
+    );
+
+    expect(renderedNames()).toEqual(['Boat House']);
+    expect(currentUrl()).toBe('/all?owner=Alyssa');
+    expect(replaceState).toHaveBeenCalledTimes(1);
   });
 
   it('writes every non-default filter to the URL without adding history entries', () => {
@@ -143,7 +210,6 @@ describe('SetList URL state', () => {
     expect(currentUrl()).toBe('/all?owner=Ryan&q=ap&sort=name&dir=asc');
     expect(renderedNames()).toEqual(['Apple Orchard']);
     expect(pushState).not.toHaveBeenCalled();
-    pushState.mockRestore();
   });
 
   it('drops a filter from the URL when it returns to its default', () => {
