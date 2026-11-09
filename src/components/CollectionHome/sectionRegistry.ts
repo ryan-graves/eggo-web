@@ -19,40 +19,50 @@ function formatDate(dateStr: string): string | undefined {
 }
 
 /**
- * Small seeded PRNG (mulberry32). Lets a "random" sample stay stable for a
- * given seed instead of reshuffling on every realtime refetch.
+ * Hash a set id with the shuffle seed into a sort key. Ordering by this key
+ * gives a random section a consistent random order: the same seed yields the
+ * same order on every render, refetch, and return to the page, and a set that
+ * enters or leaves the pool (a status change, a new set) moves only itself
+ * rather than reshuffling the sets around it.
  */
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+function seededSortKey(seed: number, id: string): number {
+  let hash = 0x811c9dc5 ^ Math.floor(seed * 0xffffffff);
+  for (let i = 0; i < id.length; i++) {
+    hash ^= id.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
 }
 
 /**
- * Return a random sample of up to `count` items from the array, using a
- * partial Fisher-Yates shuffle. When `seed` is provided the sample is
- * deterministic for that seed, so it stays stable across refetches.
+ * Return up to `count` items in the consistent random order for `seed`.
+ * Without a seed the sample is fresh on every call.
  */
-function randomSample<T>(array: T[], count: number, seed?: number): T[] {
-  const random =
-    seed === undefined ? Math.random : mulberry32(Math.floor(seed * 0xffffffff));
-  const copy = [...array];
-  const n = Math.min(count, copy.length);
-  for (let i = 0; i < n; i++) {
-    const j = i + Math.floor(random() * (copy.length - i));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+function randomSample<T extends { id: string }>(items: T[], count: number, seed?: number): T[] {
+  const effectiveSeed = seed ?? Math.random();
+  return [...items]
+    .sort((a, b) => seededSortKey(effectiveSeed, a.id) - seededSortKey(effectiveSeed, b.id))
+    .slice(0, count);
+}
+
+let sessionShuffleSeed: number | null = null;
+
+/**
+ * One shuffle seed for the life of the loaded app. Random sections keep the
+ * same picks while the user navigates into sets and back, across realtime
+ * refetches, and between collections; a reload or a fresh tab draws new ones.
+ */
+export function getSessionShuffleSeed(): number {
+  if (sessionShuffleSeed === null) {
+    sessionShuffleSeed = Math.random();
   }
-  return copy.slice(0, n);
+  return sessionShuffleSeed;
 }
 
 interface SmartSectionDefinition {
   title: string;
   description: string;
-  /** `seed` makes random sections deterministic for a session; most ignore it. */
+  /** `seed` fixes the order of random sections (see getSessionShuffleSeed); most ignore it. */
   getSets: (sets: LegoSet[], seed?: number) => LegoSet[];
   emptyMessage: string;
   viewAllFilter?: string;

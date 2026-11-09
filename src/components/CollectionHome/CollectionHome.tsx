@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { SetCarousel } from '@/components/SetCarousel';
 import { HomeSectionsSheet } from '@/components/HomeSectionsSheet';
 import type { LegoSet, HomeSectionConfig } from '@/types';
-import { resolveSection, DEFAULT_HOME_SECTIONS } from './sectionRegistry';
+import { resolveSection, DEFAULT_HOME_SECTIONS, getSessionShuffleSeed } from './sectionRegistry';
 import styles from './CollectionHome.module.css';
 
 interface CollectionHomeProps {
@@ -33,9 +33,10 @@ export function CollectionHome({
   hideStatus,
 }: CollectionHomeProps): React.JSX.Element {
   const [showCustomize, setShowCustomize] = useState(false);
-  // One seed per mount keeps random sections (Discover) stable across the
-  // realtime refetches that would otherwise reshuffle them under the user.
-  const [shuffleSeed] = useState(() => Math.random());
+  // The session seed keeps random sections (Discover) showing the same picks
+  // across realtime refetches and across opening a set and coming back (this
+  // component remounts on return); a reload draws new ones.
+  const [shuffleSeed] = useState(getSessionShuffleSeed);
 
   const canCustomize = !readOnly && !!onSaveSections;
   const sectionConfigs = sections ?? DEFAULT_HOME_SECTIONS;

@@ -8,6 +8,7 @@ import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { StatusControl } from '@/components/StatusControl';
 import { formatDateForDisplay } from '@/lib/date';
+import { normalizeSetNumber } from '@/lib/providers/bricksetMapping';
 import { LAST_BROWSE_PATH_KEY, useNavigation } from '@/hooks/useNavigation';
 import { SET_IMAGE_VT_NAME, SET_NAME_VT_NAME } from '@/lib/viewTransitions';
 import styles from './page.module.css';
@@ -80,6 +81,33 @@ function SetDetailContent(): React.JSX.Element {
       </Link>
     );
   }
+  // Brickset has a page for nearly every set whatever source we used, so the
+  // link doesn't depend on dataSource.
+  const bricksetHref = `https://brickset.com/sets/${normalizeSetNumber(set.setNumber)}`;
+  metadataParts.push(
+    <a
+      key="brickset"
+      href={bricksetHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${styles.themeLink} ${styles.externalLink}`}
+      aria-label="View on Brickset (opens in a new tab)"
+    >
+      Brickset
+      <svg
+        className={styles.externalIcon}
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M6 3h7v7M13 3L3 13" />
+      </svg>
+    </a>
+  );
 
   const editButton = (
     <button
