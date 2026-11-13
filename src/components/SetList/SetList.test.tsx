@@ -89,6 +89,53 @@ function renderList(
   return render(<SetList sets={sets} availableOwners={OWNERS} syncFiltersToUrl {...props} />);
 }
 
+describe('SetList stats line', () => {
+  beforeEach(() => {
+    mockPathname = '/all';
+    mockSearch = '';
+    sessionStorage.clear();
+    window.history.replaceState(null, '', '/all');
+  });
+
+  it('shows the collection totals when nothing is filtered', () => {
+    renderList();
+
+    expect(screen.getByText('3 sets')).toBeInTheDocument();
+    expect(screen.getByText('600 pieces')).toBeInTheDocument();
+  });
+
+  it('shows the selection against the collection when a filter is active', () => {
+    renderList();
+
+    fireEvent.change(screen.getByDisplayValue('All Owners'), { target: { value: 'Ryan' } });
+
+    expect(screen.getByText('2 of 3 sets')).toBeInTheDocument();
+    expect(screen.getByText('500 of 600 pieces')).toBeInTheDocument();
+  });
+
+  it('treats a search as a selection too', () => {
+    renderList();
+
+    fireEvent.change(screen.getAllByPlaceholderText('Search sets...')[1], {
+      target: { value: 'boat' },
+    });
+
+    expect(screen.getByText('1 of 3 sets')).toBeInTheDocument();
+    expect(screen.getByText('100 of 600 pieces')).toBeInTheDocument();
+  });
+
+  it('hides the piece count when nothing matches', () => {
+    renderList();
+
+    fireEvent.change(screen.getAllByPlaceholderText('Search sets...')[1], {
+      target: { value: 'zzz' },
+    });
+
+    expect(screen.getByText('0 of 3 sets')).toBeInTheDocument();
+    expect(screen.queryByText(/pieces/)).not.toBeInTheDocument();
+  });
+});
+
 describe('SetList URL state', () => {
   beforeEach(() => {
     mockPathname = '/all';
