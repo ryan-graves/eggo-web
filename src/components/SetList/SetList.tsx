@@ -310,6 +310,21 @@ export function SetList({
 
   const activeFilterCount = filterTags.length;
 
+  // The stats line reads as the collection total unless the selection is
+  // shown against it, so with any filter or search active it says
+  // "12 of 142 sets · 3,400 of 58,210 pieces".
+  const hasActiveFilters = activeFilterCount > 0 || searchQuery !== '';
+  const sumPieces = (list: LegoSet[]): number =>
+    list.reduce((sum, s) => sum + (s.pieceCount || 0), 0);
+  const totalPieces = useMemo(() => sumPieces(sets), [sets]);
+  const filteredPieces = sumPieces(filteredSets);
+  const setCountLabel = hasActiveFilters
+    ? `${filteredSets.length} of ${sets.length} ${sets.length === 1 ? 'set' : 'sets'}`
+    : `${filteredSets.length} ${filteredSets.length === 1 ? 'set' : 'sets'}`;
+  const pieceCountLabel = hasActiveFilters
+    ? `${filteredPieces.toLocaleString()} of ${totalPieces.toLocaleString()} pieces`
+    : `${filteredPieces.toLocaleString()} pieces`;
+
   return (
     <div className={styles.container}>
       {/* Mobile filter UI */}
@@ -428,15 +443,8 @@ export function SetList({
       </div>
 
       <div className={styles.stats}>
-        <span>
-          {filteredSets.length} {filteredSets.length === 1 ? 'set' : 'sets'}
-        </span>
-        {filteredSets.length > 0 && (
-          <span className={styles.totalPieces}>
-            {filteredSets.reduce((sum, s) => sum + (s.pieceCount || 0), 0).toLocaleString()} total
-            pieces
-          </span>
-        )}
+        <span>{setCountLabel}</span>
+        {filteredSets.length > 0 && <span className={styles.totalPieces}>{pieceCountLabel}</span>}
       </div>
 
       {filteredSets.length === 0 ? (

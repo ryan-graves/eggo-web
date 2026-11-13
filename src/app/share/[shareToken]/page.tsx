@@ -1,18 +1,50 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { PublicCollectionProvider, usePublicCollection } from '@/hooks/usePublicCollection';
+import { useScrollMemory } from '@/hooks/useScrollMemory';
 import { SetList } from '@/components/SetList';
 import { CollectionHome } from '@/components/CollectionHome';
 import { PublicBanner } from '@/components/PublicBanner';
 import { Header } from '@/components/Header';
 import styles from './page.module.css';
 
+type PublicView = 'home' | 'all';
+
+/** SessionStorage key prefix for the public page's remembered view, per share token. */
+const PUBLIC_VIEW_PREFIX = 'eggo_share_view:';
+
+function readRememberedView(shareToken: string): PublicView {
+  try {
+    return sessionStorage.getItem(`${PUBLIC_VIEW_PREFIX}${shareToken}`) === 'all' ? 'all' : 'home';
+  } catch {
+    return 'home';
+  }
+}
+
 function PublicCollectionContent(): React.JSX.Element {
   const { collection, sets, isLoading, error, shareToken } = usePublicCollection();
-  const [activeView, setActiveView] = useState<'home' | 'all'>('home');
+  const pathname = usePathname();
+  // The view is remembered per tab so coming back from a set (this page
+  // remounts) lands on the same view, with its own scroll position.
+  const [activeView, setActiveView] = useState<PublicView>(() => readRememberedView(shareToken));
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(`${PUBLIC_VIEW_PREFIX}${shareToken}`, activeView);
+    } catch {
+      // Storage unavailable: the view just resets on return.
+    }
+  }, [shareToken, activeView]);
+
+  const showHomeView = collection?.publicViewSettings?.showHomeView ?? false;
+  const currentView: PublicView = showHomeView && activeView === 'home' ? 'home' : 'all';
+  useScrollMemory(pathname, {
+    paused: false,
+    ready: !isLoading && !!collection,
+    key: `${pathname}:${currentView}`,
+  });
 
   if (isLoading) {
     return (
@@ -37,7 +69,6 @@ function PublicCollectionContent(): React.JSX.Element {
   }
 
   const viewSettings = collection.publicViewSettings;
-  const showHomeView = viewSettings?.showHomeView ?? false;
   const hideStatus = viewSettings ? !(viewSettings.showStatus ?? true) : false;
   const linkPrefix = `/share/${shareToken}/set`;
 
@@ -89,7 +120,7 @@ function PublicCollectionContent(): React.JSX.Element {
           </div>
         )}
 
-        {showHomeView && activeView === 'home' ? (
+        {currentView === 'home' ? (
           <CollectionHome
             sets={sets}
             sections={collection.homeSections}
