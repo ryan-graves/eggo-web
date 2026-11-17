@@ -136,6 +136,49 @@ describe('SetList stats line', () => {
   });
 });
 
+describe('SetList collection value', () => {
+  // Apple Orchard is assembled (used value), Boat House is sealed (new value),
+  // Castle Keep has no market value yet (falls back to retail).
+  const pricedSets: LegoSet[] = [
+    { ...sets[0], retailPrice: 59.99, marketValueNew: 120, marketValueUsed: 80 },
+    { ...sets[1], retailPrice: 19.99, marketValueNew: 49, marketValueUsed: 17 },
+    { ...sets[2], retailPrice: 99.99 },
+  ];
+
+  beforeEach(() => {
+    mockPathname = '/all';
+    mockSearch = '';
+    sessionStorage.clear();
+    window.history.replaceState(null, '', '/all');
+  });
+
+  it('totals each set at its value for its condition', () => {
+    renderList({ sets: pricedSets, showValue: true });
+
+    expect(screen.getByText('$229 value')).toBeInTheDocument();
+  });
+
+  it('totals only the visible sets when a filter is active', () => {
+    renderList({ sets: pricedSets, showValue: true });
+
+    fireEvent.change(screen.getByDisplayValue('All Owners'), { target: { value: 'Ryan' } });
+
+    expect(screen.getByText('$180 of $229 value')).toBeInTheDocument();
+  });
+
+  it('is left out unless asked for, as on public share pages', () => {
+    renderList({ sets: pricedSets });
+
+    expect(screen.queryByText(/value/)).not.toBeInTheDocument();
+  });
+
+  it('is left out when no set has a price', () => {
+    renderList({ showValue: true });
+
+    expect(screen.queryByText(/value/)).not.toBeInTheDocument();
+  });
+});
+
 describe('SetList URL state', () => {
   beforeEach(() => {
     mockPathname = '/all';

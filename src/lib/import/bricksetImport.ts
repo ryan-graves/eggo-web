@@ -303,6 +303,7 @@ export async function runBricksetImport(
           owners,
           dateReceived,
           notes: set.notes ?? undefined,
+          retailPrice: set.retailPrice ?? undefined,
           dataSource: 'brickset',
           dataSourceId: set.sourceId,
           lastSyncedAt: new Date().toISOString(),

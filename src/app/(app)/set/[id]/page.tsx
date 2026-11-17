@@ -8,6 +8,8 @@ import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { StatusControl } from '@/components/StatusControl';
 import { formatDateForDisplay } from '@/lib/date';
+import { formatUsd, getMarketValue } from '@/lib/pricing';
+import { ANALYTICS_EXCLUDE_CLASS } from '@/lib/analytics';
 import { normalizeSetNumber } from '@/lib/providers/bricksetMapping';
 import { LAST_BROWSE_PATH_KEY, useNavigation } from '@/hooks/useNavigation';
 import { SET_IMAGE_VT_NAME, SET_NAME_VT_NAME } from '@/lib/viewTransitions';
@@ -113,6 +115,16 @@ function SetDetailContent(): React.JSX.Element {
     </a>
   );
 
+  const marketValue = getMarketValue(set);
+  const marketValueDate = set.marketValuesUpdatedAt
+    ? new Date(set.marketValuesUpdatedAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : null;
+  const hasPrices = marketValue !== null || set.retailPrice !== undefined;
+
   const editButton = (
     <button
       type="button"
@@ -192,6 +204,28 @@ function SetDetailContent(): React.JSX.Element {
                 <StatusControl setId={set.id} currentStatus={set.status} />
               </div>
             </div>
+
+            {hasPrices && (
+              <dl className={`${styles.prices} ${ANALYTICS_EXCLUDE_CLASS}`}>
+                {marketValue && (
+                  <div className={styles.price}>
+                    <dt className={styles.priceLabel}>Market value</dt>
+                    <dd className={styles.priceAmount}>{formatUsd(marketValue.amount)}</dd>
+                    <dd className={styles.priceNote}>
+                      {marketValue.condition === 'new' ? 'Sealed' : 'Opened'}, BrickLink
+                      {marketValueDate && <> {'·'} {marketValueDate}</>}
+                    </dd>
+                  </div>
+                )}
+                {set.retailPrice !== undefined && (
+                  <div className={styles.price}>
+                    <dt className={styles.priceLabel}>Original retail</dt>
+                    <dd className={styles.priceAmount}>{formatUsd(set.retailPrice)}</dd>
+                    <dd className={styles.priceNote}>LEGO US price</dd>
+                  </div>
+                )}
+              </dl>
+            )}
 
             {/* Collection Story — narrative engine unchanged per design direction. */}
             {(set.owners.length > 0 || set.dateReceived || set.hasBeenAssembled) && (

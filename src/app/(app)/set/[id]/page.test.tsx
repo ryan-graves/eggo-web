@@ -79,3 +79,43 @@ describe('SetDetailPage Brickset link', () => {
     ).toHaveAttribute('href', 'https://brickset.com/sets/75192-1');
   });
 });
+
+describe('SetDetailPage prices', () => {
+  const priced: Partial<LegoSet> = {
+    retailPrice: 849.99,
+    marketValueNew: 1088,
+    marketValueUsed: 870,
+    marketValuesUpdatedAt: '2026-11-16T18:00:00Z',
+  };
+
+  it('shows the used market value and original retail for an opened set', () => {
+    renderWithSet({ ...makeSet('75313-1'), ...priced });
+
+    expect(screen.getByText('Market value')).toBeInTheDocument();
+    expect(screen.getByText('$870')).toBeInTheDocument();
+    expect(screen.getByText(/Opened, BrickLink/)).toHaveTextContent('Nov 16, 2026');
+    expect(screen.getByText('Original retail')).toBeInTheDocument();
+    expect(screen.getByText('$849.99')).toBeInTheDocument();
+  });
+
+  it('shows the new market value for a sealed set', () => {
+    renderWithSet({ ...makeSet('75313-1'), ...priced, status: 'unopened' });
+
+    expect(screen.getByText('$1,088')).toBeInTheDocument();
+    expect(screen.getByText(/Sealed, BrickLink/)).toBeInTheDocument();
+  });
+
+  it('shows retail alone when there is no market value', () => {
+    renderWithSet({ ...makeSet('75192-1'), retailPrice: 849.99 });
+
+    expect(screen.queryByText('Market value')).not.toBeInTheDocument();
+    expect(screen.getByText('$849.99')).toBeInTheDocument();
+  });
+
+  it('shows no prices for a set without any', () => {
+    renderWithSet(makeSet('75192-1'));
+
+    expect(screen.queryByText('Market value')).not.toBeInTheDocument();
+    expect(screen.queryByText('Original retail')).not.toBeInTheDocument();
+  });
+});

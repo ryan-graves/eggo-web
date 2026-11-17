@@ -200,6 +200,45 @@
   margin-top: var(--space-3);
 }
 
+/* ---- Prices ---------------------------------------------------------- */
+
+/* Market value and original retail side by side, each a small label over
+   a display-scale figure. Same no-surface treatment as the story: spacing
+   alone sets them apart. */
+.prices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-10);
+  margin: 0;
+}
+
+.price {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.priceLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  letter-spacing: var(--letter-spacing-wider);
+}
+
+.priceAmount {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-tight);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.priceNote {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
 /* ---- Story (narrative + built-before badge) -------------------------- */
 
 .story {
