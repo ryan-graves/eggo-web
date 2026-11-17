@@ -200,32 +200,32 @@ function SetDetailContent(): React.JSX.Element {
                   </span>
                 ))}
               </p>
+              {hasPrices && (
+                <dl className={`${styles.prices} ${ANALYTICS_EXCLUDE_CLASS}`}>
+                  {marketValue && (
+                    <div className={styles.priceRow}>
+                      <dt className={styles.priceLabel}>Market value</dt>
+                      <dd className={styles.priceValue}>
+                        {formatUsd(marketValue.amount)}
+                        <span className={styles.priceNote}>
+                          {marketValue.condition === 'new' ? 'Sealed' : 'Opened'}, BrickLink
+                          {marketValueDate && <>, {marketValueDate}</>}
+                        </span>
+                      </dd>
+                    </div>
+                  )}
+                  {set.retailPrice !== undefined && (
+                    <div className={styles.priceRow}>
+                      <dt className={styles.priceLabel}>Original retail</dt>
+                      <dd className={styles.priceValue}>{formatUsd(set.retailPrice)}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
               <div className={styles.statusRow}>
                 <StatusControl setId={set.id} currentStatus={set.status} />
               </div>
             </div>
-
-            {hasPrices && (
-              <dl className={`${styles.prices} ${ANALYTICS_EXCLUDE_CLASS}`}>
-                {marketValue && (
-                  <div className={styles.price}>
-                    <dt className={styles.priceLabel}>Market value</dt>
-                    <dd className={styles.priceAmount}>{formatUsd(marketValue.amount)}</dd>
-                    <dd className={styles.priceNote}>
-                      {marketValue.condition === 'new' ? 'Sealed' : 'Opened'}, BrickLink
-                      {marketValueDate && <> {'·'} {marketValueDate}</>}
-                    </dd>
-                  </div>
-                )}
-                {set.retailPrice !== undefined && (
-                  <div className={styles.price}>
-                    <dt className={styles.priceLabel}>Original retail</dt>
-                    <dd className={styles.priceAmount}>{formatUsd(set.retailPrice)}</dd>
-                    <dd className={styles.priceNote}>LEGO US price</dd>
-                  </div>
-                )}
-              </dl>
-            )}
 
             {/* Collection Story — narrative engine unchanged per design direction. */}
             {(set.owners.length > 0 || set.dateReceived || set.hasBeenAssembled) && (
