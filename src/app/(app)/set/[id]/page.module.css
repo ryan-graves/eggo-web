@@ -200,6 +200,44 @@
   margin-top: var(--space-3);
 }
 
+/* ---- Prices -------------------------------------------------------- */
+
+/* Market value and original retail read as two more facts under the
+   metadata line: label-weight terms against body-size figures, no display
+   numbers (DESIGN.md: no hero-metric blocks). Each row is a wrapper div
+   so the dl stays valid HTML; display: contents lets the terms and values
+   share one two-column grid so the figures line up. */
+.prices {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-1) var(--space-4);
+  font-size: var(--font-size-sm);
+  margin: var(--space-1) 0 0;
+}
+
+.priceRow {
+  display: contents;
+}
+
+.priceLabel {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.priceValue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.priceNote {
+  color: var(--text-tertiary);
+}
+
 /* ---- Story (narrative + built-before badge) -------------------------- */
 
 .story {

@@ -247,6 +247,7 @@ Individual Lego sets with:
 - Theme hierarchy: `theme`, `subtheme` (from Brickset/Rebrickable)
 - User data: `status`, `owner`, `occasion`, `dateReceived`
 - Status values: `unopened`, `in_progress`, `rebuild_in_progress`, `assembled`, `disassembled`
+- Prices (US dollars, all optional): `retailPrice` (LEGO's original US price), `marketValueNew` / `marketValueUsed` (BrickLink averages, sealed and opened), `marketValuesUpdatedAt`. The add-set form and the Brickset import fill `retailPrice` from Brickset's `LEGOCom.US.retailPrice` (0 means unpriced and is stored as nothing). Brickset's API has no market values, so those come from a snapshot. `src/lib/pricing.ts` values a set at its new price while unopened and its used price otherwise, falling back to retail; the `/all` stats line totals the visible sets that way (`SetList` `showValue`, members only), and the set detail page shows the market value and original retail. Public share pages never show prices, though the columns are readable there through RLS like the rest of a public set row.
 
 ### Browse views (`/home`, `/all`)
 
@@ -349,6 +350,7 @@ Schema lives in `supabase/migrations/`:
 - `0004_harden_replace_members.sql` — re-creates `replace_collection_members()` with guards rejecting empty arrays and inputs missing `auth.uid()`, so the RPC can't lock everyone out of a collection via RLS.
 - `0005_fix_members_select_policy.sql` — broadens the `collection_members` SELECT policy from "your own row only" to "any row where you're a member of the same collection", so the embed in `Collection.memberUserIds` returns the full membership list.
 - `0009_brickset_links.sql` — `brickset_links` (one remembered Brickset account per user: username + sealed session hash + sync timestamps) and `brickset_requests` (per-user log of Brickset sign-ins/fetches used for throttling). Both are server-only: RLS enabled with no policies and all privileges revoked from `anon`/`authenticated`; only the secret-key client touches them.
+- `0011_set_prices.sql` — nullable price columns on `sets` (`retail_price_usd`, `market_value_new_usd`, `market_value_used_usd`, `market_values_updated_at`), covered by the existing `sets` policies.
 
 RLS policy summary:
 

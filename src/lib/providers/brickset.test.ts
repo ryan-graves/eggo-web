@@ -34,6 +34,7 @@ describe('BricksetProvider', () => {
               imageURL: 'https://images.brickset.com/sets/images/75192-1.jpg',
             },
             bricksetURL: 'https://brickset.com/sets/75192-1',
+            LEGOCom: { US: { retailPrice: 849.99 } },
           },
         ],
       };
@@ -53,6 +54,7 @@ describe('BricksetProvider', () => {
         theme: 'Star Wars',
         subtheme: 'Ultimate Collector Series',
         imageUrl: 'https://images.brickset.com/sets/images/75192-1.jpg',
+        retailPrice: 849.99,
         sourceId: '75192-1',
         dataSource: 'brickset',
       });

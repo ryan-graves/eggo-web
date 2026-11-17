@@ -6,6 +6,7 @@ import {
   normalizeSetNumber,
   sourceImageCandidates,
   standardBricksetImage,
+  usRetailPrice,
   type BricksetSet,
 } from './bricksetMapping';
 
@@ -26,6 +27,7 @@ function record(overrides: Partial<BricksetSet> = {}): BricksetSet {
       imageURL: 'https://images.brickset.com/sets/images/10300-1.jpg',
     },
     bricksetURL: 'https://brickset.com/sets/10300-1',
+    LEGOCom: { US: { retailPrice: 199.99 } },
     collection: { owned: true, qtyOwned: 1 },
     ...overrides,
   };
@@ -88,6 +90,7 @@ describe('mapBricksetSetToOwnedSet', () => {
       theme: 'Icons',
       subtheme: 'Back to the Future',
       imageUrl: 'https://images.brickset.com/sets/images/10300-1.jpg',
+      retailPrice: 199.99,
       quantity: 2,
       notes: 'Gift',
     });
@@ -144,6 +147,7 @@ describe('mapBricksetSetToLookupResult', () => {
       theme: 'Icons',
       subtheme: 'Back to the Future',
       imageUrl: 'https://images.brickset.com/sets/images/10300-1.jpg',
+      retailPrice: 199.99,
       sourceId: '10300-1',
       dataSource: 'brickset',
     });
@@ -151,5 +155,18 @@ describe('mapBricksetSetToLookupResult', () => {
 
   it('does not throw on a record without an image', () => {
     expect(mapBricksetSetToLookupResult(record({ image: undefined })).imageUrl).toBeNull();
+  });
+});
+
+describe('usRetailPrice', () => {
+  it('reads the LEGO.com US price', () => {
+    expect(usRetailPrice(record())).toBe(199.99);
+  });
+
+  it('treats a missing or zero price as unknown', () => {
+    expect(usRetailPrice(record({ LEGOCom: undefined }))).toBeNull();
+    expect(usRetailPrice(record({ LEGOCom: null }))).toBeNull();
+    expect(usRetailPrice(record({ LEGOCom: { US: null } }))).toBeNull();
+    expect(usRetailPrice(record({ LEGOCom: { US: { retailPrice: 0 } } }))).toBeNull();
   });
 });

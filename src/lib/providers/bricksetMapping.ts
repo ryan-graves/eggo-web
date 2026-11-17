@@ -25,6 +25,12 @@ export interface BricksetSet {
     imageURL?: string | null;
   } | null;
   bricksetURL: string;
+  /** LEGO.com availability and price per market. Missing or zero when LEGO never sold it there. */
+  LEGOCom?: {
+    US?: {
+      retailPrice?: number | null;
+    } | null;
+  } | null;
   /** The requesting user's collection record. Only meaningful when the request carried a userHash. */
   collection?: BricksetCollectionEntry;
 }
@@ -112,6 +118,15 @@ function bestImageUrl(set: BricksetSet): string | null {
   return standardBricksetImage(set.image?.imageURL || set.image?.thumbnailURL || null);
 }
 
+/**
+ * LEGO's US retail price. Brickset reports 0 for sets LEGO never priced in
+ * the US (promos, other markets), which Eggo treats as unknown.
+ */
+export function usRetailPrice(set: BricksetSet): number | null {
+  const price = set.LEGOCom?.US?.retailPrice;
+  return typeof price === 'number' && price > 0 ? price : null;
+}
+
 /** Brickset's canonical "number-variant" identifier, stored as `dataSourceId`. */
 function sourceIdFor(set: BricksetSet): string {
   return `${set.number}-${set.numberVariant}`;
@@ -126,6 +141,7 @@ export function mapBricksetSetToLookupResult(set: BricksetSet): SetLookupResult 
     theme: set.theme,
     subtheme: set.subtheme,
     imageUrl: bestImageUrl(set),
+    retailPrice: usRetailPrice(set),
     sourceId: sourceIdFor(set),
     dataSource: 'brickset',
   };
@@ -151,6 +167,7 @@ export function mapBricksetSetToOwnedSet(set: BricksetSet): BricksetOwnedSet {
     theme: set.theme || null,
     subtheme: set.subtheme || null,
     imageUrl: bestImageUrl(set),
+    retailPrice: usRetailPrice(set),
     quantity: Math.max(1, qtyOwned),
     notes: notes ? notes : null,
   };

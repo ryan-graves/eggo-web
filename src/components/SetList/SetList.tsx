@@ -7,6 +7,8 @@ import { FilterSheet } from '@/components/FilterSheet';
 import { FilterTags } from '@/components/FilterTags';
 import { ALL_SETS_QUERY_KEY } from '@/hooks/useNavigation';
 import { getDateSortString } from '@/lib/date';
+import { formatUsd, getSetValue } from '@/lib/pricing';
+import { ANALYTICS_EXCLUDE_CLASS } from '@/lib/analytics';
 import type { LegoSet, SetStatus, PublicViewSettings } from '@/types';
 import styles from './SetList.module.css';
 
@@ -21,6 +23,8 @@ interface SetListProps {
   emptyMessage?: string;
   /** Mirror filters and sort into the URL (the /all route only). */
   syncFiltersToUrl?: boolean;
+  /** Show the value of the listed sets in the stats line. Members only, never on public share pages. */
+  showValue?: boolean;
 }
 
 type SortField = 'name' | 'dateReceived' | 'pieceCount' | 'setNumber';
@@ -155,6 +159,7 @@ export function SetList({
   viewSettings,
   emptyMessage = 'No sets in your collection yet. Add your first set!',
   syncFiltersToUrl = false,
+  showValue = false,
 }: SetListProps): React.JSX.Element {
   // Filters and sort live in the URL — only when syncFiltersToUrl is set (the
   // /all route), never on public share pages.
@@ -325,6 +330,17 @@ export function SetList({
     ? `${filteredPieces.toLocaleString()} of ${totalPieces.toLocaleString()} pieces`
     : `${filteredPieces.toLocaleString()} pieces`;
 
+  // The value follows the same pattern, and is left out when no set in the
+  // collection has a price.
+  const sumValue = (list: LegoSet[]): number =>
+    list.reduce((sum, s) => sum + (getSetValue(s)?.amount ?? 0), 0);
+  const hasPrices = useMemo(() => sets.some((s) => getSetValue(s) !== null), [sets]);
+  const totalValue = useMemo(() => sumValue(sets), [sets]);
+  const filteredValue = sumValue(filteredSets);
+  const valueLabel = hasActiveFilters
+    ? `${formatUsd(filteredValue, { wholeDollars: true })} of ${formatUsd(totalValue, { wholeDollars: true })} value`
+    : `${formatUsd(filteredValue, { wholeDollars: true })} value`;
+
   return (
     <div className={styles.container}>
       {/* Mobile filter UI */}
@@ -445,6 +461,14 @@ export function SetList({
       <div className={styles.stats}>
         <span>{setCountLabel}</span>
         {filteredSets.length > 0 && <span className={styles.totalPieces}>{pieceCountLabel}</span>}
+        {filteredSets.length > 0 && showValue && hasPrices && (
+          <span
+            className={`${styles.totalValue} ${ANALYTICS_EXCLUDE_CLASS}`}
+            title="BrickLink value (new if sealed, used if opened), or retail price where there's no BrickLink value"
+          >
+            {valueLabel}
+          </span>
+        )}
       </div>
 
       {filteredSets.length === 0 ? (

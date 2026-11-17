@@ -49,6 +49,7 @@ describe('RebrickableProvider', () => {
         theme: 'Star Wars',
         subtheme: null,
         imageUrl: 'https://example.com/image.jpg',
+        retailPrice: null,
         sourceId: '75192-1',
         dataSource: 'rebrickable',
       });
@@ -121,6 +122,7 @@ describe('RebrickableProvider', () => {
         theme: 'Star Wars',
         subtheme: 'Ultimate Collector Series',
         imageUrl: 'https://example.com/landspeeder.jpg',
+        retailPrice: null,
         sourceId: '75341-1',
         dataSource: 'rebrickable',
       });

@@ -128,13 +128,15 @@
 
 .stats {
   display: flex;
-  gap: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   padding: 0 var(--space-1);
 }
 
-.totalPieces {
+.totalPieces,
+.totalValue {
   color: var(--text-tertiary);
 }
 

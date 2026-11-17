@@ -103,6 +103,7 @@ export class RebrickableProvider implements SetDataProvider {
       theme,
       subtheme,
       imageUrl: set.set_img_url,
+      retailPrice: null, // Rebrickable has no prices
       sourceId: set.set_num,
       dataSource: 'rebrickable',
     };

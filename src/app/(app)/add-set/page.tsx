@@ -339,6 +339,7 @@ function AddSetContent(): React.JSX.Element {
         occasion: occasion.trim(),
         dateReceived: dateReceived || null,
         notes: notes.trim() || undefined,
+        retailPrice: lookupResult.retailPrice ?? undefined,
         dataSource: lookupResult.dataSource ?? 'manual',
         dataSourceId: lookupResult.sourceId,
       });

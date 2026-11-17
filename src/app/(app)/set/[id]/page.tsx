@@ -8,6 +8,8 @@ import { useCollection } from '@/hooks/useCollection';
 import { Header } from '@/components/Header';
 import { StatusControl } from '@/components/StatusControl';
 import { formatDateForDisplay } from '@/lib/date';
+import { formatUsd, getMarketValue } from '@/lib/pricing';
+import { ANALYTICS_EXCLUDE_CLASS } from '@/lib/analytics';
 import { normalizeSetNumber } from '@/lib/providers/bricksetMapping';
 import { LAST_BROWSE_PATH_KEY, useNavigation } from '@/hooks/useNavigation';
 import { SET_IMAGE_VT_NAME, SET_NAME_VT_NAME } from '@/lib/viewTransitions';
@@ -113,6 +115,16 @@ function SetDetailContent(): React.JSX.Element {
     </a>
   );
 
+  const marketValue = getMarketValue(set);
+  const marketValueDate = set.marketValuesUpdatedAt
+    ? new Date(set.marketValuesUpdatedAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : null;
+  const hasPrices = marketValue !== null || set.retailPrice !== undefined;
+
   const editButton = (
     <button
       type="button"
@@ -188,6 +200,28 @@ function SetDetailContent(): React.JSX.Element {
                   </span>
                 ))}
               </p>
+              {hasPrices && (
+                <dl className={`${styles.prices} ${ANALYTICS_EXCLUDE_CLASS}`}>
+                  {marketValue && (
+                    <div className={styles.priceRow}>
+                      <dt className={styles.priceLabel}>Market value</dt>
+                      <dd className={styles.priceValue}>
+                        {formatUsd(marketValue.amount)}
+                        <span className={styles.priceNote}>
+                          {marketValue.condition === 'new' ? 'Sealed' : 'Opened'}, BrickLink
+                          {marketValueDate && <>, {marketValueDate}</>}
+                        </span>
+                      </dd>
+                    </div>
+                  )}
+                  {set.retailPrice !== undefined && (
+                    <div className={styles.priceRow}>
+                      <dt className={styles.priceLabel}>Original retail</dt>
+                      <dd className={styles.priceValue}>{formatUsd(set.retailPrice)}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
               <div className={styles.statusRow}>
                 <StatusControl setId={set.id} currentStatus={set.status} />
               </div>

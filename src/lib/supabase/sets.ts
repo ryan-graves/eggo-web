@@ -28,11 +28,22 @@ interface SetRow {
   date_received: string | null;
   owners: string[];
   notes: string | null;
+  // Postgres numeric: PostgREST sends a JSON number, but accept a string too.
+  retail_price_usd: number | string | null;
+  market_value_new_usd: number | string | null;
+  market_value_used_usd: number | string | null;
+  market_values_updated_at: string | null;
   data_source: DataSource;
   data_source_id: string | null;
   last_synced_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+function priceFromDb(value: number | string | null | undefined): number | undefined {
+  if (value === null || value === undefined) return undefined;
+  const price = Number(value);
+  return Number.isFinite(price) ? price : undefined;
 }
 
 function fromDb(row: SetRow): LegoSet {
@@ -53,6 +64,10 @@ function fromDb(row: SetRow): LegoSet {
     dateReceived: row.date_received,
     owners: row.owners ?? [],
     notes: row.notes ?? undefined,
+    retailPrice: priceFromDb(row.retail_price_usd),
+    marketValueNew: priceFromDb(row.market_value_new_usd),
+    marketValueUsed: priceFromDb(row.market_value_used_usd),
+    marketValuesUpdatedAt: row.market_values_updated_at ?? undefined,
     dataSource: row.data_source,
     dataSourceId: row.data_source_id ?? undefined,
     lastSyncedAt: row.last_synced_at ?? undefined,
@@ -83,6 +98,12 @@ function toDb(input: Partial<LegoSet>): Record<string, unknown> {
   if (input.dateReceived !== undefined) out.date_received = input.dateReceived;
   if (input.owners !== undefined) out.owners = input.owners;
   if (input.notes !== undefined) out.notes = input.notes;
+  if (input.retailPrice !== undefined) out.retail_price_usd = input.retailPrice;
+  if (input.marketValueNew !== undefined) out.market_value_new_usd = input.marketValueNew;
+  if (input.marketValueUsed !== undefined) out.market_value_used_usd = input.marketValueUsed;
+  if (input.marketValuesUpdatedAt !== undefined) {
+    out.market_values_updated_at = input.marketValuesUpdatedAt;
+  }
   if (input.dataSource !== undefined) out.data_source = input.dataSource;
   if (input.dataSourceId !== undefined) out.data_source_id = input.dataSourceId;
   if (input.lastSyncedAt !== undefined) out.last_synced_at = input.lastSyncedAt;

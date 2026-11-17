@@ -84,6 +84,12 @@ export interface LegoSet {
   owners: string[]; // Can have multiple owners for shared sets
   notes?: string;
 
+  // Prices in US dollars (see src/lib/pricing.ts for how a set is valued)
+  retailPrice?: number; // LEGO's original US retail price
+  marketValueNew?: number; // BrickLink average, sealed
+  marketValueUsed?: number; // BrickLink average, opened
+  marketValuesUpdatedAt?: string;
+
   // Data provenance
   dataSource: DataSource;
   dataSourceId?: string;
@@ -147,6 +153,8 @@ export interface SetLookupResult {
   theme: string | null;
   subtheme: string | null;
   imageUrl: string | null;
+  /** LEGO's original US retail price, when the provider knows it. */
+  retailPrice: number | null;
   sourceId?: string;
   dataSource: DataSource;
 }
@@ -170,6 +178,8 @@ export interface BricksetOwnedSet {
   theme: string | null;
   subtheme: string | null;
   imageUrl: string | null;
+  /** LEGO's original US retail price, when Brickset has one. */
+  retailPrice: number | null;
   /** Copies owned according to Brickset. Always at least 1. */
   quantity: number;
   notes: string | null;
