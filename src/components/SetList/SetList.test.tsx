@@ -155,7 +155,7 @@ describe('SetList collection value', () => {
   it('totals each set at its value for its condition', () => {
     renderList({ sets: pricedSets, showValue: true });
 
-    expect(screen.getByText('$229 value')).toBeInTheDocument();
+    expect(screen.getByText('$229 est. market value')).toBeInTheDocument();
   });
 
   it('totals only the visible sets when a filter is active', () => {
@@ -163,7 +163,7 @@ describe('SetList collection value', () => {
 
     fireEvent.change(screen.getByDisplayValue('All Owners'), { target: { value: 'Ryan' } });
 
-    expect(screen.getByText('$180 of $229 value')).toBeInTheDocument();
+    expect(screen.getByText('$180 of $229 est. market value')).toBeInTheDocument();
   });
 
   it('is left out unless asked for, as on public share pages', () => {

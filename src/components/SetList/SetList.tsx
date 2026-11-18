@@ -331,15 +331,16 @@ export function SetList({
     : `${filteredPieces.toLocaleString()} pieces`;
 
   // The value follows the same pattern, and is left out when no set in the
-  // collection has a price.
+  // collection has a price. "Est." because sets with no market value yet
+  // count at their original retail price.
   const sumValue = (list: LegoSet[]): number =>
     list.reduce((sum, s) => sum + (getSetValue(s)?.amount ?? 0), 0);
   const hasPrices = useMemo(() => sets.some((s) => getSetValue(s) !== null), [sets]);
   const totalValue = useMemo(() => sumValue(sets), [sets]);
   const filteredValue = sumValue(filteredSets);
   const valueLabel = hasActiveFilters
-    ? `${formatUsd(filteredValue, { wholeDollars: true })} of ${formatUsd(totalValue, { wholeDollars: true })} value`
-    : `${formatUsd(filteredValue, { wholeDollars: true })} value`;
+    ? `${formatUsd(filteredValue, { wholeDollars: true })} of ${formatUsd(totalValue, { wholeDollars: true })} est. market value`
+    : `${formatUsd(filteredValue, { wholeDollars: true })} est. market value`;
 
   return (
     <div className={styles.container}>
@@ -464,7 +465,7 @@ export function SetList({
         {filteredSets.length > 0 && showValue && hasPrices && (
           <span
             className={`${styles.totalValue} ${ANALYTICS_EXCLUDE_CLASS}`}
-            title="BrickLink value (new if sealed, used if opened), or retail price where there's no BrickLink value"
+            title="BrickLink market value (new if sealed, used if opened), or original retail price for sets with no market value yet"
           >
             {valueLabel}
           </span>
